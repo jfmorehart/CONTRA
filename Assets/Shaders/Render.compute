@@ -1,0 +1,50 @@
+#pragma kernel CSMain
+
+int2 dime;
+StructuredBuffer<float> popBuffer;
+RWTexture2D<float4> Result;
+StructuredBuffer<int> teamOf;
+
+struct Color{
+    float x;
+    float y;
+    float z;
+};
+
+int numStates; 
+StructuredBuffer<Color> stateColors;
+
+int IsBorder(int index){
+
+    if((index - 3) > dime.x && (index + 3) < dime.x * (dime.y - 1))
+    {
+        int border = 1;
+        int di = 0;
+	    di = abs(teamOf[index] - teamOf[index + dime.x * border]);
+        di += abs(teamOf[index] - teamOf[index - dime.x * border]);
+        di += abs(teamOf[index] - teamOf[index + border]);
+        di += abs(teamOf[index] - teamOf[index - border]);
+
+        return di;
+    }
+
+    return 1;
+}
+
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int index = (id.y * dime.x) + id.x;
+
+    float3 col = float3(stateColors[teamOf[index]].x,
+        stateColors[teamOf[index]].y, 
+	    stateColors[teamOf[index]].z);
+
+    float brightness = popBuffer[index];
+    brightness += IsBorder(index);
+
+    col *= brightness;
+
+    Result[id.xy] = float4(col, 0);  
+}

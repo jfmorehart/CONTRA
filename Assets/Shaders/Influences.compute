@@ -1,0 +1,54 @@
+#pragma kernel CSMain
+
+int2 dime;
+
+struct Inf{
+    int x;
+    int y;
+    float strength;
+    int team;
+    int isArmy;
+};
+
+int numStates;
+int numInfs;
+StructuredBuffer<Inf> infs; 
+RWStructuredBuffer<float> stin;
+RWStructuredBuffer<int> teamOf;
+StructuredBuffer<int> atWar; 
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+
+    int index = (id.y * dime.x) + id.x;
+
+    //Finds us the first number in the array refferring to this texel;
+    int stin_index = id.y * (dime.x * numStates);
+    stin_index += id.x * numStates;
+ 
+    for(int i = 0; i < numInfs; i++){
+
+        int usable = 0;//(1 - infs[i].isArmy); 
+        usable = usable + atWar[teamOf[index] * numStates + infs[i].team];
+        usable = clamp(usable, 0, 1);
+
+        int2 pos = int2(infs[i].x, infs[i].y);
+        float dist = distance(pos, id.xy) + 0.01;
+        float adjustedDenom = pow(dist, 2 + 0.4 * infs[i].isArmy);
+        float dInf = infs[i].strength * (1 / adjustedDenom) * usable;
+        stin[stin_index + infs[i].team] += dInf;
+    }
+
+    int myTeam = 0;
+    float most = -1;
+    for(int j = 0; j < numStates; j++)
+    {
+        if(stin[stin_index + j] > most)
+	    {
+	        most = stin[stin_index + j];
+            myTeam = j;
+	    }
+    } 
+    teamOf[index] = myTeam;////myTeam;//atWar[teamOf[index] * numStates + 4];//myTeam;
+}
