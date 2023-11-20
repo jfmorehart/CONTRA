@@ -69,8 +69,7 @@ public class Map : MonoBehaviour
 		// Lock borders at war-state, but now moving armies
 		// wont override peacetime borders
 		ROE.SetAllExceptIdentity(0);
-		
-
+	
 	}
 
 	public void Update()

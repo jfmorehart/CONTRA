@@ -49,7 +49,7 @@ public class Army : Unit
 		if (uns.Count < 1) return;
 		int i = Random.Range(0, uns.Count);
 		Vector2 delta = uns[i].transform.position - transform.position;
-		float hTime = Pool.ins.GetBullet().Fire(transform.position, delta);
+		float hTime = Pool.ins.GetBullet().Fire(transform.position, delta, team);
 		uns[i].Hit(hTime);
 		return;
 	}

@@ -57,7 +57,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
-  hP: 8
+  hP: 3
   strength: 0
   speed: 20
   reload: 1

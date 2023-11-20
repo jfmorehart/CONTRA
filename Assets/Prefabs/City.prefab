@@ -98,4 +98,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   team: 0
   pop: 0
+  truepop: 0
+  capRate: 200
+  maxCapDist: 150
   sample_radius: 20
+  debug: 

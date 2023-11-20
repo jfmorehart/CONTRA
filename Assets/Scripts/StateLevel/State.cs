@@ -17,7 +17,6 @@ public class State : MonoBehaviour
 
 	protected virtual void Awake()
 	{
-
 		recentlyOrdered = new List<Unit>();
 		attacked = new List<City>();
 	}
@@ -45,18 +44,21 @@ public class State : MonoBehaviour
 	void CaptureACity(int ofteam) {
 		City toAttack = ArmyUtils.NearestCity(transform.position, ofteam, attacked);
 		if (toAttack == null) return; // war over lmao
-		foreach (City ci in attacked)
-		{
-			attacked.Add(ci);
-			if (attacked.Count >= warScope)
-			{
-				attacked.RemoveAt(0);
-			}
-		}
+
+		//Get units closest to nearest city
 		Unit[] units = ArmyUtils.GetUnits(team, 5, toAttack.transform.position, recentlyOrdered);
 		foreach(Unit un in units) {
 			recentlyOrdered.Add(un);
 		}
+		// Reassign city toAttack to target the city closest to them
+		// since it may differ from above target
+		toAttack = ArmyUtils.NearestCity(transform.position, ofteam, attacked);
+		attacked.Add(toAttack);
+		if (attacked.Count >= warScope)
+		{
+			attacked.RemoveAt(0);
+		}
+
 		Vector2[] pos = ArmyUtils.Encircle(toAttack.transform.position, 20, units.Length);
 		for(int i =0; i< pos.Length; i++) {
 			units[i].Direct(new Order(Order.Type.MoveTo, pos[i]));
