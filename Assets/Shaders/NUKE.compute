@@ -1,7 +1,8 @@
+
 #pragma kernel CSMain
 
 float rand (float2 uv) { 
-    return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
+    return frac(sin(dot(uv.xy, float2(13.9897, 78.233))) * 43758.5453123);
 }
 
 float noise (float2 uv) {
@@ -17,7 +18,7 @@ float noise (float2 uv) {
     return lerp( lerp(o,  x, smooth.x), lerp(y, xy, smooth.x), smooth.y);
 }
 
-float fractal_noise (float2 uv) {
+float fr (float2 uv) {
     float n = 0;
     // fractal noise is created by adding together "octaves" of a noise
     // an octave is another noise value that is half the amplitude and double the frequency of the previously added noise
@@ -33,18 +34,9 @@ float fractal_noise (float2 uv) {
 }
 
 int2 dime;
-int numCities;
-
-struct City
-{
-    int2 pos;
-    float pop;
-    int team;
-    int unused; // isarmy
-};
-
-StructuredBuffer<City> cityBuffer; 
-RWStructuredBuffer<float> popBuffer;
+RWStructuredBuffer<float> pop;
+int radius;
+int2 pos;
 
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -54,31 +46,30 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     uv.x = (float2)id.x / (float2)dime.x;
     uv.y = (float2)id.y / (float2)dime.y;
 
-    float cpop = 0;
+    float cur = pop[index];
+    float pre = cur;
+    float dist = distance(pos, id);
+    int mask = step(radius, dist);
+    //old noise //(max(fr(uv * 130 + pos) - 0.5, 0)) * 12 * radius;
+    // old noise2   //float noise2 = (fr(uv * 300 + pos)) * 1;
+    // noise2  //min(pow(1.3 - noise2, 6), cur);
 
-    for(int i = 0; i < numCities; i++){
-        float dist = distance(cityBuffer[i].pos, id.xy) + 0.01;
-        float loc = cityBuffer[i].pop * (1 / (dist * dist));
-        cpop += loc;
-    }
-    cpop = min(max(cpop, 0), 1);
-
-
-    float scale = 40;
-    float noise1 = fractal_noise(uv * scale * 2.8);
-    noise1 = pow(noise1, 3);
-
-    float noise2 = fractal_noise(uv * scale * 3);
-    noise2 = pow(noise2, 3);
-
-    noise1 += noise2;
-
-    cpop *= 0.8 + pow(noise1, 2) * 10;
-    cpop += pow(noise2, 1.8) * 2;
-    cpop = pow(cpop, 2) + 0.1;
+    float noise = fr(uv * 50 + pos) - 0.2;
+    noise *= 5;
+    float noise2 = fr(uv * 800 + pos);
+    noise2 = pow(noise2 + 0.2, 2);
+    noise2 = max(noise2, 0);
+    noise2 = min(noise2, 1);
 
 
-    //cpop = step(0.5, fractal_noise(uv * 2.01 + -103));
+    cur = cur * step(pow(radius, 0.5) + noise, dist);
+    int n2mask = step(pow(8 + radius * 10, 0.5), dist);
+    float rad = pow(5 + radius * 10, 0.5) - dist;
+    rad = 1 - (rad / (dist * 3));
 
-    popBuffer[index] = cpop;
+    cur = cur * n2mask + (1 - n2mask) * noise2 * cur * rad;//* noise2;
+
+    cur = max(0, cur);
+    //cur = min(pre, cur);
+    pop[index] = cur;
 }

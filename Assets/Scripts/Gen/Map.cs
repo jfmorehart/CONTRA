@@ -30,6 +30,7 @@ public class Map : MonoBehaviour
 	ComputeBuffer popbuffer;
 	ComputeBuffer citybuffer;
 	ComputeBuffer colorBuffer;
+	public ComputeShader NUKE;
 
 	public ComputeShader Influences;
 	ComputeBuffer stin;
@@ -80,6 +81,23 @@ public class Map : MonoBehaviour
 			ConvertToTexture();
 		}
 	}
+
+	public void Detonate(Vector2 wpos, float radius) {
+		Pool.ins.Explode().Nuke(wpos, radius);
+	}
+	public void NukePop(Vector2 wpos, float radius) {
+		Vector2Int pos = MapUtils.PointToCoords(wpos);
+		int popSize = texelDimensions.x * texelDimensions.y;
+		popbuffer = new ComputeBuffer(popSize, 4);
+		popbuffer.SetData(population);
+		NUKE.SetBuffer(0, "pop", popbuffer);
+		NUKE.SetInts("dime", texelDimensions.x, texelDimensions.y);
+		NUKE.SetInts("pos", pos.x, pos.y);
+		NUKE.SetFloat("radius", radius);
+		NUKE.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
+		popbuffer.GetData(population);
+		popbuffer.Release();
+    }
 
 	public void NewMap() { 
     

@@ -42,9 +42,9 @@ public class CamMovement : MonoBehaviour
 			Camera.main.orthographicSize = 15;
 		}
 
-		if (Camera.main.orthographicSize > 540)
+		if (Camera.main.orthographicSize > 600)
 		{
-			Camera.main.orthographicSize = 540;
+			Camera.main.orthographicSize = 600;
 		}
 
 		transform.position = pos;

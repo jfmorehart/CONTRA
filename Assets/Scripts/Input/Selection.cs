@@ -11,6 +11,8 @@ public class Selection : MonoBehaviour
 	Vector2 click1;
 	Vector2 rclick1;
 
+	public int test;
+
 	public void Update()
 	{
 		if (Input.GetMouseButtonDown(0)) {
@@ -31,6 +33,13 @@ public class Selection : MonoBehaviour
 
 	void LMBDown() {
 		click1 = Input.mousePosition;
+		Vector2 pos = ScreenToWorld(Input.mousePosition);
+
+		for (int i = 0; i < test; i++) {
+			Vector2 ran = Random.insideUnitCircle * Random.Range(0f, 100);
+			Pool.ins.GetMissile().Launch(Map.ins.transform.position, pos + ran, 0.5f);
+		}
+
 		if (!Input.GetKey(KeyCode.LeftShift)) {
 			ClearSelected();
 		}

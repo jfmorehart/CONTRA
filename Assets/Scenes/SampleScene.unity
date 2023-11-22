@@ -338,6 +338,12 @@ MonoBehaviour:
   psize: 100
   bulletPrefab: {fileID: 7024469171325701689, guid: fb69cd5789f97476ebed504cf6c1baae, type: 3}
   bpool: []
+  esize: 100
+  exploPrefab: {fileID: 2347859611945768445, guid: 831f8d18d871742c6bd404e2c21f4b6b, type: 3}
+  epool: []
+  msize: 150
+  mPrefab: {fileID: 1588719671531102589, guid: 6b527b34d3ba94bd3870effafb3361ca, type: 3}
+  mpool: []
 --- !u!1 &284012458
 GameObject:
   m_ObjectHideFlags: 0
@@ -1057,6 +1063,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selected: []
   worldDragMin: 1
+  test: 10
 --- !u!114 &532372183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1220,7 +1227,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 540
+  orthographic size: 600
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1469,6 +1476,7 @@ MonoBehaviour:
   - {r: 0.21309653, g: 0.33962262, b: 0, a: 1}
   - {r: 0.06537184, g: 0, b: 0.1792453, a: 1}
   POP: {fileID: 7200000, guid: e3d15e96982554a4aab0e46060b84918, type: 3}
+  NUKE: {fileID: 7200000, guid: bfb7cd7044f254dffa5b939359a3138c, type: 3}
   Influences: {fileID: 7200000, guid: b1b6293562a7744659b72426dd9a8510, type: 3}
   Render: {fileID: 7200000, guid: 1dde6cf48e6bb43118f4f5f0fb477ad7, type: 3}
   mapMat: {fileID: 2100000, guid: f7b458a6423fd4171bcf06c0f40381dc, type: 2}
