@@ -11,8 +11,6 @@ public class Selection : MonoBehaviour
 	Vector2 click1;
 	Vector2 rclick1;
 
-	public int test;
-
 	public void Update()
 	{
 		if (Input.GetMouseButtonDown(0)) {
@@ -29,16 +27,14 @@ public class Selection : MonoBehaviour
 		{
 			RMBUp();
 		}
+
+		if (Input.GetKeyDown(KeyCode.Space)) {
+
+		}
 	}
 
 	void LMBDown() {
 		click1 = Input.mousePosition;
-		Vector2 pos = ScreenToWorld(Input.mousePosition);
-
-		for (int i = 0; i < test; i++) {
-			Vector2 ran = Random.insideUnitCircle * Random.Range(0f, 100);
-			Pool.ins.GetMissile().Launch(Map.ins.transform.position, pos + ran, 0.5f);
-		}
 
 		if (!Input.GetKey(KeyCode.LeftShift)) {
 			ClearSelected();
@@ -61,13 +57,24 @@ public class Selection : MonoBehaviour
 		int t1 = TeamAtScreenPoint(click1);
 		int t2 = TeamAtScreenPoint(Input.mousePosition);
 
-		if (ROE.AreWeAtWar(t1, t2)) {
+		//Vector2Int co1 = MapUtils.PointToCoords(ScreenToWorld(click1));
+		//Vector2Int co2 = MapUtils.PointToCoords(ScreenToWorld(Input.mousePosition));
+
+		//co1 /= 2;
+		//co2 /= 2;
+
+		//int[] passableTeams = new int[1] { 0 };
+
+		//PathFind.Path(co1, co2, passableTeams);
+		if (ROE.AreWeAtWar(t1, t2))
+		{
 			ROE.MakePeace(t1, t2);
 		}
-		else {
+		else
+		{
 			ROE.DeclareWar(t1, t2);
 		}
-    }
+	}
 	void RMBUp() {
 		Vector2 c1 = ScreenToWorld(rclick1);
 		Vector2 c2 = ScreenToWorld(Input.mousePosition);
@@ -80,6 +87,7 @@ public class Selection : MonoBehaviour
 		float[] axisSort = new float[selected.Count];
 		for (int i = 0; i < selected.Count; i++)
 		{
+			if (selected[i] == null) continue;
 			axisSort[i] = Vector2.Distance(selected[i].transform.position, axis * 1000);
 		}
 		Unit[] sar = selected.ToArray();
@@ -102,7 +110,10 @@ public class Selection : MonoBehaviour
 
 	void ClearSelected() {
 		for (int i =0; i < selected.Count; i++) {
-			Deselect(selected[i]);
+
+			if (selected[i] != null) {
+				selected[i].Deselect();
+			}
 		}
 		selected.Clear();
     }

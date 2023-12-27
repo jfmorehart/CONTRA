@@ -59,8 +59,10 @@ MonoBehaviour:
   team: 0
   hP: 3
   strength: 0
-  speed: 20
+  speed: 10
   reload: 1
+  path: []
+  wpos: {x: 0, y: 0}
 --- !u!23 &2418100944819583422
 MeshRenderer:
   m_ObjectHideFlags: 0

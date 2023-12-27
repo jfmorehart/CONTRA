@@ -5,25 +5,128 @@ using UnityEngine;
 
 public static class ArmyUtils
 {
-	public static Unit[] GetUnits(int team)
+	public static int[] conventionalCount;
+	public static int[] nuclearCount;
+
+	//Keeps a list of info on the armies that was collected
+	// as a byproduct from a different operation to use for non-critical
+	// calculations like city capture updates.
+
+	public static List<Unit>[] armies;
+	//public static int[] lastWrite;
+
+	public static void Init() {
+		conventionalCount = new int[Map.ins.numStates];
+		nuclearCount = new int[Map.ins.numStates];
+		armies = new List<Unit>[Map.ins.numStates];
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			armies[i] = new List<Unit>();
+		}
+	}
+
+	public enum Tar { 
+		Nuclear, //icbms, runways, submarine pens
+		Conventional, //armies
+		Civilian, // cities
+		Support, // radars, etc
+    }
+	public struct Target {
+		public Target(Vector2 p, float v, Tar t) {
+			wpos = p;
+			value = v;
+			type = t;
+			hash = 139841 % Mathf.RoundToInt(p.x + 2000) % (1 + (139843 % Mathf.RoundToInt(p.y + 2000)));
+		}
+		public Vector2 wpos;
+		public float value;
+		public Tar type;
+		public int hash;
+    }
+
+	public static Target[] GetTargets(int team) {
+		List<Target> tars = new List<Target>();
+		tars.AddRange(NuclearTargets(team));
+		tars.AddRange(ConventionalTargets(team));
+		tars.AddRange(CivilianTargets(team));
+		return TargetSort(tars.ToArray());
+	}
+
+	public static Target[] TargetSort(Target[] tr) {
+		float[] keys = new float[tr.Length];
+		for (int i = 0; i < keys.Length; i++)
+		{
+			keys[i] = -tr[i].value;
+		}
+		System.Array.Sort(keys, tr);
+		return tr;
+	}
+
+	public static Target[] NuclearTargets(int team) {
+		List<Target> tars = new List<Target>();
+		Silo[] sls = GetSilos(team);
+		foreach (Silo sl in sls)
+		{
+			tars.Add(new Target(sl.transform.position, 10, Tar.Nuclear));
+		}
+		nuclearCount[team] = tars.Count;
+		return tars.ToArray();
+	}
+	public static Target[] ConventionalTargets(int team)
+	{
+		List<Target> tars = new List<Target>();
+		Unit[] arms = GetArmies(team);
+		foreach (Unit sl in arms)
+		{
+			tars.Add(new Target(sl.transform.position, 1, Tar.Conventional));
+		}
+		return tars.ToArray();
+	}
+	public static Target[] CivilianTargets(int team)
+	{
+		List<Target> tars = new List<Target>();
+		foreach (City sl in GetCities(team))
+		{
+			tars.Add(new Target(sl.transform.position, sl.truepop, Tar.Civilian));
+		}
+		return tars.ToArray();
+	}
+
+	public static Silo[] GetSilos(int team)
+	{
+		//Get info from tracker
+		List<Silo> uns = new List<Silo>();
+		InfluenceMan.ins.CleanArmies();
+		Silo[] units = InfluenceMan.ins.silos.ToArray();
+
+		//Pick the ones we want
+		for (int i = 0; i < units.Length; i++)
+		{
+			if (units[i].team == team) { uns.Add(units[i]); }
+		}
+		return uns.ToArray();
+	}
+
+	public static Unit[] GetArmies(int team)
 	{
 		//Get info from tracker
 		List<Unit> uns = new List<Unit>();
 		InfluenceMan.ins.CleanArmies();
-		Unit[] units = InfluenceMan.ins.tracker.ToArray();
+		Unit[] units = InfluenceMan.ins.armies.ToArray();
 
 		//Pick the ones we want
 		for(int i = 0; i < units.Length; i++){
 			if (units[i].team == team) { uns.Add(units[i]); }
 		}
+		conventionalCount[team] = uns.Count;
+		armies[team] = uns;
 		return uns.ToArray();
 	}
-	public static Unit[] GetUnits(int team, int number, Vector2 near, List<Unit> ignore)
+	public static Unit[] GetArmies(int team, int number, Vector2 near, List<Unit> ignore)
 	{
 		//Get info from tracker
 		List<Unit> uns = new List<Unit>();
 		InfluenceMan.ins.CleanArmies();
-		Unit[] units = InfluenceMan.ins.tracker.ToArray();
+		Unit[] units = InfluenceMan.ins.armies.ToArray();
 		//Pick the ones we want
 		for (int i = 0; i < units.Length; i++)
 		{
@@ -52,7 +155,7 @@ public static class ArmyUtils
 		return trim.ToArray();
 	}
 	public static City NearestCity(Vector2 pos, int teamOf, List<City> ignore) {
-		City[] cities = InfluenceMan.ins.cities;
+		City[] cities = InfluenceMan.ins.cities.ToArray();
 		float cdist = float.MaxValue;
 		City near = null;
 		for(int i = 0; i < cities.Length; i++) {
@@ -64,7 +167,32 @@ public static class ArmyUtils
 			}
 		}
 		return near;
-    }	
+    }
+	public static City BiggestCity(int teamOf, List<City> ignore)
+	{
+		City[] cities = InfluenceMan.ins.cities.ToArray();
+		float bpop = float.MinValue;
+		City big = null;
+		for (int i = 0; i < cities.Length; i++)
+		{
+			if (cities[i].team != teamOf || ignore.Contains(cities[i])) continue;
+			if (cities[i].truepop > bpop) {
+				bpop = cities[i].truepop;
+				big = cities[i];
+			}
+		}
+		return big;
+	}
+
+	public static List<City> GetCities(int team) {
+		List<City> cs = new List<City>();
+		for(int i =0; i < InfluenceMan.ins.cities.Count; i++) {
+			if (InfluenceMan.ins.cities[i].team == team) {
+				cs.Add(InfluenceMan.ins.cities[i]);
+			}
+		}
+		return cs;
+    }
 
 	public static Vector2[] Encircle(Vector2 pos, float radius, int numSamples) {
 		Vector2[] enc = new Vector2[numSamples];
@@ -80,4 +208,15 @@ public static class ArmyUtils
 		}
 		return enc;
 	}
+
+	public static void Salvo(Silo sl, Order or, int repeat) {
+		int n = Mathf.Min(repeat, sl.numMissiles);
+		for (int i = 0; i < n; i++) {
+			sl.Direct(or);
+		}
+    }
+
+	//public static List<Army> FetchStoredArmyData(int team) { 
+		
+ //   }
 }

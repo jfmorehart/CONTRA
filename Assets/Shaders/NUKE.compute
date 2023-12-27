@@ -35,6 +35,7 @@ float fr (float2 uv) {
 
 int2 dime;
 RWStructuredBuffer<float> pop;
+RWStructuredBuffer<uint> dead;
 int radius;
 int2 pos;
 
@@ -71,5 +72,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     cur = max(0, cur);
     //cur = min(pre, cur);
+
+    InterlockedAdd(dead[0], pop[index] - cur);
     pop[index] = cur;
+
 }

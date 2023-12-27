@@ -35,7 +35,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
         int2 pos = int2(infs[i].x, infs[i].y);
         float dist = distance(pos, id.xy) + 0.01;
-        float adjustedDenom = pow(dist, 2 + 0.4 * infs[i].isArmy);
+        float adjustedDenom = pow(dist, 2 + 0.8 * infs[i].isArmy);
         float dInf = infs[i].strength * (1 / adjustedDenom) * usable;
         stin[stin_index + infs[i].team] += dInf;
     }

@@ -17,13 +17,13 @@ public class Map : MonoBehaviour
 
 	
 	[HideInInspector]
-	public Vector2Int[] stateCenters;
-	public Color[] stateColors;
+	public Vector2Int[] state_centers;
+	public Color[] state_colors;
 
-	//Buffers
+	//Texel Buffers
 	float[] stateInfluence;
-	float[] population;
-	int[] pixTeam;
+	float[] pixelPop;
+	int[] pixTeam; 
 
 	[Header("Compute Stuff")]
 	public ComputeShader POP;
@@ -41,23 +41,35 @@ public class Map : MonoBehaviour
 	float lastDraw;
 	public float reDrawDelay;
 
+	[Header("Counting")]
+	public ComputeShader COUNT;
+	public ComputeShader CITYCOUNT;
+	// Last count of populations
+	public uint[] state_populations;
+
+	public float rpoptocpop;
+
 	private void Awake()
 	{
 		ins = this;
+		ArmyUtils.Init();
 		ROE.SetUpRoe();
 		Diplo.SetupDiplo();
-	}
 
-	public void Start()
-	{
 		//Create basic info
 		NewMap();
-	
+
 		//Borders are initially set by state of war
 		ROE.SetAllExceptIdentity(1);
 
 		//Just city borders, used for army placement
 		BuildInfluences();
+
+		state_populations = new uint[numStates];
+	}
+
+	public void Start()
+	{
 		InfluenceMan.ins.RandomArmies(100);
 
 		//Rebuild borders now with army info
@@ -70,7 +82,10 @@ public class Map : MonoBehaviour
 		// Lock borders at war-state, but now moving armies
 		// wont override peacetime borders
 		ROE.SetAllExceptIdentity(0);
-	
+
+		CountPop();
+
+		InvokeRepeating(nameof(UpdatePops), 1, 1);
 	}
 
 	public void Update()
@@ -82,21 +97,41 @@ public class Map : MonoBehaviour
 		}
 	}
 
-	public void Detonate(Vector2 wpos, float radius) {
+	void UpdatePops() {
+		CountPop();
+    }
+
+	public void Detonate(Vector2 wpos, float radius, int dteam) {
 		Pool.ins.Explode().Nuke(wpos, radius);
+		uint dead = NukePop(wpos, radius);
+		MapUtils.NukeObjs(wpos, radius);
+		Diplo.Nuked(dteam, GetPixTeam(PointToCoords(wpos)), dead);
 	}
-	public void NukePop(Vector2 wpos, float radius) {
+
+	public uint NukePop(Vector2 wpos, float radius) {
 		Vector2Int pos = MapUtils.PointToCoords(wpos);
 		int popSize = texelDimensions.x * texelDimensions.y;
 		popbuffer = new ComputeBuffer(popSize, 4);
-		popbuffer.SetData(population);
+		popbuffer.SetData(pixelPop);
 		NUKE.SetBuffer(0, "pop", popbuffer);
 		NUKE.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		NUKE.SetInts("pos", pos.x, pos.y);
 		NUKE.SetFloat("radius", radius);
+
+		uint[] de = new uint[1] { 0 };
+		ComputeBuffer deadbuffer = new ComputeBuffer(1, 4);
+		deadbuffer.SetData(de);
+		NUKE.SetBuffer(0, "dead", deadbuffer);
+
 		NUKE.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
-		popbuffer.GetData(population);
+
+		popbuffer.GetData(pixelPop);
+		deadbuffer.GetData(de);
+
 		popbuffer.Release();
+		deadbuffer.Release();
+		return TexelPopToWorldPop(de[0]);
+
     }
 
 	public void NewMap() { 
@@ -104,13 +139,13 @@ public class Map : MonoBehaviour
 		//Prep buffers
 		stateInfluence = new float[texelDimensions.x * texelDimensions.y * numStates];
 		pixTeam = new int[texelDimensions.x * texelDimensions.y];
-		population = new float[texelDimensions.x * texelDimensions.y];
+		pixelPop = new float[texelDimensions.x * texelDimensions.y];
 
 		//Create States, the different colored nations
-		stateCenters = new Vector2Int[numStates];
+		state_centers = new Vector2Int[numStates];
 		for (int i = 0; i < numStates; i++)
 		{
-			stateCenters[i] = PlaceState(i);
+			state_centers[i] = PlaceState(i);
 		}
 
 		InfluenceMan.ins.Setup();
@@ -142,7 +177,7 @@ public class Map : MonoBehaviour
 		// that represents the number of people that live in that area.
 		int popSize = texelDimensions.x * texelDimensions.y;
 		popbuffer = new ComputeBuffer(popSize, 4);
-		popbuffer.SetData(population);
+		popbuffer.SetData(pixelPop);
 
 		//Prep it
 		POP.SetInts("dime", texelDimensions.x, texelDimensions.y);
@@ -155,12 +190,11 @@ public class Map : MonoBehaviour
 
 		//Clean up
 		citybuffer.Release();
-		popbuffer.GetData(population);
+		popbuffer.GetData(pixelPop);
 		popbuffer.Release();
 	}
 
 	void BuildInfluences() {
-
 		stin = new ComputeBuffer(texelDimensions.x * texelDimensions.y * numStates, 4);
 		stin.SetData(stateInfluence);
 		Influences.SetBuffer(0, "stin", stin);
@@ -172,6 +206,9 @@ public class Map : MonoBehaviour
 		atWar.SetData(ROE.atWar);
 		Influences.SetBuffer(0, "atWar", atWar);
 
+		if(InfluenceMan.ins == null) {
+			InfluenceMan.ins = FindObjectOfType<InfluenceMan>();
+		}
 		//Probably unnecessary to update cities so frequently, but what the hell
 		Inf[] cities = InfluenceMan.ins.UpdateCities();
 		Inf[] armies = InfluenceMan.ins.UpdateArmies();
@@ -198,7 +235,6 @@ public class Map : MonoBehaviour
 
 		Influences.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		Influences.SetInt("numStates", numStates);
-
 		Influences.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		//disp
 
@@ -207,11 +243,69 @@ public class Map : MonoBehaviour
 		atWar.Release();
 		stin.Release();
 		infs.Release();
-
 	}
 
-	void ConvertToTexture() {
+	public void CountPop()
+	{
+		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
+		teamOf.SetData(pixTeam);
+		COUNT.SetBuffer(0, "teamOf", teamOf);
 
+		int popSize = texelDimensions.x * texelDimensions.y;
+		popbuffer = new ComputeBuffer(popSize, 4);
+		popbuffer.SetData(pixelPop);
+		COUNT.SetBuffer(0, "popBuffer", popbuffer);
+
+		COUNT.SetInts("dime", texelDimensions.x, texelDimensions.y);
+
+		COUNT.SetInt("numStates", numStates);
+
+		ComputeBuffer popCount = new ComputeBuffer(numStates, 4);
+
+		state_populations = new uint[numStates];
+		popCount.SetData(state_populations);
+		COUNT.SetBuffer(0, "popcount", popCount);
+
+		COUNT.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
+
+		popbuffer.Release();
+		teamOf.Release();
+
+		popCount.GetData(state_populations);
+		popCount.Release();
+		for (int i = 0; i < state_populations.Length; i++) {
+			state_populations[i] = TexelPopToWorldPop(state_populations[i]);
+		}
+
+	}
+	public uint CountPop_City(Vector2Int mpos) {
+
+		int popSize = texelDimensions.x * texelDimensions.y;
+		popbuffer = new ComputeBuffer(popSize, 4);
+		popbuffer.SetData(pixelPop);
+		CITYCOUNT.SetBuffer(0, "popBuffer", popbuffer);
+
+		CITYCOUNT.SetInts("dime", texelDimensions.x, texelDimensions.y);
+		CITYCOUNT.SetInts("cpos", mpos.x, mpos.y);
+
+		CITYCOUNT.SetInt("numStates", numStates);
+
+		ComputeBuffer popCount = new ComputeBuffer(numStates, 4);
+
+		uint[] cpop = new uint[1] { 0 };
+		popCount.SetData(cpop);
+		CITYCOUNT.SetBuffer(0, "popcount", popCount);
+
+		CITYCOUNT.Dispatch(0, 1, 1, 1);
+		popCount.GetData(cpop);
+
+		popbuffer.Release();
+		popCount.Release();
+
+		return TexelPopToWorldPop(cpop[0]);
+    }
+
+	void ConvertToTexture() {
 		RenderTexture mapRT = new RenderTexture(texelDimensions.x, texelDimensions.y, 0);
 		mapRT.enableRandomWrite = true;
 		mapRT.filterMode = FilterMode.Point;
@@ -224,7 +318,7 @@ public class Map : MonoBehaviour
 
 		SColor[] scolors = new SColor[numStates];
 		for(int i = 0; i < numStates; i++) {
-			scolors[i] = new SColor(stateColors[i].r, stateColors[i].g, stateColors[i].b);
+			scolors[i] = new SColor(state_colors[i].r, state_colors[i].g, state_colors[i].b);
 		}
 		colorBuffer = new ComputeBuffer(numStates, 12);
 		colorBuffer.SetData(scolors);
@@ -234,7 +328,7 @@ public class Map : MonoBehaviour
 
 		int popSize = texelDimensions.x * texelDimensions.y;
 		popbuffer = new ComputeBuffer(popSize, 4);
-		popbuffer.SetData(population);
+		popbuffer.SetData(pixelPop);
 		Render.SetBuffer(0, "popBuffer", popbuffer);
 		Render.SetTexture(0, "Result", mapRT);
 

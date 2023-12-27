@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class InfluenceMan : MonoBehaviour
@@ -9,18 +10,20 @@ public class InfluenceMan : MonoBehaviour
     public GameObject armyPrefab;
 	public GameObject cityPrefab;
 	public GameObject statePrefab;
+	public GameObject siloPrefab;
 
-   
-    public List<Unit> tracker;
-	public City[] cities;
+	public List<Army> armies;
+	public List<Silo> silos;
+	public List<City> cities;
 
 	private void Awake()
 	{
         ins = this;
-        tracker = new List<Unit>();
+        armies = new List<Army>();
+        silos = new List<Silo>();
 	}
 	public void Setup() {
-		cities = new City[Map.ins.numCities];
+		cities = new List<City>();
 	}
 
 	public State NewState(int index, Vector2Int pos) {
@@ -31,52 +34,62 @@ public class InfluenceMan : MonoBehaviour
 		return s;
 	}
 
+
 	public void RandomArmies(int numToSpawn) {
 
         for (int i = 0; i < numToSpawn; i++) {
             Vector2 wp = RandomPointOnMap();
-			Vector2Int pt = MapUtils.PointToCoords(wp);
-            int te = Map.ins.GetPixTeam(pt);
             Transform t = Instantiate(armyPrefab, wp, Quaternion.identity, transform).transform;
             Army rm = t.GetComponent<Army>();
-            rm.Setup(50, te); 
-            tracker.Add(rm);
 		}
-    }
+
+		for(int i = 0; i < 10; i++) {
+			Vector2 wp = RandomPointOnMap();
+			Transform t = Instantiate(siloPrefab, wp, Quaternion.identity, transform).transform;
+		}
+
+	}
+	public void PlaceArmy(Vector2 worldPos)
+	{
+		Instantiate(armyPrefab, worldPos, Quaternion.identity, transform);
+	}
 	public void Spawn_CityLogic(int index, Inf city)
 	{
 		Vector3 p = MapUtils.CoordsToPoint(city.pos);
-		cities[index] = Instantiate(
+		cities.Add(Instantiate(
 			cityPrefab, p,
 			Quaternion.identity,
 			transform
-			).GetComponent<City>();
+			).GetComponent<City>());
+
 		cities[index].SetUpCity(city.team, city.pop);
+		cities[index].name = index.ToString();
 	}
 
 
     public Inf[] UpdateArmies() {
 
 		CleanArmies();
-        Inf[] armies = new Inf[tracker.Count];
-        for(int i = 0; i < armies.Length; i++) {
-            armies[i] = new Inf(
-                MapUtils.PointToCoords(tracker[i].transform.position),
+		Unit[] tarmies = armies.ToArray();
+        Inf[] larmies = new Inf[tarmies.Length];
+        for(int i = 0; i < larmies.Length; i++) {
+            larmies[i] = new Inf(
+                MapUtils.PointToCoords(tarmies[i].transform.position),
                 Map.ins.armyInfluenceStrength,
-                tracker[i].team,
+                tarmies[i].team,
 				1
                 );
 	    }
 
-        return armies;
+        return larmies;
     }
 	public Inf[] UpdateCities()
 	{
-		Inf[] infcities = new Inf[cities.Length];
+		Inf[] infcities = new Inf[cities.Count];
 		for (int i = 0; i < infcities.Length; i++)
 		{
 			infcities[i] = new Inf(
-				MapUtils.PointToCoords(cities[i].transform.position),
+				cities[i].mpos,
                 cities[i].pop,
 				cities[i].team,
 				0
@@ -85,19 +98,29 @@ public class InfluenceMan : MonoBehaviour
 
 		return infcities;
 	}
-
-	public void CleanArmies() {
+	public List<Unit> CleanList(List<Unit> ls) {
 		List<Unit> clean = new List<Unit>();
-		for(int i = 0; i < tracker.Count; i++) {
-			if (tracker[i] != null) {
-				clean.Add(tracker[i]);
+		for (int i = 0; i < ls.Count; i++)
+		{
+			if (ls[i] != null)
+			{
+				clean.Add(ls[i]);
 			}
 		}
-		tracker = clean;
+		return clean;
+	}
+	public void CleanArmies() {
+		//List<Army> clean = new List<Army>();
+		//for(int i = 0; i < armies.Count; i++) {
+		//	if (armies[i] != null) {
+		//		clean.Add(armies[i]);
+		//	}
+		//}
+		//armies = clean;
     }
 
 	Vector2 RandomPointOnMap() {
-        Vector2 rn = new Vector2(Random.Range(0.05f, 0.95f), Random.Range(0.05f, 0.95f));
+        Vector2 rn = new Vector2(Random.Range(0.01f, 0.99f), Random.Range(0.01f, 0.99f));
         rn *= Map.ins.transform.localScale;
         return rn;
     }
@@ -111,7 +134,7 @@ public class InfluenceMan : MonoBehaviour
 		float maxY = Mathf.Max(w1.y, w2.y);
 
 		CleanArmies();
-		foreach (Unit r in tracker)
+		foreach (Unit r in armies)
 		{
 			Vector2 pos = r.transform.position;
 			if (pos.x < minX) continue;
@@ -121,6 +144,32 @@ public class InfluenceMan : MonoBehaviour
 			sel.Add(r);
 		}
 		return sel.ToArray();
+	}
+	public void RemoveCity(City c) {
+		cities.Remove(c);
+		Map.ins.numCities = cities.Count;
+    }
+
+	public void RegisterUnit(Unit un) {
+		if(un is Army) {
+			armies.Add(un as Army);
+		}
+		if (un is Silo)
+		{
+			silos.Add(un as Silo);
+		}
+	}
+
+	public void DeregisterUnit(Unit un)
+	{
+		if (un is Army)
+		{
+			armies.Remove(un as Army);
+		}
+		if (un is Silo)
+		{
+			silos.Remove(un as Silo);
+		}
 	}
 
 }

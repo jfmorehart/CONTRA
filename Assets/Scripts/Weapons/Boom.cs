@@ -24,9 +24,6 @@ public class Boom : MonoBehaviour
 		ren.material.color = Color.white;
 		Show();
 
-
-
-		Map.ins.NukePop(transform.position, radius);
 		Invoke(nameof(StartFade), 1.5f);
     }
 

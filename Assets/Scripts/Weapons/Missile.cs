@@ -11,35 +11,39 @@ public class Missile : MonoBehaviour
 	Vector2 en;
 	float yield;
 	float speed = 50;
-	float hmult = 3;
+	float hmult = 1.5f;
+
+	public int team;
 
 	private void Awake()
 	{
 		tren = GetComponent<TrailRenderer>();
 		ren = GetComponent<Renderer>();
+		Toggle(false);
 	}
-	public void Launch(Vector2 start, Vector2 end, float myield) {
+	public void Launch(Vector2 start, Vector2 end, float myield, int mteam) {
+		LaunchDetection.Launched(start, end);
 		transform.position = start;
 		st = start;
 		en = end;
 		Toggle(true);
 		flying = true;
 		yield = myield;
+		team = mteam;
 	}
 	private void Update()
 	{
 		if (flying) {
 			Vector2 delta = en - st;
 			float per = PercentOfPath();
-			Debug.Log(per);
-
 			Vector2 adj = delta.normalized + (0.5f - per) * hmult * Vector2.up;
-			transform.Translate(speed * Time.deltaTime * adj);
+			transform.LookAt((Vector2)transform.position + adj);
+			transform.Translate(speed * Time.deltaTime * adj, Space.World);
 
 			if (per > 1) {
 				flying = false;
 				Toggle(false);
-				Map.ins.Detonate(en, yield);
+				Map.ins.Detonate(en, yield, team);
 			}
 		}
 	}

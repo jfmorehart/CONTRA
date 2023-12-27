@@ -35,8 +35,8 @@ public class Bullet : MonoBehaviour
 		posAr[0] = pos;
 		posAr[1] = pos + dir;
 		lren.SetPositions(posAr);
-		lren.startColor = Map.ins.stateColors[team];
-		lren.endColor = Map.ins.stateColors[team];
+		lren.startColor = Map.ins.state_colors[team];
+		lren.endColor = Map.ins.state_colors[team];
 		return hTime;
     }
 

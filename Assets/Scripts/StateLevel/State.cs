@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static ArmyUtils;
 
 public class State : MonoBehaviour
 {
@@ -8,64 +9,62 @@ public class State : MonoBehaviour
 	public float money;
 	public Vector2Int origin;
 
-	int warScope = 6;
-	List<City> attacked;
-
-	int armySize; 
-    List<Unit> recentlyOrdered;
-
 
 	protected virtual void Awake()
 	{
-		recentlyOrdered = new List<Unit>();
-		attacked = new List<City>();
+		LaunchDetection.launchDetectedAction += LaunchDetect;
 	}
 
-	public void Setup(int i, Vector2Int pos) {
+	public virtual void Setup(int i, Vector2Int pos) {
 		//Called a few ms after start
 		team = i;
 		origin = pos;
 		Diplo.RegisterState(this);
-		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 1);
+		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 5);
     }
 
 	protected virtual void StateUpdate() {
-		if (!ROE.AreWeAtWar(team)) return;
-		armySize = ArmyUtils.GetUnits(team).Length;
-		for(int i =0; i < Map.ins.numStates; i++) {
-			if (ROE.AreWeAtWar(team, i)) {
-				if (team == i) continue;
-				CaptureACity(i);
+		City[] cities = GetCities(team).ToArray();
+		int[] r = new int[cities.Length];
+		for(int i = 0; i < r.Length; i++) {
+			r[i] = Random.Range(0, 100);
+		}
+		System.Array.Sort(r, cities);
+
+		int toSpawn = (int)Map.ins.state_populations[team] - GetArmies(team).Length;
+		for(int i = 0; i < cities.Length; i++) {
+			if (toSpawn < 1) return;
+			float odds = cities[i].truepop / 100;
+			int spin = Random.Range(0, 100);
+			if(spin < odds * 100){
+				toSpawn--;
+				Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);
+				p += cities[i].transform.position;
+				if(p.x > Map.ins.transform.localScale.x - 5) {
+					p.x = Map.ins.transform.localScale.x - 5;
+				}
+				if (p.y > Map.ins.transform.localScale.y - 5)
+				{
+					p.y = Map.ins.transform.localScale.y - 5;
+				}
+				if (p.x < 5)
+				{
+					p.x = 5;
+				}
+				if (p.y < 5)
+				{
+					p.y = 5;
+				}
+				InfluenceMan.ins.PlaceArmy(p);
 			}
 		}
+
     }
-
-	//Test
-	void CaptureACity(int ofteam) {
-		City toAttack = ArmyUtils.NearestCity(transform.position, ofteam, attacked);
-		if (toAttack == null) return; // war over lmao
-
-		//Get units closest to nearest city
-		Unit[] units = ArmyUtils.GetUnits(team, 5, toAttack.transform.position, recentlyOrdered);
-		foreach(Unit un in units) {
-			recentlyOrdered.Add(un);
-		}
-		// Reassign city toAttack to target the city closest to them
-		// since it may differ from above target
-		toAttack = ArmyUtils.NearestCity(transform.position, ofteam, attacked);
-		attacked.Add(toAttack);
-		if (attacked.Count >= warScope)
-		{
-			attacked.RemoveAt(0);
-		}
-
-		Vector2[] pos = ArmyUtils.Encircle(toAttack.transform.position, 20, units.Length);
-		for(int i =0; i< pos.Length; i++) {
-			units[i].Direct(new Order(Order.Type.MoveTo, pos[i]));
-		}
+	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) { 
+    
     }
+		
+	public virtual void ReadyForOrders(Unit un) {
 
-	public void ReadyForOrders(Unit un) {
-		recentlyOrdered.Remove(un);
     }
 }

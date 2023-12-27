@@ -14,7 +14,7 @@ public static class MapUtils
 
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
-			float dist = Vector2.Distance(Map.ins.stateCenters[i], posI);
+			float dist = Vector2.Distance(Map.ins.state_centers[i], posI);
 			if (dist < cdist)
 			{
 				cdist = dist;
@@ -25,7 +25,23 @@ public static class MapUtils
 		return new Inf(posI, popU, mteam, 0);
     }
 
-
+	public static void NukeObjs(Vector2 wpos, float radius) {
+		float dist = Mathf.Pow(radius, 0.4f) * 25;
+		for(int i =0; i < InfluenceMan.ins.armies.Count; i++) {
+			float nd = Vector2.Distance(InfluenceMan.ins.armies[i].transform.position, wpos);
+			if(nd < dist) {
+				InfluenceMan.ins.armies[i].Kill();
+			}
+		}
+		for (int i = 0; i < InfluenceMan.ins.silos.Count; i++)
+		{
+			float nd = Vector2.Distance(InfluenceMan.ins.silos[i].transform.position, wpos);
+			if (nd < dist)
+			{
+				InfluenceMan.ins.silos[i].Kill();
+			}
+		}
+	}
 	public static Vector2Int PlaceState(int index)
 	{
 		Vector2Int posI = new Vector2Int(
@@ -83,4 +99,11 @@ public static class MapUtils
 		Vector2Int coords = PointToCoords(point);
 		return Map.ins.GetPixTeam(coords);
     }
+
+	public static uint TexelPopToWorldPop(float rout) {
+		rout = Mathf.Pow(rout, 0.7f) * 0.3f;
+		return (uint)Mathf.RoundToInt(rout);
+	}
+
+
 }

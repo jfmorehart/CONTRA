@@ -12,21 +12,22 @@ public class Unit : MonoBehaviour
 	public int hP;
 	protected int maxHP;
 
-	bool selected;
-
 	public Order lastOrder;
 	Renderer ren;
 
 
 	public virtual void Awake() {
 		maxHP = hP;
-    }
+		Vector2Int pt = MapUtils.PointToCoords(transform.position);
+		team = Map.ins.GetPixTeam(pt);
+	}
 
 	public virtual void Start()
 	{
+		InfluenceMan.ins.RegisterUnit(this);
 		ren = GetComponent<Renderer>();
 		ren.material = new Material(ren.material);
-		ren.material.color = Map.ins.stateColors[team] + Color.white * 0.5f;
+		ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
 	}
 
 	public virtual void Direct(Order order) {
@@ -34,14 +35,12 @@ public class Unit : MonoBehaviour
     }
 
 	public virtual void Select() {
-		selected = true;
 		ren.material.color = Color.white;
 
 	}
 	public virtual void Deselect()
 	{
-		selected = false;
-		ren.material.color = Map.ins.stateColors[team]  + Color.white * 0.5f;
+		ren.material.color = Map.ins.state_colors[team]  + Color.white * 0.5f;
 	}
 
 	public virtual void Hit()
@@ -49,10 +48,15 @@ public class Unit : MonoBehaviour
 		hP--;
 		if (hP < 1)
 		{
-			Destroy(gameObject);
+			Kill();
 		}
 	}
 	public virtual void Hit(float after) {
 		Invoke(nameof(Hit), after);
     }
+
+	public virtual void Kill() {
+		InfluenceMan.ins.DeregisterUnit(this);
+		Destroy(gameObject);
+	}
 }

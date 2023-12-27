@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,8 @@ public static class ROE
 	//2D array of 0 or 1 shorts
     //Not bools for ease of use with compute shaders
 	public static int[] atWar;
+	public static Action roeChange;
+	public static bool[] borders;
 
 	public static void SetUpRoe()
 	{
@@ -16,6 +19,10 @@ public static class ROE
 		for(int i = 0; i < Map.ins.numStates; i++) {
 			DeclareWar(i, i);
 		}
+
+		//Subscribe to delegate that will tell us when all the states
+		// have registered so we can check who touches who. 
+		// unclear when we should update this info
 	}
 
 	//With specified player
@@ -53,6 +60,9 @@ public static class ROE
 		atWar[index] = toSet;
 		int index2 = t2 * Map.ins.numStates + t1;
 		atWar[index2] = toSet;
+
+		roeChange?.Invoke();
+
 	}
 
 	public static void DebugAll() { 
@@ -69,5 +79,16 @@ public static class ROE
 				SetState(i, j, toSet);
 			}
 		}
+    }
+
+	public static int[] Passables(int team) {
+		List<int> pas = new List<int>();
+		// Return countries that we are at war with or have open borders with
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			if (AreWeAtWar(team, i)) {
+				pas.Add(i);
+			}
+		}
+		return pas.ToArray();
     }
 }
