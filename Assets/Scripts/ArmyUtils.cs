@@ -21,6 +21,7 @@ public static class ArmyUtils
 		armies = new List<Unit>[Map.ins.numStates];
 		for(int i = 0; i < Map.ins.numStates; i++) {
 			armies[i] = new List<Unit>();
+			GetArmies(i);
 		}
 	}
 
@@ -155,17 +156,34 @@ public static class ArmyUtils
 		return trim.ToArray();
 	}
 	public static City NearestCity(Vector2 pos, int teamOf, List<City> ignore) {
-		City[] cities = InfluenceMan.ins.cities.ToArray();
+		List<City> cities = InfluenceMan.ins.cities;
 		float cdist = float.MaxValue;
 		City near = null;
-		for(int i = 0; i < cities.Length; i++) {
-			if (cities[i].team != teamOf || ignore.Contains(cities[i])) continue;
-			float ndist = Vector2.Distance(pos, cities[i].transform.position);
-			if(ndist < cdist) {
-				cdist = ndist;
-				near = cities[i];
+		if(ignore == null) {
+			for (int i = 0; i < cities.Count; i++)
+			{
+				if (cities[i].team != teamOf) continue;
+				float ndist = Vector2.Distance(pos, cities[i].wpos);
+				if (ndist < cdist)
+				{
+					cdist = ndist;
+					near = cities[i];
+				}
 			}
 		}
+		else {
+			for (int i = 0; i < cities.Count; i++)
+			{
+				if (cities[i].team != teamOf || ignore.Contains(cities[i])) continue;
+				float ndist = Vector2.Distance(pos, cities[i].transform.position);
+				if (ndist < cdist)
+				{
+					cdist = ndist;
+					near = cities[i];
+				}
+			}
+		}
+
 		return near;
     }
 	public static City BiggestCity(int teamOf, List<City> ignore)

@@ -36,7 +36,9 @@ public class Map : MonoBehaviour
 	ComputeBuffer stin;
 
 	[Header("Rendering")]
+
 	public ComputeShader Render;
+	RenderTexture mapRT;
 	public Material mapMat;
 	float lastDraw;
 	public float reDrawDelay;
@@ -70,6 +72,12 @@ public class Map : MonoBehaviour
 
 	public void Start()
 	{
+		mapRT = new RenderTexture(texelDimensions.x, texelDimensions.y, 0);
+		mapRT.enableRandomWrite = true;
+		mapRT.filterMode = FilterMode.Point;
+		mapRT.Create();
+
+
 		InfluenceMan.ins.RandomArmies(100);
 
 		//Rebuild borders now with army info
@@ -86,6 +94,7 @@ public class Map : MonoBehaviour
 		CountPop();
 
 		InvokeRepeating(nameof(UpdatePops), 1, 1);
+
 	}
 
 	public void Update()
@@ -306,10 +315,7 @@ public class Map : MonoBehaviour
     }
 
 	void ConvertToTexture() {
-		RenderTexture mapRT = new RenderTexture(texelDimensions.x, texelDimensions.y, 0);
-		mapRT.enableRandomWrite = true;
-		mapRT.filterMode = FilterMode.Point;
-		mapRT.Create();
+
 
 		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		teamOf.SetData(pixTeam);

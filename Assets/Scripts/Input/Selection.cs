@@ -28,9 +28,6 @@ public class Selection : MonoBehaviour
 			RMBUp();
 		}
 
-		if (Input.GetKeyDown(KeyCode.Space)) {
-
-		}
 	}
 
 	void LMBDown() {
@@ -57,13 +54,14 @@ public class Selection : MonoBehaviour
 		int t1 = TeamAtScreenPoint(click1);
 		int t2 = TeamAtScreenPoint(Input.mousePosition);
 
-		//Vector2Int co1 = MapUtils.PointToCoords(ScreenToWorld(click1));
-		//Vector2Int co2 = MapUtils.PointToCoords(ScreenToWorld(Input.mousePosition));
+		Vector2Int co1 = MapUtils.PointToCoords(ScreenToWorld(click1));
+		Vector2Int co2 = MapUtils.PointToCoords(ScreenToWorld(Input.mousePosition));
 
-		//co1 /= 2;
-		//co2 /= 2;
+		int[] passableTeams = new int[1] { 0 };
 
-		//int[] passableTeams = new int[1] { 0 };
+		Vector2Int co3 = AsyncPath.ins.CheapestOpenNode(co1, co2, passableTeams, 2);
+
+		//Debug.Log(co1 + " ")
 
 		//PathFind.Path(co1, co2, passableTeams);
 		if (ROE.AreWeAtWar(t1, t2))

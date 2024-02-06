@@ -24,6 +24,7 @@ public class Army : Unit
 	int current;
 	public Order pathOrder;
 
+
 	[HideInInspector]
 	public Vector2 wpos;
 
@@ -52,6 +53,14 @@ public class Army : Unit
 						current++;
 						enroute = true;
 						dest = MapUtils.CoordsToPoint(path[current]);
+						int et = Map.ins.GetPixTeam(path[^1]);
+						int[] pas = ROE.Passables(team);
+
+						if (!pas.Contains(et))
+						{
+							enroute = false;
+							Diplo.states[team].ReadyForOrders(this);
+						}
 					}
 					else {
 						Diplo.states[team].ReadyForOrders(this);
@@ -131,9 +140,10 @@ public class Army : Unit
 	void CheckTargetValidity() { 
 		if (!enroute) return;
 		if(path != null) {
-			int et = Map.ins.GetPixTeam(MapUtils.PointToCoords(path[^1]));
+			int et = Map.ins.GetPixTeam(path[^1]);
 			if (!ROE.Passables(team).Contains(et)) {
 				enroute = false;
+				Diplo.states[team].ReadyForOrders(this);
 			}
 		}
     }

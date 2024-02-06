@@ -134,6 +134,71 @@ public class AsyncPath : MonoBehaviour
 			return null;
 		}
 	}
+	public Vector2Int CheapestOpenNode(Vector2Int start, Vector2Int end, int[] passableTeams, int downres)
+	{
+		//Task<Vector2Int> tempPath = new Task<Vector2Int>()
+		Vector2Int st = start / downres;
+		Vector2Int en = end / downres;
+		List<Node> open = new List<Node>();
+		Dictionary<Vector2Int, Node> nlookup = new Dictionary<Vector2Int, Node>();
+
+		Node n = CreateNode(en, 0, st, st);
+		nlookup.Add(n.pos, n);
+		open.Add(n);
+		int lowC = int.MaxValue;
+		int sf = n.fcost;
+		Node lownode = n;
+		int tries = 0;
+		while (lownode.fcost > 1 && tries < 500)
+		{
+			tries++;
+			if (open.Count < 1)
+			{
+				Debug.Log("closed all nodes: " + tries);
+				return lownode.pos * downres;
+			}
+
+			Node toeval = NextNode(open, out int r);
+			if (toeval.fcost + toeval.gcost * 0.8f < lowC)
+			{
+				lowC = Mathf.RoundToInt(toeval.fcost + toeval.gcost * 0.8f);
+				lownode = toeval;
+			}
+			open.RemoveAt(r);
+
+			//Update box around node
+			for (int i = 0; i < 9; i++)
+			{
+				Vector2Int off = new Vector2Int((i % 3) - 1, Mathf.FloorToInt(i / 3) - 1);
+				Vector2Int pos = off + toeval.pos;
+
+				//Dont create nodes for impassable terrain
+				if (!ValidHalfPos(pos, downres)) { continue; }
+				if (i == 4) continue;
+				if (!IsPassable(pos * downres, passableTeams)) continue;
+				if (nlookup.ContainsKey(pos))
+				{
+					if (!nlookup[pos].closed)
+					{
+						Node c = CreateNode(en, toeval.gcost, toeval.pos, pos);
+						c.closed = true;
+						if (c.gcost < nlookup[c.pos].gcost)
+						{
+							nlookup.Remove(c.pos);
+							nlookup.Add(c.pos, c);
+						}
+					}
+				}
+				else
+				{
+					Node c = CreateNode(en, toeval.gcost, toeval.pos, pos);
+					open.Add(c);
+					nlookup.Add(c.pos, c);
+				}
+			}
+		}
+		return lownode.pos * downres;
+	}
 
 	public Node NextNode(List<Node> open, out int r)
 	{

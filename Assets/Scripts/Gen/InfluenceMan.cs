@@ -10,6 +10,7 @@ public class InfluenceMan : MonoBehaviour
     public GameObject armyPrefab;
 	public GameObject cityPrefab;
 	public GameObject statePrefab;
+	public GameObject playerPrefab;
 	public GameObject siloPrefab;
 
 	public List<Army> armies;
@@ -28,7 +29,17 @@ public class InfluenceMan : MonoBehaviour
 
 	public State NewState(int index, Vector2Int pos) {
 		Vector3 p = MapUtils.CoordsToPoint(pos);
-		GameObject go = Instantiate(statePrefab, p, Quaternion.identity, transform);
+		GameObject go;
+		
+		//go = Instantiate(statePrefab, p, Quaternion.identity, transform);
+		if (index == 0)
+		{
+			go = Instantiate(playerPrefab, p, Quaternion.identity, transform);
+		}
+		else
+		{
+			go = Instantiate(statePrefab, p, Quaternion.identity, transform);
+		}
 		State s = go.GetComponent<State>();
 		s.Setup(index, pos);
 		return s;
@@ -49,9 +60,10 @@ public class InfluenceMan : MonoBehaviour
 		}
 
 	}
-	public void PlaceArmy(Vector2 worldPos)
+	public Army PlaceArmy(Vector2 worldPos)
 	{
-		Instantiate(armyPrefab, worldPos, Quaternion.identity, transform);
+		Army ar = Instantiate(armyPrefab, worldPos, Quaternion.identity, transform).GetComponent<Army>();
+		return ar;
 	}
 	public void Spawn_CityLogic(int index, Inf city)
 	{

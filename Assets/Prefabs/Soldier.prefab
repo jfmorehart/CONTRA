@@ -59,9 +59,10 @@ MonoBehaviour:
   team: 0
   hP: 3
   strength: 0
-  speed: 10
+  speed: 15
   reload: 1
   path: []
+  garrison: {fileID: 0}
   wpos: {x: 0, y: 0}
 --- !u!23 &2418100944819583422
 MeshRenderer:

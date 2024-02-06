@@ -24,7 +24,7 @@ public class City : MonoBehaviour
 	float popdelay = 5;
 
 	public Vector2Int mpos;
-	Vector2 wpos;
+	public Vector2 wpos;
 
 	public void SetUpCity(int te, float popu)
 	{

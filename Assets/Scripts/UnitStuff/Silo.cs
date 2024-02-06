@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Silo : Unit
 {
-	public int numMissiles = 10;
+	public int numMissiles = 20;
 
 	public override void Direct(Order order)
 	{
@@ -14,8 +14,8 @@ public class Silo : Unit
 
 		Vector2 pos = order.pos;
 		//todo Circular Error Probable
-		Vector2 ran = Random.insideUnitCircle;// * Random.Range(0f, 100);
-		Pool.ins.GetMissile().Launch(transform.position, pos + ran, 10, team);
+		Vector2 ran = Random.insideUnitCircle; //* Random.Range(0f, 100);
+		Pool.ins.GetMissile().Launch(transform.position, pos + ran, 10f, team);
 		numMissiles--;
 	}
 }

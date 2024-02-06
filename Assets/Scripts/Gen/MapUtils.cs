@@ -4,6 +4,7 @@ using UnityEngine;
 
 public static class MapUtils
 {
+	static readonly int ICBMspeed = 50;
 	public static Inf PlaceCity(int index) {
 		Vector2Int posI = new Vector2Int(
 			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
@@ -105,5 +106,7 @@ public static class MapUtils
 		return (uint)Mathf.RoundToInt(rout);
 	}
 
-
+	public static float Tau(Vector2 p1, Vector2 p2) {
+		return Vector2.Distance(p1, p2) / ICBMspeed;
+	}
 }

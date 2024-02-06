@@ -60,6 +60,7 @@ public class State : MonoBehaviour
 		}
 
     }
+
 	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) { 
     
     }

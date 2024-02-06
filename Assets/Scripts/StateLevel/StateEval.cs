@@ -16,10 +16,10 @@ public struct StateEval
 	public bool isHotWar;
 
 	public StateEval(int team, int enemy) {
-		popRatio = (1 + Map.ins.state_populations[enemy]) / (Map.ins.state_populations[team] + 1);
-		nukeRatio = (1 + nuclearCount[enemy]) / (nuclearCount[team] + 1);
-		armyRatio = (1 + conventionalCount[enemy]) / (conventionalCount[team] + 1);
-		pVictory = Mathf.Pow(0.5f, (nukeRatio + armyRatio) * 0.5f);
+		popRatio = (1 + Map.ins.state_populations[enemy]) / (float)(Map.ins.state_populations[team] + 1f);
+		nukeRatio = (1 + nuclearCount[enemy]) / (float)(nuclearCount[team] + 1f);
+		armyRatio = (1 + conventionalCount[enemy]) / (float)(conventionalCount[team] + 1f);
+		pVictory = Mathf.Pow(0.5f, Mathf.Pow((nukeRatio + armyRatio) * 0.5f, 2));
 		relationship = Diplo.relationships[team, enemy];
 		isHotWar = (int)relationship > 4; // covers limited and total war
 	}

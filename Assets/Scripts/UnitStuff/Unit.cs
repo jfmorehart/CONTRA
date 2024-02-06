@@ -12,7 +12,6 @@ public class Unit : MonoBehaviour
 	public int hP;
 	protected int maxHP;
 
-	public Order lastOrder;
 	Renderer ren;
 
 
@@ -26,8 +25,8 @@ public class Unit : MonoBehaviour
 	{
 		InfluenceMan.ins.RegisterUnit(this);
 		ren = GetComponent<Renderer>();
-		ren.material = new Material(ren.material);
-		ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
+		//ren.material = new Material(ren.material);
+		//ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
 	}
 
 	public virtual void Direct(Order order) {
@@ -35,12 +34,12 @@ public class Unit : MonoBehaviour
     }
 
 	public virtual void Select() {
-		ren.material.color = Color.white;
+		//ren.material.color = Color.white;
 
 	}
 	public virtual void Deselect()
 	{
-		ren.material.color = Map.ins.state_colors[team]  + Color.white * 0.5f;
+		//ren.material.color = Map.ins.state_colors[team]  + Color.white * 0.5f;
 	}
 
 	public virtual void Hit()

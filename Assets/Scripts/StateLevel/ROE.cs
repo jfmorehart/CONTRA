@@ -9,7 +9,6 @@ public static class ROE
     //Not bools for ease of use with compute shaders
 	public static int[] atWar;
 	public static Action roeChange;
-	public static bool[] borders;
 
 	public static void SetUpRoe()
 	{
