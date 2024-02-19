@@ -72,13 +72,28 @@ public static class ArmyUtils
 		nuclearCount[team] = tars.Count;
 		return tars.ToArray();
 	}
+
+	const int CONVENTIONAL_TARGETLIST_SIZE = 6;
 	public static Target[] ConventionalTargets(int team)
 	{
+		// no comments fio bud
 		List<Target> tars = new List<Target>();
-		Unit[] arms = GetArmies(team);
-		foreach (Unit sl in arms)
-		{
-			tars.Add(new Target(sl.transform.position, 1, Tar.Conventional));
+		int[] indexValues = new int[UnitChunks.chunks.Length];
+		int[] indexes = new int[UnitChunks.chunks.Length];
+		for(int i = 0; i < UnitChunks.chunks.Length; i++) {
+			indexes[i] = i;
+			indexValues[i] = UnitChunks.chunkValues[team][i];
+		}
+		System.Array.Sort(indexValues, indexes);
+		Debug.Log(UnitChunks.chunkValues[team][indexes[^1]]);
+		for(int i = 0; i < CONVENTIONAL_TARGETLIST_SIZE; i++) {
+			Debug.Log("targeting + "+ indexes[^(i+1)]);
+			Target t = new Target(
+				UnitChunks.ChunkIndexToMapPos(indexes[^(i+1)]),
+				UnitChunks.chunkValues[team][indexes[^(i+1)]],
+				Tar.Conventional
+				);
+			tars.Add(t);
 		}
 		return tars.ToArray();
 	}

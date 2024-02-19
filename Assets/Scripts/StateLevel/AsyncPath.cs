@@ -154,7 +154,7 @@ public class AsyncPath : MonoBehaviour
 			tries++;
 			if (open.Count < 1)
 			{
-				Debug.Log("closed all nodes: " + tries);
+				//Debug.Log("closed all nodes: " + tries);
 				return lownode.pos * downres;
 			}
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
@@ -10,6 +11,8 @@ public class Unit : MonoBehaviour
 
 	public int team;
 	public int hP;
+	public int positionChunk; //used for efficiently knowing where units are
+
 	protected int maxHP;
 
 	Renderer ren;
@@ -19,6 +22,9 @@ public class Unit : MonoBehaviour
 		maxHP = hP;
 		Vector2Int pt = MapUtils.PointToCoords(transform.position);
 		team = Map.ins.GetPixTeam(pt);
+		gameObject.name = team.ToString() + Random.Range(0, 10000).ToString();
+		positionChunk = UnitChunks.ChunkLookup(transform.position);
+		UnitChunks.AddToChunk(positionChunk, this);
 	}
 
 	public virtual void Start()
@@ -27,6 +33,15 @@ public class Unit : MonoBehaviour
 		ren = GetComponent<Renderer>();
 		//ren.material = new Material(ren.material);
 		//ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
+	}
+
+	public void Check4ChunkUpdate() {
+		int tch = UnitChunks.ChunkLookup(transform.position);
+		if(positionChunk != tch) {
+			UnitChunks.RemoveFromChunk(positionChunk, this);
+			positionChunk = tch;
+			UnitChunks.AddToChunk(positionChunk, this);
+		}
 	}
 
 	public virtual void Direct(Order order) {
@@ -56,6 +71,7 @@ public class Unit : MonoBehaviour
 
 	public virtual void Kill() {
 		InfluenceMan.ins.DeregisterUnit(this);
+		UnitChunks.RemoveFromChunk(positionChunk, this);
 		Destroy(gameObject);
 	}
 }

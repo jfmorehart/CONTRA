@@ -15,8 +15,8 @@ public class Army : Unit
 	bool enroute;
 	float stopDist = 1f;
 
-	List<Unit> inView;
-
+	//List<Unit> inView;
+	public int range;
 	public float reload;
 	float lastShot;
 
@@ -31,9 +31,8 @@ public class Army : Unit
 	public override void Awake()
 	{
 		base.Awake();
-		inView = new List<Unit>();
 		lastShot = Random.Range(0, 1f);
-		ROE.roeChange += StaggerTargetCheck;
+		ROE.roeChange += StaggerPathTargetCheck;
 	}
 
 	public virtual void Update()
@@ -75,17 +74,17 @@ public class Army : Unit
 
 		if(Time.time - lastShot > reload) {
 			lastShot = Time.time;
+			Check4ChunkUpdate();
 			ShootUpdate();
 		}
 	}
 
 	public virtual void ShootUpdate() {
-		List<Unit> uns = ValidTargets();
-		if (uns.Count < 1) return;
-		int i = Random.Range(0, uns.Count);
-		Vector2 delta = uns[i].transform.position - transform.position;
+		Unit un = GetValidTarget();
+		if (un == null) return;
+		Vector2 delta = un.transform.position - transform.position;
 		float hTime = Pool.ins.GetBullet().Fire(transform.position, delta, team);
-		uns[i].Hit(hTime);
+		un.Hit(hTime);
 		return;
 	}
 
@@ -131,13 +130,13 @@ public class Army : Unit
 	}
 
 	//Used so that not every army dude does this check on the same frame
-	void StaggerTargetCheck()
+	void StaggerPathTargetCheck()
 	{
 		if (!enroute) return;
-		Invoke(nameof(CheckTargetValidity), Random.Range(0f, 0.5f));
+		Invoke(nameof(CheckPathTargetValidity), Random.Range(0f, 0.5f));
 	}
 
-	void CheckTargetValidity() { 
+	void CheckPathTargetValidity() { 
 		if (!enroute) return;
 		if(path != null) {
 			int et = Map.ins.GetPixTeam(path[^1]);
@@ -148,55 +147,47 @@ public class Army : Unit
 		}
     }
 
-	List<Unit> ValidTargets() 
+	Unit GetValidTarget() 
     {
-		CleanViewList();
-		List<Unit> uns = new List<Unit>();
-		for(int i = 0; i < inView.Count; i++) { 
-			if(ROE.AreWeAtWar(team, inView[i].team)) {
-				uns.Add(inView[i]);
-			}
-		}
-		return uns;
-    }
-
-	void CleanViewList() {
-		List<Unit> clear = new List<Unit>();
-		for(int i = 0; i< inView.Count; i++) {
-			if (inView[i] == null) {
-				clear.Add(inView[i]);
+		List<Unit> uns = UnitChunks.GetSurroundingChunkData(positionChunk);
+		for (int i = 0; i < uns.Count; i++) {
+			if (team == uns[i].team) continue;
+			if (!ROE.AreWeAtWar(team, uns[i].team)) {
 				continue;
 			}
+			Vector2 delta = transform.position - uns[i].transform.position;
+			if(delta.magnitude > range) {
+				continue;
+			}
+			return uns[i];
 		}
-
-		for(int i = 0; i< clear.Count; i++) {
-			inView.Remove(clear[i]);
-		}
+		return null;
     }
+
 
 	public override void Kill()
 	{
 		base.Kill();
-		ROE.roeChange -= StaggerTargetCheck;
+		ROE.roeChange -= StaggerPathTargetCheck;
 	}
 
-	private void OnTriggerEnter2D(Collider2D collision)
-	{
-		if (!collision.CompareTag("Unit")) return;
-		if (collision.gameObject.TryGetComponent(out Unit un)){
-			if (un.team == team) return;
-			if (inView.Contains(un)) return;
-			inView.Add(un);
-		}
-	}
-	private void OnTriggerExit2D(Collider2D collision)
-	{
-		if (!collision.CompareTag("Unit")) return;
+	//private void OnTriggerEnter2D(Collider2D collision)
+	//{
+	//	if (!collision.CompareTag("Unit")) return;
+	//	if (collision.gameObject.TryGetComponent(out Unit un)){
+	//		if (un.team == team) return;
+	//		if (inView.Contains(un)) return;
+	//		inView.Add(un);
+	//	}
+	//}
+	//private void OnTriggerExit2D(Collider2D collision)
+	//{
+	//	if (!collision.CompareTag("Unit")) return;
 
-		if (collision.gameObject.TryGetComponent(out Unit un))
-		{
-			if (un.team == team) return;
-			inView.Remove(un);
-		}
-	}
+	//	if (collision.gameObject.TryGetComponent(out Unit un))
+	//	{
+	//		if (un.team == team) return;
+	//		inView.Remove(un);
+	//	}
+	//}
 }

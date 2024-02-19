@@ -54,6 +54,7 @@ public class Map : MonoBehaviour
 	private void Awake()
 	{
 		ins = this;
+		UnitChunks.Init();
 		ArmyUtils.Init();
 		ROE.SetUpRoe();
 		Diplo.SetupDiplo();

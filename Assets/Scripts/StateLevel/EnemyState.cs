@@ -27,7 +27,7 @@ public class EnemyState : State_AI
 		{
 			if (team == i) continue;
 			StateEval eval = new StateEval(team, i);
-			Debug.Log(team + " " + i + " " + eval.pVictory);
+			//Debug.Log(team + " " + i + " " + eval.pVictory);
 
 			troopAllocations[i] = tas[i] / (tasum + 0.001f);
 			tas[i] = eval.armyRatio * (AsyncPath.ins.SharesBorder(team, i) ? 1 : 0);
