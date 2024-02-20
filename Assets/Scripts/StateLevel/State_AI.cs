@@ -8,15 +8,30 @@ using Unity.VisualScripting;
 
 public class State_AI : State
 {
-	int warScope = 6;
+	// State class inherited by Player and NPCs.
+	// Has some useful tools, namely ICBMStrike(and related target hashing),
+	// troop movement, so the defensive posturing stuff and attacking stuff
+		// the garisson system, DistributedPositions, etc
+		// CaptureACity, which i thought was gonna be temp but oh well, etc
+
+
+	//number of guaranteed different cities to simulntaneously attack
+	//we avoid duplicates within this number of attack commands
+	const int recentlyAttackedCities_ListSize = 6;
+	//list of said cities
 	List<City> attacked;
 
+	//list of units not to boss around just yet
 	List<Unit> recentlyOrdered;
 
+	//list of targets not to fire at since theres already a nuke enroute
 	List<int> targetHashList;
 
+	//some kind of scariness evaluation used for determining how many
+	//troops to send to the border with given enemy
 	public float[] troopAllocations;
 
+	//list of units assigned to each border organized by enemyborder team#
 	public List<Unit>[] garrisons;
 
 	protected override void Awake()
@@ -40,58 +55,62 @@ public class State_AI : State
 		//Called a few ms after start
 		base.Setup(i, pos);
 	}
-
-
-	protected void ConductWar_Update(int enemy, War war)
+	protected override void StateUpdate()
 	{
-		List<Target> targets = new List<Target>();
+		base.StateUpdate();
+		GenerateTroopAllocations();
 
-		CaptureACity(enemy); //slow
-		 
-		switch (war)
+		ReAssignGarrisons(true);
+		for (int r = 0; r < Map.ins.numStates; r++)
 		{
-			case War.Peer:
-				// Conventional Invasion
-				// Maintain countervalue threat
-				targets.AddRange(NuclearTargets(enemy));
-				ICBMStrike(20, targets);
-				break;
-			case War.Colonial:
-				// Conventional Invasion
-				// Prevent escalation with countervalue deterrence (offer way out)
-				// Counterforce to preserve capturable civilian centers
-				//targets.AddRange(NuclearTargets(enemy));
-				//ICBMStrike(20, targets);
-				break;
-			case War.Defensive:
-				// Repel invasion 
-				// Diplomatic Pressure from allies
-				// Maintain limited countervalue threat
-				targets.AddRange(CivilianTargets(enemy));
-				targets = TargetSort(targets.ToArray()).ToList();
-				ICBMStrike(30, targets);
-				break;
-			case War.Total:
-
-				// Short Term: Eliminate Nuclear Assets
-				// Long Term: Eliminate Cities
-				targets.AddRange(NuclearTargets(enemy));
-				targets.AddRange(CivilianTargets(enemy));
-				targets.AddRange(ConventionalTargets(enemy));
-				targets = TargetSort(targets.ToArray()).ToList();
-				ICBMStrike(20, targets);
-				break;
+			//Expensive
+			DistributedPositions(r, garrisons[r]);
 		}
 	}
+
+
+	protected virtual void ConductWar_Update(int enemy, War war)
+	{
+		CaptureACity(enemy); //slow
+	}
+	public virtual void GenerateTroopAllocations()
+	{
+		float[] tas = new float[Map.ins.numStates];
+		float tasum = 0;
+
+		//this function should generate fresh data for troopAllocations
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (team == i) continue;
+			StateEval eval = new StateEval(team, i); //not that expensive really
+			//Debug.Log(team + " " + i + " " + eval.pVictory);
+	
+			tas[i] = eval.armyRatio * (AsyncPath.ins.SharesBorder(team, i) ? 1 : 0);
+
+			if (ROE.AreWeAtWar(team, i)){
+				// weight troop allocation by necessity
+				tas[i] += 0.2f;
+				tas[i] *= 5;
+			}
+			tasum += tas[i];
+		}
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			troopAllocations[i] = tas[i] / (tasum + 0.001f);
+		}
+	}
+
 	public void ICBMStrike(int warheads, List<Target> targets)
 	{
+		//Nice little self contained function for obliterating civilization
+
 		Silo[] silos = ArmyUtils.GetSilos(team);
 		if (silos.Length < 1) return;
 		int slcham = 0;
 		int n = Mathf.Min(targets.Count, warheads);
 		for (int i = 0; i < n; i++)
 		{
-						if (slcham >= silos.Length) slcham = 0;
+			if (slcham >= silos.Length) slcham = 0;
 
 			Target target;
 			bool target_aquired = false;
@@ -119,26 +138,32 @@ public class State_AI : State
 
 	protected async void DistributedPositions(int borderwith, List<Unit> troops)
 	{
+		//fucky and overcomplex function designed to spread out troops along the border
+		//with an enemy state, for defensive posturing
 		for (int i = 0; i < troops.Count; i++)
 		{
 			Vector2 pos = (troops[i] as Army).wpos;
 			Vector2Int mpos = MapUtils.PointToCoords(pos);
+
+			//honestly stupid expensive
 			City c = await Task.Run(() => NearestCity(pos, borderwith, null));
 			if (c == null) return; // alexander wept
-			int[] pas = ROE.Passables(team);
+			int[] pas = ROE.Passables(team); //which states we can pass over
+
+			//find us the closest legal square to the desired one
 			Vector2Int con = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(mpos, c.mpos, pas, 4));
 			Vector2 moveto = MapUtils.CoordsToPoint(con);
 			Vector2 edit = moveto;
 			int tries = 0;
-			bool gtg;
+			bool goodToGo; 
 			do
 			{
 				tries++;
 				Vector2 ran = Random.insideUnitCircle * 80;
 				edit = moveto + ran;
-				gtg = pas.Contains(Map.ins.GetPixTeam(MapUtils.PointToCoords(edit)));
+				goodToGo = pas.Contains(Map.ins.GetPixTeam(MapUtils.PointToCoords(edit)));
 			}
-			while (!gtg && tries < 50);
+			while (!goodToGo && tries < 50);
 			Order o = new Order(Order.Type.MoveTo, edit);
 			if (i >= troops.Count) break;
 			if (troops[i] == null) continue;
@@ -146,47 +171,47 @@ public class State_AI : State
 			recentlyOrdered.Add(troops[i]);
 		}
 	}
-	async void CityGarrisons(int borderWith, List<Unit> troops) {
+	//async void CityGarrisons(int borderWith, List<Unit> troops) {
 
-		Vector2 ep = Diplo.states[borderWith].transform.position;
-		Vector2Int mep = MapUtils.PointToCoords(ep);
-		int[] pas = ROE.Passables(team);
-		List<City> needsProtection = new List<City>();
-		List<Vector2> borders = new List<Vector2>();
-		for (int i = 0; i < 10; i++)
-		{
+	//	Vector2 ep = Diplo.states[borderWith].transform.position;
+	//	Vector2Int mep = MapUtils.PointToCoords(ep);
+	//	int[] pas = ROE.Passables(team);
+	//	List<City> needsProtection = new List<City>();
+	//	List<Vector2> borders = new List<Vector2>();
+	//	for (int i = 0; i < 10; i++)
+	//	{
 		
-			City c = NearestCity(ep, team, needsProtection);
-			if (c == null) break;
-			needsProtection.Add(c);
-			Vector2Int node = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(needsProtection[i].mpos, mep, pas, 2));
-			if (node != Vector2Int.zero)
-			{
+	//		City c = NearestCity(ep, team, needsProtection);
+	//		if (c == null) break;
+	//		needsProtection.Add(c);
+	//		Vector2Int node = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(needsProtection[i].mpos, mep, pas, 2));
+	//		if (node != Vector2Int.zero)
+	//		{
 
-				borders.Add(MapUtils.CoordsToPoint(node));
-			}
-		}
-		int l = borders.Count;
-		if (l < 1) return;
+	//			borders.Add(MapUtils.CoordsToPoint(node));
+	//		}
+	//	}
+	//	int l = borders.Count;
+	//	if (l < 1) return;
 
-		Vector2[] spawns = new Vector2[troops.Count];
-		for (int i = 0; i < spawns.Length; i++)
-		{
-			bool gtg = false;
-			int tries = 0;
-			do
-			{
-				tries++;
-				Vector2 ran = Random.insideUnitCircle * 80;
-				spawns[i] = borders[i % l] + ran;
-				gtg = pas.Contains(Map.ins.GetPixTeam(MapUtils.PointToCoords(spawns[i])));
-			}
-			while (!gtg && tries < 50);
-			Order o = new Order(Order.Type.MoveTo, spawns[i]);
-			troops[i].Direct(o);
-			recentlyOrdered.Add(troops[i]);
-		}
-	}
+	//	Vector2[] spawns = new Vector2[troops.Count];
+	//	for (int i = 0; i < spawns.Length; i++)
+	//	{
+	//		bool gtg = false;
+	//		int tries = 0;
+	//		do
+	//		{
+	//			tries++;
+	//			Vector2 ran = Random.insideUnitCircle * 80;
+	//			spawns[i] = borders[i % l] + ran;
+	//			gtg = pas.Contains(Map.ins.GetPixTeam(MapUtils.PointToCoords(spawns[i])));
+	//		}
+	//		while (!gtg && tries < 50);
+	//		Order o = new Order(Order.Type.MoveTo, spawns[i]);
+	//		troops[i].Direct(o);
+	//		recentlyOrdered.Add(troops[i]);
+	//	}
+	//}
 
 	//Test, slow
 	void CaptureACity(int ofteam)
@@ -200,11 +225,14 @@ public class State_AI : State
 		// since it may differ from above target
 		toAttack = ArmyUtils.NearestCity(transform.position, ofteam, attacked);
 		attacked.Add(toAttack);
-		if (attacked.Count >= warScope)
+		if (attacked.Count >= recentlyAttackedCities_ListSize)
 		{
 			attacked.RemoveAt(0);
 		}
 
+		//code for surrounding enemy cities. was implemented when i used to
+		//calculate city capturing using actual encirclement which was meh
+		//but visually this is still coolish
 		Vector2[] pos = ArmyUtils.Encircle(toAttack.transform.position, 20, units.Length);
 		for (int i = 0; i < pos.Length; i++)
 		{
@@ -227,6 +255,8 @@ public class State_AI : State
 	}
 
 	protected void ReAssignGarrisons(bool overwriteRecentOrders) {
+		//used for cleaning up garrison system
+
 		ClearGarrisons();
 		Unit[] uns = ArmyUtils.GetArmies(team);
 		List<Unit> assigned = new List<Unit>(); 
@@ -237,7 +267,7 @@ public class State_AI : State
 		int[] allotment = new int[Map.ins.numStates];
 
 		for (int i = 0; i < Map.ins.numStates; i++) {
-			if (troopAllocations[i] < 0.05f) continue;
+			if (troopAllocations[i] < 0.01f) continue;
 			allotment[i] = Mathf.FloorToInt(uns.Length * troopAllocations[i]);
 			if (allotment[i] < 1) continue;
 			Vector2 ep = Diplo.states[i].transform.position;

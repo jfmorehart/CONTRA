@@ -35,7 +35,8 @@ public class UI : MonoBehaviour
 	public bool osc;
 	bool up;
 
-	int incoming;
+	[HideInInspector]
+	public int incoming;
 	List<int> liveIncoming;
 	int playerTeam = 0;
 
@@ -48,6 +49,7 @@ public class UI : MonoBehaviour
 	public List<TMP_Text> nationoptions;
 	public List<TMP_Text> mainoptions;
 	public TMP_Text strikeNationText;
+	public TMP_Text diploNationText;
 	public bool[] values;
    
 	public int selected;
@@ -167,6 +169,7 @@ public class UI : MonoBehaviour
 						if (options[(int)currentMenu][3].transform.GetChild(0).TryGetComponent(out Slider sl))
 						{
 							sat = sl.value * 20;
+							sat = Mathf.Max(1, sat);
 						}
 						else {
 							Debug.LogError("set up wrong");
@@ -183,11 +186,18 @@ public class UI : MonoBehaviour
 			options[(int)currentMenu][selected].color = Color.white;
 		}
 		strikeNationText.color = Map.ins.state_colors[nationSelected];
+		diploNationText.color = Map.ins.state_colors[nationSelected];
 		menus[(int)currentMenu].SetActive(false);
 		currentMenu = (Menu)newMenu;
 		menus[(int)currentMenu].SetActive(true);
 		values = new bool[options[(int)currentMenu].Count];
-		selected = 0;
+		if(newMenu == (int)Menu.main) {
+			selected = nationSelected - 1;
+		}
+		else {
+			selected = 0;
+		}
+
 		ChangeSelected(0);
 		for (int i = 0; i < 3; i++)
 		{

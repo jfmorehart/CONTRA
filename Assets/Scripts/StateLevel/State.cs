@@ -5,10 +5,19 @@ using static ArmyUtils;
 
 public class State : MonoBehaviour
 {
-	public int team;
-	public float money;
-	public Vector2Int origin;
+	// this base class represents a country, and is inherited by State_AI which
+	// adds on more advanced functionality. in reality there doesn't need to be 
+	// a seperation, but State_AI was initially intended to be purely for NPCs, 
+	// and was later made the base class for both the player and the NPCS due to 
+	// the redesign to make gameplay less micromanagey.
 
+	public int team; 
+
+	public float money; //unused so far
+
+	// the Grid location of the middle of the state
+	//really only used in generation but could be nice to have
+	public Vector2Int origin;
 
 	protected virtual void Awake()
 	{
@@ -24,6 +33,8 @@ public class State : MonoBehaviour
     }
 
 	protected virtual void StateUpdate() {
+		//called ever 5 seconds
+		//this function 
 		City[] cities = GetCities(team).ToArray();
 		int[] r = new int[cities.Length];
 		for(int i = 0; i < r.Length; i++) {
@@ -31,9 +42,15 @@ public class State : MonoBehaviour
 		}
 		System.Array.Sort(r, cities);
 
-		int toSpawn = (int)Map.ins.state_populations[team] - GetArmies(team).Length;
+		Unit[] armies = GetArmies(team);
+		if (armies.Length < 1) return;
+		int toSpawn = (int)Map.ins.state_populations[team] - armies.Length;
+		if(toSpawn < 1){
+			armies[Random.Range(0, armies.Length - 1)].Kill();
+			return;
+	    }
 		for(int i = 0; i < cities.Length; i++) {
-			if (toSpawn < 1) return;
+
 			float odds = cities[i].truepop / 100;
 			int spin = Random.Range(0, 100);
 			if(spin < odds * 100){
