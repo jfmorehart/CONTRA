@@ -16,7 +16,7 @@ public class Load : MonoBehaviour
 
 	private void Update()
 	{
-		if(Time.time - start_load > 1) {
+		if(Time.time - start_load > 0.1f) {
 			Debug.Log("load back!");
 			SceneManager.LoadScene(0);
 		}

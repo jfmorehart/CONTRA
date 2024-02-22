@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using static ArmyUtils;
@@ -59,6 +60,7 @@ public class UI : MonoBehaviour
 	float lastAD;
 	readonly float ADtick = 0.05f;
 
+
 	private void Awake()
 	{
 		ins = this;
@@ -72,10 +74,15 @@ public class UI : MonoBehaviour
 		menus.Add(strikeMenu);
 		options = new List<TMP_Text>[3] { mainoptions, nationoptions, strikeoptions };	
 	}
-
+	void Reset() {
+		DisplayHandler.resetGame -= Reset;
+		LaunchDetection.launchDetectedAction -= LaunchDetect;
+	}
 	private void Start()
 	{
-		for(int i = 1; i < Map.ins.numStates; i++){
+		DisplayHandler.resetGame += Reset;
+
+		for (int i = 1; i < Map.ins.numStates; i++){
 			TMP_Text t = options[0][i - 1];
 			t.color = Map.ins.state_colors[i];
 			t.text = Diplo.state_names[i];
@@ -121,6 +128,7 @@ public class UI : MonoBehaviour
 					{
 						sl.value -= 0.05f;
 						lastAD = Time.unscaledTime;
+						UpdateSlider(sl);
 					}
 				}
 			}
@@ -134,9 +142,17 @@ public class UI : MonoBehaviour
 					{
 						sl.value += 0.05f;
 						lastAD = Time.unscaledTime;
+						UpdateSlider(sl);
 					}
 				}
 
+			}
+		}
+		void UpdateSlider(Slider sl) { 
+			if(currentMenu == Menu.state) {
+				//this is the troop slider
+				PlayerState pl = Diplo.states[0] as PlayerState;
+				pl.troopAllocPlayerInput[nationSelected] = sl.value - 0.5f;
 			}
 		}
 		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) {
@@ -159,7 +175,11 @@ public class UI : MonoBehaviour
 					SwitchMenu((int)Menu.state);
 					break;
 				case Menu.state:
-					if(selected == 1) { // magic number for preemptive strike
+					if (selected == 1)
+					{ // magic number for declaring war
+						ROE.DeclareWar(0, nationSelected);
+					}
+					if (selected == 2) { // magic number for preemptive strike
 						SwitchMenu((int)Menu.strike);
 					}
 					break;
@@ -198,6 +218,13 @@ public class UI : MonoBehaviour
 		}
 		else {
 			selected = 0;
+		}
+		if(newMenu == (int)Menu.state) {
+			if (options[(int)currentMenu][0].transform.GetChild(0).TryGetComponent(out Slider sl))
+			{
+				PlayerState pl = Diplo.states[0] as PlayerState;
+				sl.value = pl.troopAllocPlayerInput[nationSelected] + 0.5f;
+			}
 		}
 
 		ChangeSelected(0);
