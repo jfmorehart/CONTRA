@@ -18,7 +18,7 @@ public class InfoPanel : MonoBehaviour
 	{
 		instance = this;
 		ROE.roeChange += ROEUpdate;
-		texts = new();
+		texts = new List<TMP_Text>();
 	}
 	private void Start()
 	{

@@ -24,6 +24,7 @@ public class InfluenceMan : MonoBehaviour
         silos = new List<Silo>();
 	}
 	public void Setup() {
+		ins = this;
 		cities = new List<City>();
 	}
 

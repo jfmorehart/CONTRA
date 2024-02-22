@@ -28,6 +28,7 @@ public static class Diplo
 
 	public static void SetupDiplo()
 	{
+		numreg = 0;
 		states = new State[Map.ins.numStates];
 		state_names = new string[Map.ins.numStates];
 		relationships = new Relationship[states.Length, states.Length];
@@ -38,7 +39,9 @@ public static class Diplo
 				relationships[i, j] = Relationship.Neutral;
 			}
 		}
-
+        ftaken = new List<int>();
+        staken = new List<int>();
+		ttaken = new List<int>();
 	}
 	public static void RegisterState(State st) {
 		states[st.team] = st;
@@ -76,7 +79,7 @@ public static class Diplo
 		ttaken.Add(index);
 		return name;
 	}
-	static List<int> ftaken = new();
+	static List<int> ftaken = new List<int>();
 	public static string[] firsts = new string[] {
 		"p",
 		"rus",
@@ -87,7 +90,7 @@ public static class Diplo
 		"corb",
 		"fl"
 	};
-	static List<int> staken = new();
+	static List<int> staken = new List<int>();
 	public static string[] seconds = new string[] {
 		"a",
 		"o",
@@ -101,7 +104,7 @@ public static class Diplo
 		"ori",
 		"ooli",
 	};
-	static List<int> ttaken = new();
+	static List<int> ttaken = new List<int>();
 	public static string[] thirds = new string[] {
 		"land",
 		"ca",

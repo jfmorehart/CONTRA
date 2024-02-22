@@ -22,6 +22,7 @@ public class AsyncPath : MonoBehaviour
 		DisplayHandler.resetGame += Reset;
 	}
 	void Reset() {
+		Debug.Log("i unsubbed i promise");
 		Diplo.StatesReady -= Setup;
     }
 
