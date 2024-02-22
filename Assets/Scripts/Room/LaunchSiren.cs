@@ -43,12 +43,10 @@ public class LaunchSiren : MonoBehaviour
 
 	public void SpinUp() {
 		ToggleLights(true);
-		Debug.Log("spinup");
     }
 
 	public void Off()
 	{
-		Debug.Log("off");
 		ToggleLights(false);
 	}
 

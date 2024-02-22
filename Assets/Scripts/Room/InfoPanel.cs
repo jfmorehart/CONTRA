@@ -60,8 +60,6 @@ public class InfoPanel : MonoBehaviour
 		g.transform.position = (Vector2)textOrigin.transform.position + offset;
 		tex.text = Diplo.state_names[nation]; //todo replace with nation names
 		tex.color = Map.ins.state_colors[nation];
-	
-		Debug.Log(nation + " on screen");
 	}
 
 	void ClearTexts() { 

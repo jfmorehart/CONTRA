@@ -34,8 +34,9 @@ public class Army : Unit
 		lastShot = Random.Range(0, 1f);
 		ROE.roeChange += StaggerPathTargetCheck;
 	}
-	private void Start()
+	public override void Start()
 	{
+		base.Start();
 		DisplayHandler.resetGame += Reset;
 	}
 

@@ -90,6 +90,7 @@ public static class Diplo
 	static List<int> staken = new();
 	public static string[] seconds = new string[] {
 		"a",
+		"o",
 		"oli",
 		"ertu",
 		"eri",
@@ -97,7 +98,7 @@ public static class Diplo
 		"us",
 		"is",
 		"an",
-		"eri",
+		"ori",
 		"ooli",
 	};
 	static List<int> ttaken = new();

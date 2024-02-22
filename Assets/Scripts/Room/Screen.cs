@@ -17,7 +17,7 @@ public class Screen : MonoBehaviour
 	// An example to update the emission color & intensity (and albedo) every frame.
 	void Update()
 	{
-
+		RendererExtensions.UpdateGIMaterials(renderer);
 	}
 
 	public void Switch(int i) {
@@ -31,6 +31,6 @@ public class Screen : MonoBehaviour
 			renderer.material.SetTexture("_EmissionMap", DisplayHandler.ins.cameraOutputs[i]);
 			renderer.material.SetTexture("_MainTex", DisplayHandler.ins.cameraOutputs[i]);
 		}
-		RendererExtensions.UpdateGIMaterials(renderer);
+
 	}
 }

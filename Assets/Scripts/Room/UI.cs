@@ -150,7 +150,6 @@ public class UI : MonoBehaviour
 			else if (values[selected] == false)
 			{
 				strikeoptions[selected].text = strikeoptions[selected].text.Replace(' ', 'x');
-				Debug.Log("mark X");
 				values[selected] = true;
 			}
 
@@ -213,17 +212,14 @@ public class UI : MonoBehaviour
 		List<Target> tars = new List<Target>();
 		if (nuclear) {
 			tars.AddRange(NuclearTargets(nationSelected));
-			Debug.Log("AAA");
 		}
 		if (conventional)
 		{
 			tars.AddRange(ConventionalTargets(nationSelected, saturation));
-			Debug.Log("BBB");
 		}
 		if (cities)
 		{
 			tars.AddRange(CivilianTargets(nationSelected));
-			Debug.Log("CCC");
 		}
 		player.ICBMStrike(saturation, TargetSort(tars.ToArray()).ToList());
 	}

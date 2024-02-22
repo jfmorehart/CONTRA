@@ -85,7 +85,6 @@ public static class ArmyUtils
 		}
 		System.Array.Sort(indexValues, indexes);
 		System.Array.Reverse(indexes);
-		Debug.Log(UnitChunks.chunkValues[team][indexes[0]]);
 
 		int t = 0;
 		while (tars.Count < numTargets) {
