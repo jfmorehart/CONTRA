@@ -60,7 +60,29 @@ public class State_AI : State
 		base.StateUpdate();
 		GenerateTroopAllocations();
 
-		ReAssignGarrisons(true);
+		//evaluate the difference between desired troop allocations and 
+		// garrison sizes. Only overwrite previous assignments if there are significant discrepancies
+		// in proportional size
+		float total = 0;
+		float discrepancy = 0;
+		for (int r = 0; r < Map.ins.numStates; r++)
+		{
+			total += garrisons[r].Count;
+		}
+		for (int r = 0; r < Map.ins.numStates; r++)
+		{
+			discrepancy += Mathf.Abs((garrisons[r].Count / total)  - troopAllocations[r]);
+		}
+		if(discrepancy > 0.25f) {
+			//expensive 
+			ReAssignGarrisons(true);
+		}
+		else {
+			//bit cheaper
+			ReAssignGarrisons(false);
+		}
+
+
 		for (int r = 0; r < Map.ins.numStates; r++)
 		{
 			//Expensive
@@ -71,6 +93,7 @@ public class State_AI : State
 
 	protected virtual void ConductWar_Update(int enemy, War war)
 	{
+		if (Map.ins.state_populations[enemy] < 1) ROE.MakePeace(team, enemy);
 		CaptureACity(enemy); //slow
 	}
 	public virtual void GenerateTroopAllocations()
@@ -84,10 +107,9 @@ public class State_AI : State
 			if (team == i) continue;
 			StateEval eval = new StateEval(team, i); //not that expensive really
 			//Debug.Log(team + " " + i + " " + eval.pVictory);
-	
 			tas[i] = eval.armyRatio * (AsyncPath.ins.SharesBorder(team, i) ? 1 : 0);
 
-			if (ROE.AreWeAtWar(team, i)){
+			if (ROE.AreWeAtWar(team, i) && AsyncPath.ins.SharesBorder(team, i)){
 				// weight troop allocation by necessity
 				tas[i] += 0.2f;
 				tas[i] *= 5;
@@ -140,6 +162,7 @@ public class State_AI : State
 	{
 		//fucky and overcomplex function designed to spread out troops along the border
 		//with an enemy state, for defensive posturing
+
 		for (int i = 0; i < troops.Count; i++)
 		{
 			Vector2 pos = (troops[i] as Army).wpos;

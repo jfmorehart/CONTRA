@@ -44,11 +44,10 @@ public class AsyncPath : MonoBehaviour
 				if ((i >= j)) continue;
 				Vector2Int st = MapUtils.PointToCoords(Diplo.states[i].transform.position);
 				Vector2Int en = MapUtils.PointToCoords(Diplo.states[j].transform.position);
-				List<int> pas = ROE.Passables(i).ToList();
-				pas.Add(j);
-				float t = System.DateTime.Now.Millisecond;
-				Vector2Int[] path = await Task.Run(() => Path(st, en, pas.ToArray(), 2));
+				int[] pas = new int[] { i, j };
+				Vector2Int[] path = await Task.Run(() => Path(st, en, pas, 1));
 				borders[i, j] = (path != null);
+				Debug.Log(i + "does" + (borders[i, j] ? "" : "n't") + " border " + j);
 			}
 		}
     }

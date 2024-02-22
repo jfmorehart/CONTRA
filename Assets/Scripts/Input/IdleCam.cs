@@ -44,7 +44,6 @@ public class IdleCam : MonoBehaviour
 
 	void NextFocus() {
 		List<Silo> sl = InfluenceMan.ins.silos;
-		Debug.Log(" focus " + sl.Count);
 		if (sl.Count < 1) return;
 		focus = sl[Random.Range(0, sl.Count)].transform.position;
     }

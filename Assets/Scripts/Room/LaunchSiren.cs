@@ -54,7 +54,6 @@ public class LaunchSiren : MonoBehaviour
 		foreach(GameObject g in lights) {
 
 			g.SetActive(t_on);
-			Debug.Log(t_on);
 		}
     }
 }

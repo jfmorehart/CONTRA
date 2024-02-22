@@ -78,9 +78,9 @@ public class EnemyState : State_AI
 				// Repel invasion 
 				// Diplomatic Pressure from allies
 				// Maintain limited countervalue threat
-				targets.AddRange(CivilianTargets(enemy));
+				targets.AddRange(ConventionalTargets(enemy));
 				targets = TargetSort(targets.ToArray()).ToList();
-				ICBMStrike(20, targets);
+				ICBMStrike(6, targets);
 				break;
 			case War.Total:
 

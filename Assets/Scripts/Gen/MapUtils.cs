@@ -54,6 +54,7 @@ public static class MapUtils
 	}
 
 	public static Vector3Int STIN_FromIndex(int index) {
+		if (!Map.ins) return Vector3Int.zero;
 		int rowSize = Map.ins.numStates * Map.ins.texelDimensions.x;
 		float fy = index / (float)(rowSize);
 		int y = Mathf.FloorToInt(fy);
@@ -67,6 +68,7 @@ public static class MapUtils
     }
 
 	public static int STIN_ToIndex(Vector3Int seperate) {
+		if (!Map.ins) return 0;
 		int state = seperate.z;
 		int x = seperate.x;
 		int y = seperate.y;
@@ -78,6 +80,8 @@ public static class MapUtils
     }
 
 	public static Vector2Int PointToCoords(Vector2 point) {
+		if (!Map.ins) return Vector2Int.zero;
+
 		Vector2 co = new Vector2(point.x / Map.ins.transform.localScale.x,
 	     point.y / Map.ins.transform.localScale.y);
 		co.x *= Map.ins.texelDimensions.x;
@@ -87,6 +91,7 @@ public static class MapUtils
 	}
 
 	public static Vector2 CoordsToPoint(Vector2Int coords) {
+		if (!Map.ins) return Vector2.zero;
 		Vector2 point = Vector2.zero;
 		point.x = coords.x / (float)Map.ins.texelDimensions.x;
 		point.y = coords.y / (float)Map.ins.texelDimensions.y;
