@@ -11,7 +11,7 @@ public class State : MonoBehaviour
 	// and was later made the base class for both the player and the NPCS due to 
 	// the redesign to make gameplay less micromanagey.
 
-	public int team; 
+	public int team;
 
 	public float money; //unused so far
 

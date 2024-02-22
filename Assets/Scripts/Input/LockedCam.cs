@@ -11,7 +11,7 @@ public class LockedCam : MonoBehaviour
 	public Material crtmat;
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
-		crtmat.SetFloat("_t", Time.time * timeScale);
+		crtmat.SetFloat("_t", Time.unscaledTime * timeScale);
 		Graphics.Blit(source, destination, crtmat);
 
 	}

@@ -17,6 +17,13 @@ public class AsyncPath : MonoBehaviour
 		ins = this;
 		Diplo.StatesReady += Setup;
 	}
+	private void Start()
+	{
+		DisplayHandler.resetGame += Reset;
+	}
+	void Reset() {
+		Diplo.StatesReady -= Setup;
+    }
 
 	public void Setup() {
 		borders = new bool[Map.ins.numStates, Map.ins.numStates];

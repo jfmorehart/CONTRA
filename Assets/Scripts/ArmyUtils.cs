@@ -73,8 +73,7 @@ public static class ArmyUtils
 		return tars.ToArray();
 	}
 
-	const int CONVENTIONAL_TARGETLIST_SIZE = 6;
-	public static Target[] ConventionalTargets(int team)
+	public static Target[] ConventionalTargets(int team, int numTargets = 6)
 	{
 		// no comments fio bud
 		List<Target> tars = new List<Target>();
@@ -85,15 +84,28 @@ public static class ArmyUtils
 			indexValues[i] = UnitChunks.chunkValues[team][i];
 		}
 		System.Array.Sort(indexValues, indexes);
-		Debug.Log(UnitChunks.chunkValues[team][indexes[^1]]);
-		for(int i = 0; i < CONVENTIONAL_TARGETLIST_SIZE; i++) {
-			Debug.Log("targeting + "+ indexes[^(i+1)]);
-			Target t = new Target(
-				UnitChunks.ChunkIndexToMapPos(indexes[^(i+1)]),
-				UnitChunks.chunkValues[team][indexes[^(i+1)]],
+		System.Array.Reverse(indexes);
+		Debug.Log(UnitChunks.chunkValues[team][indexes[0]]);
+
+		int t = 0;
+		while (tars.Count < numTargets) {
+			t++;
+			if(t > 50) {
+				Debug.Log("borken");
+				break;
+			}
+			Vector2 testPos = UnitChunks.ChunkIndexToMapPos(indexes[t]);
+			Vector2Int gpos = MapUtils.PointToCoords(testPos);
+			if(team != Map.ins.GetPixTeam(gpos)) {
+				continue;
+			}
+			Target tar = new Target(
+				testPos,
+				UnitChunks.chunkValues[team][indexes[t]],
 				Tar.Conventional
-				);
-			tars.Add(t);
+			);
+			tars.Add(tar);
+			if (tar.value < 1) break;
 		}
 		return tars.ToArray();
 	}

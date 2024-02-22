@@ -39,6 +39,10 @@ public static class UnitChunks
     public static int ChunkLookup(Vector2 position) {
         int x = Mathf.FloorToInt(position.x / chunkSize);
 		int y = Mathf.FloorToInt(position.y / chunkSize);
+        if (x < 0) x = 0;
+        if (x > dime.x) x = dime.x;
+        if (y < 0) y = 0;
+        if (y > dime.y) y = dime.y;
 		return x + (y * dime.x);
     }
 

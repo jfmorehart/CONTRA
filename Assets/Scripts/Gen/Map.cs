@@ -61,7 +61,6 @@ public class Map : MonoBehaviour
 
 		//Create basic info
 		NewMap();
-
 		//Borders are initially set by state of war
 		ROE.SetAllExceptIdentity(1);
 

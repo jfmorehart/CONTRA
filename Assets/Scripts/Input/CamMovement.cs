@@ -36,8 +36,25 @@ public class MoveCam : MonoBehaviour
 		if (!canMove) return;
 		Vector3 pos = transform.position;
 
-		velo.x += Input.GetAxisRaw("Horizontal") * accel.x * Time.deltaTime;
-		velo.y += Input.GetAxisRaw("Vertical") * accel.y * Time.deltaTime;
+		int horiz = 0;
+		if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D)) {
+			horiz = -1;
+		}
+		if (Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
+		{
+			horiz = 1;
+		}
+		int verti = 0;
+		if (Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.W))
+		{
+			verti = -1;
+		}
+		if (Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.S))
+		{
+			verti = 1;
+		}
+		velo.x += horiz * accel.x * Time.deltaTime;
+		velo.y += verti * accel.y * Time.deltaTime;
 		float zax = 0;
 		if (Input.GetKey(zoomIN)){
 			zax = 1;
@@ -87,7 +104,7 @@ public class MoveCam : MonoBehaviour
 		//int dwidth = width >> downRes;
 		//int dheight = height >> downRes;
 		//RenderTexture temp3 = RenderTexture.GetTemporary(dwidth, dheight);
-		crtmat.SetFloat("_t", Time.time * timeScale);
+		crtmat.SetFloat("_t", Time.unscaledTime * timeScale);
 		Graphics.Blit(source, destination, crtmat); // overwrites all previous work
 
 		//Graphics.Blit(temp3, destination, crtmat);

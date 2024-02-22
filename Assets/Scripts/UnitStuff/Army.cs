@@ -34,6 +34,10 @@ public class Army : Unit
 		lastShot = Random.Range(0, 1f);
 		ROE.roeChange += StaggerPathTargetCheck;
 	}
+	private void Start()
+	{
+		DisplayHandler.resetGame += Reset;
+	}
 
 	public virtual void Update()
 	{
@@ -136,7 +140,7 @@ public class Army : Unit
 		Invoke(nameof(CheckPathTargetValidity), Random.Range(0f, 0.5f));
 	}
 
-	void CheckPathTargetValidity() { 
+	void CheckPathTargetValidity() {
 		if (!enroute) return;
 		if(path != null) {
 			int et = Map.ins.GetPixTeam(path[^1]);
@@ -164,11 +168,16 @@ public class Army : Unit
 		return null;
     }
 
-
+	
 	public override void Kill()
 	{
 		base.Kill();
 		ROE.roeChange -= StaggerPathTargetCheck;
+	}
+
+	void Reset() {
+		ROE.roeChange -= StaggerPathTargetCheck;
+		DisplayHandler.resetGame -= Reset;
 	}
 
 	//private void OnTriggerEnter2D(Collider2D collision)

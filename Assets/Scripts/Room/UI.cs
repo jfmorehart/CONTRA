@@ -75,9 +75,10 @@ public class UI : MonoBehaviour
 
 	private void Start()
 	{
-		for(int i = 0; i < Map.ins.numStates - 1; i++){
-			TMP_Text t = options[0][i];
-			t.color = Map.ins.state_colors[i + 1];
+		for(int i = 1; i < Map.ins.numStates; i++){
+			TMP_Text t = options[0][i - 1];
+			t.color = Map.ins.state_colors[i];
+			t.text = Diplo.state_names[i];
 		}
 
 		for(int i = 0; i < 3; i++) {
@@ -96,21 +97,21 @@ public class UI : MonoBehaviour
 		}
 		if (!UIcontrol) return;
 
-		if (Input.GetKeyDown(KeyCode.Escape)) { 
+		if (Input.GetKeyDown(KeyCode.Tab)) { 
 			//Go back a menu
 			if((int)currentMenu > 0) {
 				SwitchMenu((int)currentMenu - 1);
 			}
 		}
 
-		if (Input.GetKeyDown(KeyCode.W)) {
+		if (Input.GetKeyDown(KeyCode.UpArrow)) {
 			ChangeSelected(-1);
 		}
-		if (Input.GetKeyDown(KeyCode.S)){
+		if (Input.GetKeyDown(KeyCode.DownArrow)){
 			ChangeSelected(1);
 		}
 
-		if (Input.GetKey(KeyCode.A))
+		if (Input.GetKey(KeyCode.LeftArrow))
 		{
 			if (options[(int)currentMenu][selected].transform.childCount > 0)
 			{
@@ -124,7 +125,7 @@ public class UI : MonoBehaviour
 				}
 			}
 		}
-		if (Input.GetKey(KeyCode.D))
+		if (Input.GetKey(KeyCode.RightArrow))
 		{
 			if (Time.unscaledTime - lastAD > ADtick)
 			{
@@ -138,7 +139,7 @@ public class UI : MonoBehaviour
 
 			}
 		}
-		if (Input.GetKeyDown(KeyCode.Return)) {
+		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) {
 
 
 			if (values[selected] == true)
@@ -186,7 +187,9 @@ public class UI : MonoBehaviour
 			options[(int)currentMenu][selected].color = Color.white;
 		}
 		strikeNationText.color = Map.ins.state_colors[nationSelected];
+		strikeNationText.text = Diplo.state_names[nationSelected];
 		diploNationText.color = Map.ins.state_colors[nationSelected];
+		diploNationText.text = Diplo.state_names[nationSelected];
 		menus[(int)currentMenu].SetActive(false);
 		currentMenu = (Menu)newMenu;
 		menus[(int)currentMenu].SetActive(true);
@@ -214,7 +217,7 @@ public class UI : MonoBehaviour
 		}
 		if (conventional)
 		{
-			tars.AddRange(ConventionalTargets(nationSelected));
+			tars.AddRange(ConventionalTargets(nationSelected, saturation));
 			Debug.Log("BBB");
 		}
 		if (cities)
@@ -248,16 +251,19 @@ public class UI : MonoBehaviour
 		}
 	}
 
-	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim) { 
-		if(victim == playerTeam) {
+	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim) {
+		if (victim == playerTeam)
+		{
 			osc = true;
 			//PromptNuclear();
 			incoming++;
 			Invoke(nameof(RemoveIncoming), MapUtils.Tau(launchPos, targetPos));
-			nationSelected = perp;
-			SwitchMenu((int)Menu.strike);
+
+			//annoying as fuck
+			//nationSelected = perp;
+			//SwitchMenu((int)Menu.strike);
 		}
-    }
+	}
 	void RemoveIncoming() {
 		incoming--;
 		if(incoming < 1) {
