@@ -18,6 +18,9 @@ public class StrikePlan : MonoBehaviour
 	[SerializeField] Sprite armySprite;
 
 	public TMP_Text warning;
+	public Color lineColor;
+	public Color siloColor;
+	public Color validTargetColor;
 	public Color invalidTargetColor;
 
 	public List<Transform> currentPlanIcons;
@@ -60,7 +63,7 @@ public class StrikePlan : MonoBehaviour
 		for(int s = 0; s < silos.Length; s++) {
 			GameObject go = Spawn(MapPositionToLocalPosition(silos[s].transform.position), siloSprite);
 			silo_icons[s] = go.transform;
-			go.GetComponent<Image>().color = Color.red;
+			go.GetComponent<Image>().color = siloColor;
 		}
 
 		int slcham = 0;
@@ -91,6 +94,7 @@ public class StrikePlan : MonoBehaviour
 			Sprite toSpawn = Tar2Sprite(target.type);
 			Vector2 local = MapPositionToLocalPosition(target.wpos);
 			GameObject tOb = Spawn(local, toSpawn);
+			tOb.GetComponent<Image>().color = validTargetColor;
 
 			Vector2 st = MapPositionToLocalPosition(silos[slcham].transform.position);
 			DrawLine(st, local);
@@ -107,20 +111,21 @@ public class StrikePlan : MonoBehaviour
 		currentPlanIcons.Clear();
     }
 	void DrawLine(Vector2 start, Vector2 end) {
-		GameObject go = Instantiate(iconPrefab, transform);
+		GameObject go = Instantiate(iconPrefab, backGround);
 		currentPlanIcons.Add(go.transform);
-
 		go.transform.localPosition = (start + end) * 0.5f;
 
 		Vector2 delta = end - start;
 		float theta = Mathf.Atan2(delta.y, delta.x);
 		go.transform.eulerAngles = new Vector3(0, 0, theta * Mathf.Rad2Deg);
-		go.transform.localScale = new Vector3(delta.magnitude * 0.01f, 0.2f, 1);
+		go.transform.localScale = new Vector3(delta.magnitude * 0.01f, 0.1f, 1);
+
+		go.GetComponent<Image>().color = lineColor;
     }
 
 
 	GameObject Spawn(Vector2 localPosition, Sprite sprite) {
-		GameObject go = Instantiate(iconPrefab, transform);
+		GameObject go = Instantiate(iconPrefab, backGround);
 		go.transform.localPosition = localPosition;
 
 		currentPlanIcons.Add(go.transform);

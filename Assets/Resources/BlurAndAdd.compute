@@ -1,0 +1,25 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> BLayer;
+RWTexture2D<float4> CamIn;
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    
+    float4 input = CamIn[id.xy].rgba;
+
+    //blur bloom layer
+    float2 offset1 = float2(0, 1);
+    float2 offset2 = float2(1, 0);
+
+    CamIn[id.xy] = BLayer[id.xy + offset1];
+    CamIn[id.xy] += BLayer[id.xy + offset2];
+    CamIn[id.xy] += BLayer[id.xy - offset1];
+    CamIn[id.xy] += BLayer[id.xy - offset2];
+
+    CamIn[id.xy] = 0.2 * CamIn[id.xy] + input;
+}

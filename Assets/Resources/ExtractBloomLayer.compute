@@ -1,0 +1,14 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+RWTexture2D<float4> LayerOut;
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float4 input = LayerOut[id.xy].rgba;
+    LayerOut[id.xy] = step(0.8, input); 
+}

@@ -1,0 +1,79 @@
+
+#pragma kernel CSMain
+
+float rand (float2 uv) { 
+    return frac(sin(dot(uv.xy, float2(13.9897, 78.233))) * 43758.5453123);
+}
+
+float noise (float2 uv) {
+    float2 ipos = floor(uv);
+    float2 fpos = frac(uv); 
+                
+    float o  = rand(ipos);
+    float x  = rand(ipos + float2(1, 0));
+    float y  = rand(ipos + float2(0, 1));
+    float xy = rand(ipos + float2(1, 1));
+
+    float2 smooth = smoothstep(0, 1, fpos);
+    return lerp( lerp(o,  x, smooth.x), lerp(y, xy, smooth.x), smooth.y);
+}
+
+float fr (float2 uv) {
+    float n = 0;
+    // fractal noise is created by adding together "octaves" of a noise
+    // an octave is another noise value that is half the amplitude and double the frequency of the previously added noise
+    // below the uv is multiplied by a value double the previous. multiplying the uv changes the "frequency" or scale of the noise becuase it scales the underlying grid that is used to create the value noise
+    // the noise result from each line is multiplied by a value half of the previous value to change the "amplitude" or intensity or just how much that noise contributes to the overall resulting fractal noise.
+
+    n  = (1 / 2.0)  * noise( uv * 1);
+    n += (1 / 4.0)  * noise( uv * 2); 
+    n += (1 / 8.0)  * noise( uv * 4); 
+    n += (1 / 16.0) * noise( uv * 8);
+                
+    return n;
+}
+
+int2 dime;
+RWStructuredBuffer<float> pop;
+RWStructuredBuffer<uint> dead;
+int radius;
+int2 pos;
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x + (id.y * dime.x);
+    float2 uv;
+    uv.x = (float2)id.x / (float2)dime.x;
+    uv.y = (float2)id.y / (float2)dime.y;
+
+    float cur = pop[index];
+    float pre = cur;
+    float dist = distance(pos, id);
+    int mask = step(radius, dist);
+    //old noise //(max(fr(uv * 130 + pos) - 0.5, 0)) * 12 * radius;
+    // old noise2   //float noise2 = (fr(uv * 300 + pos)) * 1;
+    // noise2  //min(pow(1.3 - noise2, 6), cur);
+
+    float noise = fr(uv * 50 + pos) - 0.2;
+    noise *= 5;
+    float noise2 = fr(uv * 800 + pos);
+    noise2 = pow(noise2 + 0.2, 2);
+    noise2 = max(noise2, 0);
+    noise2 = min(noise2, 1);
+
+
+    cur = cur * step(pow(radius, 0.5) + noise, dist);
+    int n2mask = step(pow(8 + radius * 10, 0.5), dist);
+    float rad = pow(5 + radius * 10, 0.5) - dist;
+    rad = 1 - (rad / (dist * 3));
+
+    cur = cur * n2mask + (1 - n2mask) * noise2 * cur * rad;//* noise2;
+
+    cur = max(0, cur);
+    //cur = min(pre, cur);
+
+    InterlockedAdd(dead[0], pop[index] - cur);
+    pop[index] = cur;
+
+}

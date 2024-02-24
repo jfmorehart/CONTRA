@@ -1,0 +1,84 @@
+#pragma kernel CSMain
+
+float rand (float2 uv) { 
+    return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
+}
+
+float noise (float2 uv) {
+    float2 ipos = floor(uv);
+    float2 fpos = frac(uv); 
+                
+    float o  = rand(ipos);
+    float x  = rand(ipos + float2(1, 0));
+    float y  = rand(ipos + float2(0, 1));
+    float xy = rand(ipos + float2(1, 1));
+
+    float2 smooth = smoothstep(0, 1, fpos);
+    return lerp( lerp(o,  x, smooth.x), lerp(y, xy, smooth.x), smooth.y);
+}
+
+float fractal_noise (float2 uv) {
+    float n = 0;
+    // fractal noise is created by adding together "octaves" of a noise
+    // an octave is another noise value that is half the amplitude and double the frequency of the previously added noise
+    // below the uv is multiplied by a value double the previous. multiplying the uv changes the "frequency" or scale of the noise becuase it scales the underlying grid that is used to create the value noise
+    // the noise result from each line is multiplied by a value half of the previous value to change the "amplitude" or intensity or just how much that noise contributes to the overall resulting fractal noise.
+
+    n  = (1 / 2.0)  * noise( uv * 1);
+    n += (1 / 4.0)  * noise( uv * 2); 
+    n += (1 / 8.0)  * noise( uv * 4); 
+    n += (1 / 16.0) * noise( uv * 8);
+                
+    return n;
+}
+
+int2 dime;
+int numCities;
+
+struct City
+{
+    int2 pos;
+    float pop;
+    int team;
+    int unused; // isarmy
+};
+
+StructuredBuffer<City> cityBuffer; 
+RWStructuredBuffer<float> popBuffer;
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x + (id.y * dime.x);
+    float2 uv;
+    uv.x = (float2)id.x / (float2)dime.x;
+    uv.y = (float2)id.y / (float2)dime.y;
+
+    float cpop = 0;
+
+    for(int i = 0; i < numCities; i++){
+        float dist = distance(cityBuffer[i].pos, id.xy) + 0.01;
+        float loc = cityBuffer[i].pop * (1 / (dist * dist));
+        cpop += loc;
+    }
+    cpop = min(max(cpop, 0), 1);
+
+
+    float scale = 40;
+    float noise1 = fractal_noise(uv * scale * 2.8);
+    noise1 = pow(noise1, 3);
+
+    float noise2 = fractal_noise(uv * scale * 3);
+    noise2 = pow(noise2, 3);
+
+    noise1 += noise2;
+
+    cpop *= 0.8 + pow(noise1, 2) * 10;
+    cpop += pow(noise2, 1.8) * 2;
+    cpop = pow(cpop, 2) + 0.1;
+
+
+    //cpop = step(0.5, fractal_noise(uv * 2.01 + -103));
+
+    popBuffer[index] = cpop;
+}
