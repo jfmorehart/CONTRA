@@ -74,7 +74,7 @@ public static class Diplo
 		do
 		{
 			index = UnityEngine.Random.Range(0, thirds.Length);
-		} while (ftaken.Contains(index));
+		} while (ttaken.Contains(index));
 		name += thirds[index];
 		ttaken.Add(index);
 		return name;

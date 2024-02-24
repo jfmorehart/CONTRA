@@ -12,8 +12,9 @@ public class Army : Unit
 	//Movement
 	public float speed;
 	Vector3 dest;
-	bool enroute;
-	float stopDist = 1f;
+	[SerializeField] bool enroute;
+	[SerializeField] float secondsSinceSaidReady;
+	float stopDist = 4f;
 
 	//List<Unit> inView;
 	public int range;
@@ -21,9 +22,9 @@ public class Army : Unit
 	float lastShot;
 
 	public Vector2Int[] path;
-	int current;
+	int currentPathNodeIndex;
 	public Order pathOrder;
-
+	
 
 	[HideInInspector]
 	public Vector2 wpos;
@@ -42,7 +43,7 @@ public class Army : Unit
 
 	public virtual void Update()
 	{
-
+		secondsSinceSaidReady += Time.deltaTime;
 		wpos = transform.position; //For use in multithreaded city shenanigans
 
 		if (enroute) {
@@ -51,27 +52,25 @@ public class Army : Unit
 			transform.Translate(pspeed * Time.deltaTime * delta.normalized);
 
 			if(delta.magnitude < stopDist) {
-				enroute = false;
 				if(path != null) { 
-					if(current < path.Length - 1) {
-						current++;
+					if(currentPathNodeIndex < path.Length - 1) {
+						currentPathNodeIndex++;
 						enroute = true;
-						dest = MapUtils.CoordsToPoint(path[current]);
+						dest = MapUtils.CoordsToPoint(path[currentPathNodeIndex]);
 						int et = Map.ins.GetPixTeam(path[^1]);
 						int[] pas = ROE.Passables(team);
 
 						if (!pas.Contains(et))
 						{
-							enroute = false;
-							Diplo.states[team].ReadyForOrders(this);
+							Idle();
 						}
 					}
 					else {
-						Diplo.states[team].ReadyForOrders(this);
+						Idle();
 					}
 				}
 				else {
-					Diplo.states[team].ReadyForOrders(this);
+					Idle();
 				}
 
 			}
@@ -82,6 +81,11 @@ public class Army : Unit
 			Check4ChunkUpdate();
 			ShootUpdate();
 		}
+	}
+	void Idle() {
+		enroute = false;
+		Diplo.states[team].ReadyForOrders(this);
+		secondsSinceSaidReady = 0;
 	}
 
 	public virtual void ShootUpdate() {
@@ -129,8 +133,8 @@ public class Army : Unit
 		{
 			if (path.Length < 2) return;
 			enroute = true;
-			current = 1;
-			dest = MapUtils.CoordsToPoint(path[current]);
+			currentPathNodeIndex = 1;
+			dest = MapUtils.CoordsToPoint(path[currentPathNodeIndex]);
 		}
 	}
 
@@ -146,8 +150,7 @@ public class Army : Unit
 		if(path != null) {
 			int et = Map.ins.GetPixTeam(path[^1]);
 			if (!ROE.Passables(team).Contains(et)) {
-				enroute = false;
-				Diplo.states[team].ReadyForOrders(this);
+				Idle();
 			}
 		}
     }

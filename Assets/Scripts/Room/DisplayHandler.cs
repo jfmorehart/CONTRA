@@ -42,6 +42,16 @@ public class DisplayHandler : MonoBehaviour
 		}
 		pauseCam.enabled = false;
 	}
+
+	public void TogglePopStrikeScreen(bool strike) {
+		if (strike) {
+			screens[1].Switch(7);
+		}
+		else {
+			screens[1].Switch(6);
+		}
+    }
+
 	private void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.Escape))

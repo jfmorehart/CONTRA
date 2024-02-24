@@ -1,0 +1,156 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using static ArmyUtils;
+
+public class StrikePlan : MonoBehaviour
+{
+	public static StrikePlan ins;
+
+	public RectTransform backGround;
+	public GameObject iconPrefab; //blank image
+
+	[SerializeField] Sprite siloSprite;
+	[SerializeField] Sprite citySprite;
+	[SerializeField] Sprite armySprite;
+
+	public TMP_Text warning;
+	public Color invalidTargetColor;
+
+	public List<Transform> currentPlanIcons;
+
+	State_AI player;
+	private void Awake()
+	{
+		ins = this;
+		currentPlanIcons = new List<Transform>();
+	}
+	private void Start()
+	{
+		player = (Diplo.states[0] as State_AI);
+		//Vector2 v1 = MapPositionToLocalPosition((new Vector2(0, 0)));
+		//GameObject go = Spawn(v1, siloSprite) ;
+		//Vector2 v2 = MapPositionToLocalPosition((new Vector2(1920, 1080)));
+		//GameObject go2 = Spawn(v2, siloSprite);
+		//DrawLine(go.transform.position, go2.transform.position);
+	}
+	public void DrawPlan(int warheads, List<Target> targets) {
+		ErasePlan();
+		
+		Silo[] silos = ArmyUtils.GetSilos(0);
+		//putting this before the target count check is much slower, 
+		// but its important to explain to the player
+		if (silos.Length < 1)
+		{
+			warning.text = "No Silos Remaining";
+			return;
+		}
+
+		int n = Mathf.Min(targets.Count, warheads);
+		if(n == 0) {
+			warning.text = "No Valid Targets Selected";
+			return;
+		}
+
+		warning.text = "";
+		Transform[] silo_icons = new Transform[silos.Length];
+		for(int s = 0; s < silos.Length; s++) {
+			GameObject go = Spawn(MapPositionToLocalPosition(silos[s].transform.position), siloSprite);
+			silo_icons[s] = go.transform;
+			go.GetComponent<Image>().color = Color.red;
+		}
+
+		int slcham = 0;
+		int validTargetsDrawn = 0;
+
+		int targetindex = -1;
+		for (int i = 0; i < n; i++) {
+			bool target_invalid;
+
+			do
+			{
+				targetindex++; // weirdly makes sense here as long as its -1 to start
+				if (targets.Count - 1 < targetindex) {
+					if(validTargetsDrawn == 0) {
+						warning.text = "All selected targets have been fired at";
+					}
+					return;
+				}
+				ArmyUtils.Target trytarget = targets[targetindex];
+				target_invalid = player.TargetInHash(trytarget.hash);
+				if (target_invalid) {
+					GameObject inv = Spawn(MapPositionToLocalPosition(trytarget.wpos), siloSprite);
+					inv.GetComponent<Image>().color = invalidTargetColor;
+				}
+
+			} while (target_invalid);
+			ArmyUtils.Target target = targets[targetindex];
+			Sprite toSpawn = Tar2Sprite(target.type);
+			Vector2 local = MapPositionToLocalPosition(target.wpos);
+			GameObject tOb = Spawn(local, toSpawn);
+
+			Vector2 st = MapPositionToLocalPosition(silos[slcham].transform.position);
+			DrawLine(st, local);
+			validTargetsDrawn++;
+			slcham++;
+			if (slcham >= silos.Length) slcham = 0;
+		}
+	}
+
+	void ErasePlan() { 
+		for(int i = 0; i < currentPlanIcons.Count; i++) {
+			Destroy(currentPlanIcons[i].gameObject);
+		}
+		currentPlanIcons.Clear();
+    }
+	void DrawLine(Vector2 start, Vector2 end) {
+		GameObject go = Instantiate(iconPrefab, transform);
+		currentPlanIcons.Add(go.transform);
+
+		go.transform.localPosition = (start + end) * 0.5f;
+
+		Vector2 delta = end - start;
+		float theta = Mathf.Atan2(delta.y, delta.x);
+		go.transform.eulerAngles = new Vector3(0, 0, theta * Mathf.Rad2Deg);
+		go.transform.localScale = new Vector3(delta.magnitude * 0.01f, 0.2f, 1);
+    }
+
+
+	GameObject Spawn(Vector2 localPosition, Sprite sprite) {
+		GameObject go = Instantiate(iconPrefab, transform);
+		go.transform.localPosition = localPosition;
+
+		currentPlanIcons.Add(go.transform);
+		go.GetComponent<Image>().overrideSprite = sprite;
+		return go;
+	}
+
+	Vector2 MapPositionToLocalPosition(Vector2 mapPos) {
+		Vector2Int coords = MapUtils.PointToCoords(mapPos);
+		Vector2 point = Vector2.zero;
+		point.x = coords.x / (float)Map.ins.texelDimensions.x;
+		point.y = coords.y / (float)Map.ins.texelDimensions.y;
+		point -= Vector2.one * 0.5f;
+		point *= backGround.sizeDelta * 0.8f;
+
+		return point;
+	}
+
+	Sprite Tar2Sprite(Tar tar) {
+		switch (tar) {
+			case Tar.Civilian:
+				return citySprite;
+			case Tar.Conventional:
+				return armySprite;
+			case Tar.Nuclear:
+				return siloSprite;
+			case Tar.Support:
+				Debug.LogError("support?");
+				return siloSprite;
+		}
+		return null;
+    }
+}

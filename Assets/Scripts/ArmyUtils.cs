@@ -104,7 +104,7 @@ public static class ArmyUtils
 				Tar.Conventional
 			);
 			tars.Add(tar);
-			if (tar.value < 1) break;
+			if (tar.value < 3) break;
 		}
 		return tars.ToArray();
 	}

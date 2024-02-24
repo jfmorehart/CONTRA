@@ -50,6 +50,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     col += scol * pop;
     col = clamp(col, 0, 1);
 
+    //weird shit
+    col = (col.r + col.g + col.b).rrr * 0.3 * col;
+    col = pow(col + 0.1, 2);
+    float3 yellow = float3(0.9, 0.7,0.5);
+    col *= yellow;
+    // end weird shit
+
     col += IsBorder(index) * scol;
 
     Result[id.xy] = float4(col, 0);  

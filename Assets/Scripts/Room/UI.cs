@@ -10,6 +10,8 @@ using static ArmyUtils;
 
 public class UI : MonoBehaviour
 {
+	//There is an ungodly amount of magic number hardcoded bullshit in this class
+
 	public static UI ins;
 
 
@@ -42,7 +44,8 @@ public class UI : MonoBehaviour
 	int playerTeam = 0;
 
 	//StrikeMenu
-
+	float lastStikeUpdate;
+	float strikeUpdateTickDelay = 0.1f;
 
 	public int nationSelected;
 	public List<TMP_Text>[] options;
@@ -99,6 +102,13 @@ public class UI : MonoBehaviour
 
 	private void Update()
 	{
+		if(currentMenu == Menu.strike) {
+			if(Time.time - lastStikeUpdate > strikeUpdateTickDelay) {
+				UpdateStrikePlanning();
+				lastStikeUpdate = Time.time;
+			}
+		}
+
 		if (osc) {
 			Oscillate();
 		}
@@ -157,7 +167,6 @@ public class UI : MonoBehaviour
 		}
 		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) {
 
-
 			if (values[selected] == true)
 			{
 				values[selected] = false;
@@ -173,7 +182,7 @@ public class UI : MonoBehaviour
 				case Menu.main:
 					nationSelected = selected + 1;
 					SwitchMenu((int)Menu.state);
-					break;
+				break;
 				case Menu.state:
 					if (selected == 1)
 					{ // magic number for declaring war
@@ -182,26 +191,31 @@ public class UI : MonoBehaviour
 					if (selected == 2) { // magic number for preemptive strike
 						SwitchMenu((int)Menu.strike);
 					}
-					break;
+				break;
 				case Menu.strike:
-					if(selected == 4) { //magic number for launch
-						float sat = 1;
-						if (options[(int)currentMenu][3].transform.GetChild(0).TryGetComponent(out Slider sl))
-						{
+
+					if (options[(int)currentMenu][3].transform.GetChild(0).TryGetComponent(out Slider sl))
+					{
+						if (selected == 4)
+						{ //magic number for launch
+							float sat = 1;
 							sat = sl.value * 20;
-							sat = Mathf.Max(1, sat);
+							int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
+							List<Target> tars = GetTargets(sati, values[0], values[1], values[2]);
+							Launch(sati, tars);
 						}
-						else {
-							Debug.LogError("set up wrong");
-						}
-						Launch(values[0], values[1], values[2], (int)sat);
 					}
-					break;
+					else
+					{
+						Debug.LogError("set up wrong");
+					}
+				break;
 			}
 		}
 	}
 
 	void SwitchMenu(int newMenu) {
+		DeselectCurrent();	
 		if(currentMenu != Menu.main) {
 			options[(int)currentMenu][selected].color = Color.white;
 		}
@@ -220,10 +234,19 @@ public class UI : MonoBehaviour
 			selected = 0;
 		}
 		if(newMenu == (int)Menu.state) {
+			DisplayHandler.ins.TogglePopStrikeScreen(false);
 			if (options[(int)currentMenu][0].transform.GetChild(0).TryGetComponent(out Slider sl))
 			{
 				PlayerState pl = Diplo.states[0] as PlayerState;
 				sl.value = pl.troopAllocPlayerInput[nationSelected] + 0.5f;
+			}
+		}
+		if (newMenu == (int)Menu.strike)
+		{
+			DisplayHandler.ins.TogglePopStrikeScreen(true);
+			if (options[(int)currentMenu][3].transform.GetChild(0).TryGetComponent(out Slider sl))
+			{
+				sl.value = 0.5f;
 			}
 		}
 
@@ -234,10 +257,10 @@ public class UI : MonoBehaviour
 		}
 	}
 
-	void Launch(bool nuclear, bool conventional, bool cities, int saturation) {
-		State_AI player = Diplo.states[0] as State_AI;
+	List<Target> GetTargets(int saturation, bool nuclear, bool conventional, bool cities) {
 		List<Target> tars = new List<Target>();
-		if (nuclear) {
+		if (nuclear)
+		{
 			tars.AddRange(NuclearTargets(nationSelected));
 		}
 		if (conventional)
@@ -248,19 +271,54 @@ public class UI : MonoBehaviour
 		{
 			tars.AddRange(CivilianTargets(nationSelected));
 		}
+		return tars;
+	}
+	void Launch(int saturation, List<Target> tars) {
+		State_AI player = Diplo.states[0] as State_AI;
 		player.ICBMStrike(saturation, TargetSort(tars.ToArray()).ToList());
 	}
+	void UpdateStrikePlanning() {
+		if (options[(int)currentMenu][3].transform.GetChild(0).TryGetComponent(out Slider sl))
+		{
+			float sat = 1;
+			sat = sl.value * 20;
+			int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
+
+			List<Target> tars = GetTargets(sati, values[0], values[1], values[2]);
+			StrikePlan.ins.DrawPlan(sati, tars);
+		}
+	}
+
 	void ChangeSelected(int change) {
 		TMP_Text t = options[(int)currentMenu][selected];
 		HKSel(change);
 		TMP_Text t2 = options[(int)currentMenu][selected];
+		t.text = t.text.Replace(">", "");
+		t.text = t.text.Replace("<", "");
+		t2.text = ">" + t2.text + "<";
+
+
 		if (currentMenu == Menu.main) {
 			t.fontStyle = FontStyles.Bold;
 			t2.fontStyle = FontStyles.Underline | FontStyles.Bold;
+
 			return;
 		}
 		t.color = Color.white;
 		t2.color = Color.yellow;
+	}
+	void DeselectCurrent() {
+		TMP_Text t = options[(int)currentMenu][selected];
+		t.text = t.text.Replace(">", "");
+		t.text = t.text.Replace("<", "");
+
+		if (currentMenu == Menu.main)
+		{
+			t.fontStyle = FontStyles.Bold;
+
+			return;
+		}
+		t.color = Color.white;
 	}
 	void HKSel(int change) {
 		selected += change;

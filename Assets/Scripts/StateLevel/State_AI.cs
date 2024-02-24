@@ -243,7 +243,8 @@ public class State_AI : State
 		if (toAttack == null) return; // war over lmao
 
 		//Get units closest to nearest city
-		Unit[] units = ArmyUtils.GetArmies(team, 5, toAttack.transform.position, recentlyOrdered);
+		int unitsToSend = Mathf.CeilToInt(garrisons[ofteam].Count * 0.15f);
+		Unit[] units = ArmyUtils.GetArmies(team, unitsToSend, toAttack.transform.position, recentlyOrdered);
 		// Reassign city toAttack to target the city closest to them
 		// since it may differ from above target
 		toAttack = ArmyUtils.NearestCity(transform.position, ofteam, attacked);
@@ -284,7 +285,7 @@ public class State_AI : State
 		Unit[] uns = ArmyUtils.GetArmies(team);
 		List<Unit> assigned = new List<Unit>(); 
 		if (!overwriteRecentOrders) {
-			assigned =  recentlyOrdered.ToList();
+			//assigned = recentlyOrdered;
 		}
 		
 		int[] allotment = new int[Map.ins.numStates];
@@ -314,8 +315,9 @@ public class State_AI : State
 	{
 		Order or = new Order(Order.Type.Attack, t.wpos);
 		ArmyUtils.Salvo(sl, or, warheads);
-		targetHashList.Add(t.hash);
 
+		//todo only add to hashlist if a missile really was fired
+		targetHashList.Add(t.hash);
 		StartCoroutine(RemoveFromHash(t.hash, MapUtils.Tau(sl.transform.position, t.wpos)));
 	}
 
@@ -325,7 +327,9 @@ public class State_AI : State
 			gr.Clear();
 		} 
 	}
-
+	public bool TargetInHash(int i) {
+		return targetHashList.Contains(i);
+    }
 	public IEnumerator RemoveFromHash(int i, float t)
 	{
 		yield return new WaitForSeconds(t);
