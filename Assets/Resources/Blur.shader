@@ -49,8 +49,9 @@ Shader "Unlit/Blur"
                 
                 //float dist = length(cUV);
                 //float d2 = dist * dist;
-                float2 offset1 = float2(0, 0.001);// * d2;
-                float2 offset2 = float2(0.001, 0);// * d2;
+		        float nextPixel = 0.0025;
+                float2 offset1 = float2(0, nextPixel);// * d2;
+                float2 offset2 = float2(nextPixel, 0);// * d2;
 
                 fixed4 col = 0;//tex2D(_MainTex, i.uv);
 

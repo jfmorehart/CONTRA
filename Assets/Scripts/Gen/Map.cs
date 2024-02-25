@@ -56,8 +56,9 @@ public class Map : MonoBehaviour
 		ins = this;
 		UnitChunks.Init();
 		ArmyUtils.Init();
-		ROE.SetUpRoe();
 		Diplo.SetupDiplo();
+		ROE.SetUpRoe();
+
 
 		//Create basic info
 		NewMap();
@@ -78,7 +79,7 @@ public class Map : MonoBehaviour
 		mapRT.Create();
 
 
-		InfluenceMan.ins.RandomArmies(100);
+		InfluenceMan.ins.RandomArmies(200);
 
 		//Rebuild borders now with army info
 		BuildInfluences();

@@ -51,8 +51,16 @@ public class StrikePlan : MonoBehaviour
 			warning.text = "No Silos Remaining";
 			return;
 		}
-
+		int numMissiles = 0;
+		for(int s = 0; s < silos.Length; s++) {
+			numMissiles += silos[s].numMissiles;
+		}
+		if(numMissiles < 1) {
+			warning.text = "All Silos Empty";
+			return;
+		}
 		int n = Mathf.Min(targets.Count, warheads);
+		n = Mathf.Min(n, numMissiles);
 		if(n == 0) {
 			warning.text = "No Valid Targets Selected";
 			return;
@@ -85,7 +93,7 @@ public class StrikePlan : MonoBehaviour
 				ArmyUtils.Target trytarget = targets[targetindex];
 				target_invalid = player.TargetInHash(trytarget.hash);
 				if (target_invalid) {
-					GameObject inv = Spawn(MapPositionToLocalPosition(trytarget.wpos), siloSprite);
+					GameObject inv = Spawn(MapPositionToLocalPosition(trytarget.wpos), Tar2Sprite(trytarget.type)); ;
 					inv.GetComponent<Image>().color = invalidTargetColor;
 				}
 

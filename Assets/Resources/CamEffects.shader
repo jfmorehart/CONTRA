@@ -147,8 +147,10 @@ Shader "Unlit/CamEffects"
 
                 float2 nUV = rand(scale(sUV * 100 + _t, 10));
                 float lensnoise = 1.5 * pow(fractal_noise(nUV), 0.4) * length(luv);
-                lensnoise *= 0.1f * (1 -  2 * crtnoise);
+                lensnoise *= 0.12 * (1 -  2 * crtnoise);
+		        lensnoise *= 1 - step(0.5, col); //cut the noise to preserve color
                 col += lensnoise;
+
                 return float4(col, 1);
             }
             ENDCG

@@ -14,6 +14,8 @@ public class EnemyState : State_AI
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
+			if (Diplo.IsMyAlly(team, i)) continue;
+
 			StateEval eval = new StateEval(team, i);
 			//Debug.Log(team + " " + i + " " + eval.pVictory);
 			if (ROE.AreWeAtWar(team, i))
@@ -40,7 +42,7 @@ public class EnemyState : State_AI
 				if (AsyncPath.ins == null) return;
 				if (AsyncPath.ins.SharesBorder(team, i))
 				{
-					if (Time.time > 10 && eval.pVictory > 0.7f && !ROE.AreWeAtWar(team))
+					if (Time.timeSinceLevelLoad> 10 && eval.pVictory > 0.7f && !ROE.AreWeAtWar(team))
 					{
 						Debug.Log(team + " starting a war with " + i);
 						ROE.DeclareWar(team, i);
@@ -48,6 +50,12 @@ public class EnemyState : State_AI
 						//Vector2 ep = Diplo.states[i].transform.position;
 						//List<Unit> troops = GetArmies(team, 30, ep, recentlyOrdered).ToList();
 						//SendTroopsToBorder(i, troops);
+					}
+					else {  
+						//TEST hack remove when done plz
+						if(!Diplo.HasAllies(team) && !Diplo.HasAllies(i)) {
+							Diplo.JoinAlliance(i, team);
+						}
 					}
 				}
 			}

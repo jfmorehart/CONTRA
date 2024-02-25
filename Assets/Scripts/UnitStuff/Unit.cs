@@ -15,7 +15,7 @@ public class Unit : MonoBehaviour
 
 	protected int maxHP;
 
-	Renderer ren;
+	protected Renderer ren;
 
 
 	public virtual void Awake() {
@@ -31,7 +31,7 @@ public class Unit : MonoBehaviour
 	{
 		InfluenceMan.ins.RegisterUnit(this);
 		ren = GetComponent<Renderer>();
-		//ren.material = new Material(ren.material);
+		ren.material = new Material(ren.material);
 		//ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
 	}
 

@@ -58,8 +58,14 @@ public class Army : Unit
 						enroute = true;
 						dest = MapUtils.CoordsToPoint(path[currentPathNodeIndex]);
 						int et = Map.ins.GetPixTeam(path[^1]);
+						if(Map.ins.GetPixTeam(path[currentPathNodeIndex]) != team) {
+							ren.material.color = Map.ins.state_colors[team] + Color.white * 0.2f;
+						}
+						else {
+							ren.material.color = Color.white;
+						}
 						int[] pas = ROE.Passables(team);
-
+						
 						if (!pas.Contains(et))
 						{
 							Idle();

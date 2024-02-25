@@ -13,12 +13,14 @@ public static class ArmyUtils
 	// calculations like city capture updates.
 
 	public static List<Unit>[] armies;
+	public static List<Silo>[] silos;
 	//public static int[] lastWrite;
 
 	public static void Init() {
 		conventionalCount = new int[Map.ins.numStates];
 		nuclearCount = new int[Map.ins.numStates];
 		armies = new List<Unit>[Map.ins.numStates];
+		silos = new List<Silo>[Map.ins.numStates];
 		for(int i = 0; i < Map.ins.numStates; i++) {
 			armies[i] = new List<Unit>();
 			GetArmies(i);
@@ -130,6 +132,7 @@ public static class ArmyUtils
 		{
 			if (units[i].team == team) { uns.Add(units[i]); }
 		}
+		silos[team] = uns;
 		return uns.ToArray();
 	}
 
@@ -252,7 +255,7 @@ public static class ArmyUtils
 		}
 		return enc;
 	}
-
+   
 	public static void Salvo(Silo sl, Order or, int repeat) {
 		int n = Mathf.Min(repeat, sl.numMissiles);
 		for (int i = 0; i < n; i++) {

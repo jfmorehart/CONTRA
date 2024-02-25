@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class ROE
@@ -41,9 +42,26 @@ public static class ROE
 		return false;
 	}
 
+	public static List<int> GetEnemies(int team) {
+		List<int> enemies = new();
+		for(int i =0; i < Map.ins.numStates; i++) {
+			if (team == i) continue;
+			if(AreWeAtWar(team, i)) {
+				enemies.Add(i);
+			}
+		}
+		return enemies;
+    }
+
 	//More readable interfaces
 	public static void DeclareWar(int t1, int t2) {
 		SetState(t1, t2, 1);
+		if (t1 == t2) return;
+		if(Diplo.IsMyAlly(t1, t2)) {
+			Debug.LogError("trying to invade current ally :(");
+		}
+		Diplo.states[t2].WarStarted(t1);
+		Diplo.states[t1].WarStarted(t2);
 	}
 	public static void MakePeace(int t1, int t2)
 	{
@@ -61,7 +79,6 @@ public static class ROE
 		atWar[index2] = toSet;
 
 		roeChange?.Invoke();
-
 	}
 
 	public static void DebugAll() { 
@@ -81,8 +98,12 @@ public static class ROE
     }
 
 	public static int[] Passables(int team) {
-		List<int> pas = new List<int>();
+		List<int> pas = new();
 		// Return countries that we are at war with or have open borders with
+		if (Diplo.HasAllies(team)) {
+			pas.AddRange(Diplo.AlliesOf(team));
+		}
+
 		for(int i = 0; i < Map.ins.numStates; i++) {
 			if (AreWeAtWar(team, i)) {
 				pas.Add(i);

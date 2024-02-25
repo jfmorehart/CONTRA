@@ -78,6 +78,11 @@ public class State : MonoBehaviour
 
     }
 
+	public virtual void WarStarted(int by)
+	{
+
+	}
+
 	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) { 
     
     }

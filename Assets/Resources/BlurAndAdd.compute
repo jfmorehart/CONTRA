@@ -9,17 +9,7 @@ RWTexture2D<float4> CamIn;
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    
     float4 input = CamIn[id.xy].rgba;
-
-    //blur bloom layer
-    float2 offset1 = float2(0, 1);
-    float2 offset2 = float2(1, 0);
-
-    CamIn[id.xy] = BLayer[id.xy + offset1];
-    CamIn[id.xy] += BLayer[id.xy + offset2];
-    CamIn[id.xy] += BLayer[id.xy - offset1];
-    CamIn[id.xy] += BLayer[id.xy - offset2];
-
-    CamIn[id.xy] = 0.2 * CamIn[id.xy] + input;
+    float inputWeight = 0.8;
+    CamIn[id.xy] = 1 * (1 - inputWeight) * BLayer[id.xy] + CamIn[id.xy] * inputWeight;
 }

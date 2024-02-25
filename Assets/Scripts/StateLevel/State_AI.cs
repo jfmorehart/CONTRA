@@ -40,8 +40,8 @@ public class State_AI : State
 		recentlyOrdered = new List<Unit>();
 		attacked = new List<City>();
 		targetHashList = new List<int>();
-
 	}
+
 	public virtual void Start()
 	{
 		troopAllocations = new float[Map.ins.numStates];
@@ -55,6 +55,11 @@ public class State_AI : State
 		//Called a few ms after start
 		base.Setup(i, pos);
 	}
+	public override void WarStarted(int by) {
+		if (!Diplo.HasAllies(team)) return;
+		int al = Diplo.AllianceOfTeam(team);
+		Diplo.AllianceWarsUpdate(al);
+    }
 	protected override void StateUpdate()
 	{
 		base.StateUpdate();
@@ -107,8 +112,8 @@ public class State_AI : State
 			if (team == i) continue;
 			StateEval eval = new StateEval(team, i); //not that expensive really
 			//Debug.Log(team + " " + i + " " + eval.pVictory);
-			tas[i] = eval.armyRatio * (AsyncPath.ins.SharesBorder(team, i) ? 1 : 0);
-
+			tas[i] = eval.armyRatio * Diplo.CanIReachEnemyThroughAllies(team, i) * 0.3f;
+			tas[i] *= (Diplo.IsMyAlly(team, i) ? 0.1f : 1);
 			if (ROE.AreWeAtWar(team, i) && AsyncPath.ins.SharesBorder(team, i)){
 				// weight troop allocation by necessity
 				tas[i] += 0.2f;
@@ -158,7 +163,7 @@ public class State_AI : State
 		}
 	}
 
-	protected async void DistributedPositions(int borderwith, List<Unit> troops)
+	protected async void DistributedPositions(int borderwith, List<Unit> troops, bool teleport = false)
 	{
 		//fucky and overcomplex function designed to spread out troops along the border
 		//with an enemy state, for defensive posturing
@@ -190,8 +195,13 @@ public class State_AI : State
 			Order o = new Order(Order.Type.MoveTo, edit);
 			if (i >= troops.Count) break;
 			if (troops[i] == null) continue;
-			troops[i].Direct(o);
-			recentlyOrdered.Add(troops[i]);
+			if (teleport) {
+				troops[i].transform.position = o.pos;
+			}
+			else {
+				troops[i].Direct(o);
+				recentlyOrdered.Add(troops[i]);
+			}
 		}
 	}
 	//async void CityGarrisons(int borderWith, List<Unit> troops) {
@@ -271,9 +281,9 @@ public class State_AI : State
 
 		if (victim == team)
 		{
-			//Debug.Log(team + " we're getting nuked!!");
-			//We're about to get nuked
+			Debug.Log(victim + "fighting back agaisnt " + team);
 			ROE.DeclareWar(team, perp);
+
 			Diplo.relationships[team, perp] = Diplo.Relationship.NuclearWar;
 		}
 	}
@@ -313,9 +323,9 @@ public class State_AI : State
 
 	protected void SiloFire(Silo sl, Target t, int warheads)
 	{
+		if (sl.numMissiles < 1) return;
 		Order or = new Order(Order.Type.Attack, t.wpos);
 		ArmyUtils.Salvo(sl, or, warheads);
-
 		//todo only add to hashlist if a missile really was fired
 		targetHashList.Add(t.hash);
 		StartCoroutine(RemoveFromHash(t.hash, MapUtils.Tau(sl.transform.position, t.wpos)));

@@ -64,14 +64,14 @@ public class Selection : MonoBehaviour
 		//Debug.Log(co1 + " ")
 
 		//PathFind.Path(co1, co2, passableTeams);
-		if (ROE.AreWeAtWar(t1, t2))
-		{
-			ROE.MakePeace(t1, t2);
-		}
-		else
-		{
-			ROE.DeclareWar(t1, t2);
-		}
+		//if (ROE.AreWeAtWar(t1, t2))
+		//{
+		//	ROE.MakePeace(t1, t2);
+		//}
+		//else
+		//{
+		//	ROE.DeclareWar(t1, t2);
+		//}
 	}
 	void RMBUp() {
 		Vector2 c1 = ScreenToWorld(rclick1);

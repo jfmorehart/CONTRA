@@ -102,6 +102,7 @@ public class UI : MonoBehaviour
 
 	private void Update()
 	{
+
 		if(currentMenu == Menu.strike) {
 			if(Time.time - lastStikeUpdate > strikeUpdateTickDelay) {
 				UpdateStrikePlanning();
@@ -241,8 +242,15 @@ public class UI : MonoBehaviour
 				sl.value = pl.troopAllocPlayerInput[nationSelected] + 0.5f;
 			}
 		}
+		ChangeSelected(0);
+		for (int i = 0; i < 3; i++)
+		{
+			strikeoptions[i].text = strikeoptions[i].text.Replace('x', ' ');
+		}
 		if (newMenu == (int)Menu.strike)
 		{
+			strikeoptions[2].text = strikeoptions[2].text.Replace(' ', 'x');
+			values[2] = true;
 			DisplayHandler.ins.TogglePopStrikeScreen(true);
 			if (options[(int)currentMenu][3].transform.GetChild(0).TryGetComponent(out Slider sl))
 			{
@@ -250,11 +258,7 @@ public class UI : MonoBehaviour
 			}
 		}
 
-		ChangeSelected(0);
-		for (int i = 0; i < 3; i++)
-		{
-			strikeoptions[i].text = strikeoptions[i].text.Replace('x', ' ');
-		}
+
 	}
 
 	List<Target> GetTargets(int saturation, bool nuclear, bool conventional, bool cities) {
@@ -335,7 +339,7 @@ public class UI : MonoBehaviour
 	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim) {
 		if (victim == playerTeam)
 		{
-			osc = true;
+			//osc = true;
 			//PromptNuclear();
 			incoming++;
 			Invoke(nameof(RemoveIncoming), MapUtils.Tau(launchPos, targetPos));
