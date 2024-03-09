@@ -30,6 +30,7 @@ public class State_AI : State
 	//some kind of scariness evaluation used for determining how many
 	//troops to send to the border with given enemy
 	public float[] troopAllocations;
+	public bool[] sharesBorder;
 
 	//list of units assigned to each border organized by enemyborder team#
 	public List<Unit>[] garrisons;
@@ -45,6 +46,7 @@ public class State_AI : State
 	public virtual void Start()
 	{
 		troopAllocations = new float[Map.ins.numStates];
+		sharesBorder = new bool[Map.ins.numStates];
 		garrisons = new List<Unit>[Map.ins.numStates];
 		for (int i = 0; i < Map.ins.numStates; i++) {
 			garrisons[i] = new List<Unit>();
@@ -54,6 +56,7 @@ public class State_AI : State
 	{
 		//Called a few ms after start
 		base.Setup(i, pos);
+		NuclearTargets(team);
 	}
 	public override void WarStarted(int by) {
 		if (!Diplo.HasAllies(team)) return;
@@ -62,6 +65,9 @@ public class State_AI : State
     }
 	protected override void StateUpdate()
 	{
+		//this call updates info for nuclear threat assesment
+		ArmyUtils.NuclearTargets(team);
+
 		base.StateUpdate();
 		GenerateTroopAllocations();
 
@@ -106,14 +112,16 @@ public class State_AI : State
 		float[] tas = new float[Map.ins.numStates];
 		float tasum = 0;
 
+
 		//this function should generate fresh data for troopAllocations
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
+		
 			StateEval eval = new StateEval(team, i); //not that expensive really
-			//Debug.Log(team + " " + i + " " + eval.pVictory);
 			tas[i] = eval.armyRatio * Diplo.CanIReachEnemyThroughAllies(team, i) * 0.3f;
 			tas[i] *= (Diplo.IsMyAlly(team, i) ? 0.1f : 1);
+			sharesBorder[i] = AsyncPath.ins.SharesBorder(team, i); //todo fix sharesborder
 			if (ROE.AreWeAtWar(team, i) && AsyncPath.ins.SharesBorder(team, i)){
 				// weight troop allocation by necessity
 				tas[i] += 0.2f;
@@ -281,7 +289,7 @@ public class State_AI : State
 
 		if (victim == team)
 		{
-			Debug.Log(victim + "fighting back agaisnt " + team);
+			Debug.Log(team + "fighting back agaisnt " + perp);
 			ROE.DeclareWar(team, perp);
 
 			Diplo.relationships[team, perp] = Diplo.Relationship.NuclearWar;

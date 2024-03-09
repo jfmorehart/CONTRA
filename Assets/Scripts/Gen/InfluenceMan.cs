@@ -111,6 +111,16 @@ public class InfluenceMan : MonoBehaviour
 
 		return infcities;
 	}
+	public void SwapTeamsCities(int team1, int team2) { 
+		for(int i = 0; i < cities.Count; i++) {
+			if (cities[i].team == team1) {
+				cities[i].team = team2;
+			}else if (cities[i].team == team2)
+			{
+				cities[i].team = team1;
+			}
+		}
+    }
 	public List<Unit> CleanList(List<Unit> ls) {
 		List<Unit> clean = new List<Unit>();
 		for (int i = 0; i < ls.Count; i++)

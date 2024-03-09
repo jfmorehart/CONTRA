@@ -14,9 +14,7 @@ public class Unit : MonoBehaviour
 	public int positionChunk; //used for efficiently knowing where units are
 
 	protected int maxHP;
-
 	protected Renderer ren;
-
 
 	public virtual void Awake() {
 		maxHP = hP;
@@ -34,7 +32,6 @@ public class Unit : MonoBehaviour
 		ren.material = new Material(ren.material);
 		//ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
 	}
-
 	public void Check4ChunkUpdate() {
 		int tch = UnitChunks.ChunkLookup(transform.position);
 		if(positionChunk != tch) {

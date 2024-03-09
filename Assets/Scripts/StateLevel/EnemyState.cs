@@ -42,7 +42,7 @@ public class EnemyState : State_AI
 				if (AsyncPath.ins == null) return;
 				if (AsyncPath.ins.SharesBorder(team, i))
 				{
-					if (Time.timeSinceLevelLoad> 10 && eval.pVictory > 0.7f && !ROE.AreWeAtWar(team))
+					if (Time.timeSinceLevelLoad> 10 && eval.pVictory > 0.65f && !ROE.AreWeAtWar(team))
 					{
 						Debug.Log(team + " starting a war with " + i);
 						ROE.DeclareWar(team, i);
@@ -53,9 +53,9 @@ public class EnemyState : State_AI
 					}
 					else {  
 						//TEST hack remove when done plz
-						if(!Diplo.HasAllies(team) && !Diplo.HasAllies(i)) {
-							Diplo.JoinAlliance(i, team);
-						}
+						//if(!Diplo.HasAllies(team) && !Diplo.HasAllies(i)) {
+						//	Diplo.JoinAlliance(i, team);
+						//}
 					}
 				}
 			}

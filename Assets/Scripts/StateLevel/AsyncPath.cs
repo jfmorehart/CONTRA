@@ -14,6 +14,11 @@ public class AsyncPath : MonoBehaviour
 
 	private void Awake()
 	{
+		if (ins != this && ins != null) {
+			Debug.Log("kill asyncPath");
+			Destroy(gameObject);
+			return;
+		}
 		ins = this;
 		Diplo.StatesReady += Setup;
 	}
@@ -22,7 +27,6 @@ public class AsyncPath : MonoBehaviour
 		DisplayHandler.resetGame += Reset;
 	}
 	void Reset() {
-		Debug.Log("i unsubbed i promise");
 		Diplo.StatesReady -= Setup;
     }
 
@@ -45,14 +49,14 @@ public class AsyncPath : MonoBehaviour
 				Vector2Int st = MapUtils.PointToCoords(Diplo.states[i].transform.position);
 				Vector2Int en = MapUtils.PointToCoords(Diplo.states[j].transform.position);
 				int[] pas = new int[] { i, j }; //strict interpretation
-				Vector2Int[] path = await Task.Run(() => Path(st, en, pas.ToArray(), 1));
+				Vector2Int[] path = await Task.Run(() => Path(st, en, pas.ToArray(), 1, 4000));
 				borders[i, j] = (path != null);
 				//Debug.Log(i + "does" + (borders[i, j] ? "" : "n't") + " border " + j);
 			}
 		}
     }
 
-	public Vector2Int[] Path(Vector2Int start, Vector2Int end, int[] passableTeams, int downres)
+	public Vector2Int[] Path(Vector2Int start, Vector2Int end, int[] passableTeams, int downres, int maxTries = 800)
 	{
 		//Task<Vector2Int> tempPath = new Task<Vector2Int>()
 		Vector2Int st = start / downres;
@@ -64,8 +68,7 @@ public class AsyncPath : MonoBehaviour
 		nlookup.Add(n.pos, n);
 		open.Add(n);
 		int lowf = int.MaxValue;
-		int sf = n.fcost;
-
+		int sf = Mathf.Max(n.fcost, maxTries);
 		int tries = 0;
 		while (lowf > 0 && tries < sf)
 		{

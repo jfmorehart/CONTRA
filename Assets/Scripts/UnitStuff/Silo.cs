@@ -6,6 +6,20 @@ public class Silo : Unit
 {
 	public int numMissiles = 20;
 
+	float gCheck_rate = 2f;
+	float gCheck_last;
+	public void Update()
+	{
+		if(Time.time - gCheck_last > gCheck_rate) {
+			gCheck_last = Time.time;
+			GroundCheck();
+		}
+	}
+	void GroundCheck() {
+		if(Map.ins.GetPixTeam(MapUtils.PointToCoords(transform.position)) != team) {
+			Kill();
+		}
+    }
 	public override void Direct(Order order)
 	{
 		base.Direct(order);

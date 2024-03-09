@@ -11,6 +11,7 @@ public class Army : Unit
 
 	//Movement
 	public float speed;
+	float speedMod = 1;
 	Vector3 dest;
 	[SerializeField] bool enroute;
 	[SerializeField] float secondsSinceSaidReady;
@@ -48,7 +49,7 @@ public class Army : Unit
 
 		if (enroute) {
 			Vector2 delta = dest - transform.position;
-			float pspeed = speed * (hP / (float)maxHP);
+			float pspeed = (speed * (hP / (float)maxHP)) * speedMod;
 			transform.Translate(pspeed * Time.deltaTime * delta.normalized);
 
 			if(delta.magnitude < stopDist) {
@@ -57,6 +58,7 @@ public class Army : Unit
 						currentPathNodeIndex++;
 						enroute = true;
 						dest = MapUtils.CoordsToPoint(path[currentPathNodeIndex]);
+						speedMod = ((Map.ins.GetOriginalMap(path[currentPathNodeIndex]) == team) ? 1.5f : 0.8f);
 						int et = Map.ins.GetPixTeam(path[^1]);
 						if(Map.ins.GetPixTeam(path[currentPathNodeIndex]) != team) {
 							ren.material.color = Map.ins.state_colors[team] + Color.white * 0.2f;
@@ -78,7 +80,6 @@ public class Army : Unit
 				else {
 					Idle();
 				}
-
 			}
 		}
 

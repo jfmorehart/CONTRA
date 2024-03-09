@@ -23,7 +23,9 @@ public class Map : MonoBehaviour
 	//Texel Buffers
 	float[] stateInfluence;
 	float[] pixelPop;
-	int[] pixTeam; 
+	int[] pixTeam;
+
+	int[] originalMap;
 
 	[Header("Compute Stuff")]
 	public ComputeShader POP;
@@ -51,6 +53,10 @@ public class Map : MonoBehaviour
 
 	public float rpoptocpop;
 
+
+	//team swapping
+	public ComputeShader SwapColors;
+
 	private void Awake()
 	{
 		ins = this;
@@ -67,6 +73,11 @@ public class Map : MonoBehaviour
 
 		//Just city borders, used for army placement
 		BuildInfluences();
+		if (CheckSwapColors()) {
+			BuildInfluences();
+		}
+		originalMap = new int[pixTeam.Length];
+		Array.Copy(pixTeam, originalMap, pixTeam.Length);
 
 		state_populations = new uint[numStates];
 	}
@@ -94,6 +105,7 @@ public class Map : MonoBehaviour
 
 		CountPop();
 
+
 		InvokeRepeating(nameof(UpdatePops), 1, 1);
 
 	}
@@ -110,6 +122,35 @@ public class Map : MonoBehaviour
 	void UpdatePops() {
 		CountPop();
     }
+	bool CheckSwapColors() {
+
+		CountPop();
+
+		int[] ranks = new int[state_populations.Length];
+		for (int i = 1; i < state_populations.Length; i++)
+		{
+			ranks[i] = i;
+		}
+		System.Array.Sort(state_populations, ranks);
+		System.Array.Reverse(ranks);
+		int myrank = 0;
+		for (int i = 1; i < state_populations.Length; i++)
+		{
+			if (ranks[i] == 0) {
+				myrank = i;
+				break;
+			}
+		}
+		Debug.Log("ranked" + myrank);
+		if (myrank < 3) return false;
+
+		Debug.Log("switching you with " + ranks[1]);
+		InfluenceMan.ins.SwapTeamsCities(0, ranks[1]);
+		Vector2Int rpos = state_centers[0];
+		state_centers[0] = state_centers[ranks[1]];
+		state_centers[ranks[1]] = rpos;
+		return true;
+	}
 
 	public void Detonate(Vector2 wpos, float radius, int dteam) {
 		Pool.ins.Explode().Nuke(wpos, radius);
@@ -161,12 +202,12 @@ public class Map : MonoBehaviour
 		InfluenceMan.ins.Setup();
 		//Put cities everywhere
 		Inf[] cities = new Inf[numCities];
-		for(int i = 0; i < numCities - numStates; i++) {
+		for(int i = 0; i < numCities - numStates * 2; i++) {
 			InfluenceMan.ins.Spawn_CityLogic(i, PlaceCity(i));
 		}
 
 		//Put at least one in each state
-		for (int i = numCities - numStates; i < numCities; i++)
+		for (int i = numCities - numStates * 2; i < numCities; i++)
 		{
 			int tries = 0;
 			Inf testCity = PlaceCity(i);
@@ -356,7 +397,12 @@ public class Map : MonoBehaviour
 			b = z;
 		}
     }
-
+	public int GetOriginalMap(Vector2Int coordinate)
+	{
+		int index = (coordinate.y * texelDimensions.x) + coordinate.x;
+		index = Mathf.Clamp(index, 0, originalMap.Length - 1);
+		return originalMap[index];
+	}
 	public int GetPixTeam(Vector2Int coordinate) {
 		int index = (coordinate.y * texelDimensions.x) + coordinate.x;
 		index = Mathf.Clamp(index, 0, pixTeam.Length - 1);

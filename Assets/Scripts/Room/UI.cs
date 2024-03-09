@@ -75,7 +75,8 @@ public class UI : MonoBehaviour
 		menus.Add(mainMenu);
 		menus.Add(nationMenu);
 		menus.Add(strikeMenu);
-		options = new List<TMP_Text>[3] { mainoptions, nationoptions, strikeoptions };	
+		options = new List<TMP_Text>[3] { mainoptions, nationoptions, strikeoptions };
+		Cursor.lockState = CursorLockMode.Locked;
 	}
 	void Reset() {
 		DisplayHandler.resetGame -= Reset;

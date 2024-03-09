@@ -74,6 +74,25 @@ public class MoveCam : MonoBehaviour
 		{
 			Camera.main.orthographicSize = 600;
 		}
+		float xM = Map.ins.transform.localScale.x * 0.5f;
+		float yM = Map.ins.transform.localScale.y * 0.5f;
+		if(pos.x < Map.ins.transform.position.x - xM)
+		{
+			pos.x = Map.ins.transform.position.x - xM;
+		}
+		if (pos.x > Map.ins.transform.position.x + xM)
+		{
+			pos.x = Map.ins.transform.position.x + xM;
+		}
+		if (pos.y < Map.ins.transform.position.y - yM)
+		{
+			pos.y = Map.ins.transform.position.y - yM;
+		}
+		if (pos.y > Map.ins.transform.position.y + yM)
+		{
+			pos.y = Map.ins.transform.position.y + yM;
+		}
+
 
 		transform.position = pos;
 

@@ -10,9 +10,19 @@ public class LaunchSiren : MonoBehaviour
 	public float avel;
 
 	public GameObject[] lights;
- 
-	bool on;
 
+	AudioSource src;
+	public bool sirenPlaying;
+	public float lowPitch, highPitch;
+	public float spinUpAmt, noiseAccel;
+ 
+	public bool on;
+
+	private void Awake()
+	{
+		src = GetComponent<AudioSource>();
+		highPitch += (Random.value - 0.5f) * 0.5f;
+	}
 	private void Start()
 	{
 		Off();
@@ -25,6 +35,7 @@ public class LaunchSiren : MonoBehaviour
 				on = true;
 				SpinUp();
 			}
+			spinUpAmt -= noiseAccel * Time.deltaTime;
 		}
 		else {
 			if (UI.ins.incoming < 1)
@@ -33,16 +44,35 @@ public class LaunchSiren : MonoBehaviour
 				Off();
 			}
 			avel += accel + Time.deltaTime;
-
+			if(spinUpAmt < 1) {
+				spinUpAmt += noiseAccel * Time.deltaTime;
+			}
+		
+			
 		}
 
 		if (avel < 0.1f) return;
+		if (sirenPlaying) {
+			src.pitch = Mathf.Lerp(lowPitch, highPitch, spinUpAmt);
+			src.volume = Mathf.Lerp(0, 1, spinUpAmt * spinUpAmt);
+			if (spinUpAmt < 0) {
+				src.Stop();
+				src.volume = 0;
+				sirenPlaying = false;
+			}
+		}
+
 		spin.transform.Rotate(Vector3.up, avel * Time.deltaTime);
 		avel *= 1 - Time.deltaTime * drag;
 	}
 
 	public void SpinUp() {
 		ToggleLights(true);
+		src.pitch = lowPitch;
+		src.volume = 0;
+		spinUpAmt = 0.01f;
+		sirenPlaying = true;
+		src.Play();
     }
 
 	public void Off()

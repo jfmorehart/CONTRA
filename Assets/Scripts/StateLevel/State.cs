@@ -29,54 +29,70 @@ public class State : MonoBehaviour
 		team = i;
 		origin = pos;
 		Diplo.RegisterState(this);
+		Invoke(nameof(StateUpdate), 0.08f);
 		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 5);
     }
 
 	protected virtual void StateUpdate() {
 		//called ever 5 seconds
 		//this function 
+		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
+		SpawnTroops();
+    }
+
+	protected virtual void SpawnTroops() {
+
 		City[] cities = GetCities(team).ToArray();
 		int[] r = new int[cities.Length];
-		for(int i = 0; i < r.Length; i++) {
+		for (int i = 0; i < r.Length; i++)
+		{
 			r[i] = Random.Range(0, 100);
 		}
 		System.Array.Sort(r, cities);
 
 		Unit[] armies = GetArmies(team);
-		if (armies.Length < 1) return;
-		int toSpawn = (int)Map.ins.state_populations[team] - armies.Length;
-		if(toSpawn < 1){
-			armies[Random.Range(0, armies.Length - 1)].Kill();
+		int pop = (int)Map.ins.state_populations[team];
+		if (pop < 1) return;
+		int toSpawn = pop - armies.Length;
+		if (toSpawn < 1)
+		{
+			Debug.Log("kill");
+			int index = Random.Range(0, armies.Length - 1);
+			armies[index].Kill();
 			return;
-	    }
-		for(int i = 0; i < cities.Length; i++) {
-
-			float odds = cities[i].truepop / 100;
-			int spin = Random.Range(0, 100);
-			if(spin < odds * 100){
-				toSpawn--;
-				Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);
-				p += cities[i].transform.position;
-				if(p.x > Map.ins.transform.localScale.x - 5) {
-					p.x = Map.ins.transform.localScale.x - 5;
-				}
-				if (p.y > Map.ins.transform.localScale.y - 5)
-				{
-					p.y = Map.ins.transform.localScale.y - 5;
-				}
-				if (p.x < 5)
-				{
-					p.x = 5;
-				}
-				if (p.y < 5)
-				{
-					p.y = 5;
-				}
-				InfluenceMan.ins.PlaceArmy(p);
-			}
 		}
+		for (int i = 0; i < cities.Length; i++)
+		{
+			if (toSpawn == 0) return;
+			bool homeTurf = Map.ins.GetOriginalMap(cities[i].mpos) == team;
+			if (!homeTurf) Debug.Log(team);
+			float amtDown = Mathf.Pow((toSpawn / (float)pop), 2f);
+			bool spin = amtDown * (cities[i].truepop / 50f) * (homeTurf ? 10 : 0.5f) >  Random.value;
+			if (!spin) continue;
+			toSpawn--;
+			Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);
+			p += cities[i].transform.position;
+			if (p.x > Map.ins.transform.localScale.x - 5)
+			{
+				p.x = Map.ins.transform.localScale.x - 5;
+			}
+			if (p.y > Map.ins.transform.localScale.y - 5)
+			{
+				p.y = Map.ins.transform.localScale.y - 5;
+			}
+			if (p.x < 5)
+			{
+				p.x = 5;
+			}
+			if (p.y < 5)
+			{
+				p.y = 5;
+			}
 
-    }
+			InfluenceMan.ins.PlaceArmy(p);
+			Debug.Log("placed " + team);
+		}
+	}
 
 	public virtual void WarStarted(int by)
 	{
