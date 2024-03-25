@@ -6,23 +6,30 @@ using UnityEngine.UIElements;
 public static class UnitChunks
 {
     public static List<Unit>[] chunks;
-    public static int[][] chunkValues;
+    public static int[][] chunkValues; //using for nuke targeting
     public static int chunkSize = 60;
     public static Vector2Int dime;
+
+    public static List<Unit>[] targetables; //combined adjacent chunks
+    public static float[] targetables_lastUpdate; //last write to location
+
 	public static void Init() {
         //this is going to be called during map's awake function
         dime.x = Mathf.CeilToInt(Map.ins.transform.localScale.x / chunkSize);
 		dime.y = Mathf.CeilToInt(Map.ins.transform.localScale.y / chunkSize);
 		chunks = new List<Unit>[dime.x * dime.y];// ends up with 576 chunks, which seems reasonable;
-        chunkValues = new int[Map.ins.numStates][];
+        targetables = new List<Unit>[dime.x * dime.y];
+        targetables_lastUpdate = new float[dime.x * dime.y];
+
+		chunkValues = new int[Map.ins.numStates][];
 		for (int x = 0; x < Map.ins.numStates; x++)
 		{
 			chunkValues[x] = new int[dime.x * dime.y];
 		}
 		for (int i = 0; i < chunks.Length; i++) {
             chunks[i] = new List<Unit>();
-
-            for(int x = 0; x < Map.ins.numStates; x++) {
+			targetables[i] = new List<Unit>();
+			for (int x = 0; x < Map.ins.numStates; x++) {
                 chunkValues[x][i] = 0;
 	        }
 	    }
@@ -47,8 +54,13 @@ public static class UnitChunks
     }
 
     public static List<Unit> GetSurroundingChunkData(int chunk) {
+
+        //prevents redoing the same work
+        if(Time.time - targetables_lastUpdate[chunk] < 0.5f) {
+            return targetables[chunk];
+	    }
         List<Unit> sur = new List<Unit>();
-        Vector2Int cv2 = IndexToV2(chunk);
+        //Vector2Int cv2 = IndexToV2(chunk);
         for(int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++)
 			{
@@ -56,10 +68,13 @@ public static class UnitChunks
 
                 if (!IndexIsValid(index)) continue; //invalid sqrs
                 Vector2Int iv2 = IndexToV2(index);
-                if (Vector2.Distance(cv2, iv2) > 1.5f) continue; //avoid wrapping
+                //if (Vector2.Distance(cv2, iv2) > 1.5f) continue; //avoid wrapping
+                if ((chunk % dime.x) - ((chunk + j) % dime.x) > 1) continue;
                 sur.AddRange(chunks[index]);
 			}
 		}
+        targetables[chunk] = sur;
+        targetables_lastUpdate[chunk] = Time.time;
         return sur;
     }   
     static bool IndexIsValid(int index) {

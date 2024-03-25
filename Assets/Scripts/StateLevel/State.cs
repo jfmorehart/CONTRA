@@ -56,7 +56,6 @@ public class State : MonoBehaviour
 		int toSpawn = pop - armies.Length;
 		if (toSpawn < 1)
 		{
-			Debug.Log("kill");
 			int index = Random.Range(0, armies.Length - 1);
 			armies[index].Kill();
 			return;
@@ -65,7 +64,6 @@ public class State : MonoBehaviour
 		{
 			if (toSpawn == 0) return;
 			bool homeTurf = Map.ins.GetOriginalMap(cities[i].mpos) == team;
-			if (!homeTurf) Debug.Log(team);
 			float amtDown = Mathf.Pow((toSpawn / (float)pop), 2f);
 			bool spin = amtDown * (cities[i].truepop / 50f) * (homeTurf ? 10 : 0.5f) >  Random.value;
 			if (!spin) continue;
@@ -90,7 +88,6 @@ public class State : MonoBehaviour
 			}
 
 			InfluenceMan.ins.PlaceArmy(p);
-			Debug.Log("placed " + team);
 		}
 	}
 

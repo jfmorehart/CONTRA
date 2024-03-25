@@ -53,9 +53,8 @@ public class Map : MonoBehaviour
 
 	public float rpoptocpop;
 
-
-	//team swapping
-	public ComputeShader SwapColors;
+	//grow pop
+	public ComputeShader GROWTH;
 
 	private void Awake()
 	{
@@ -120,6 +119,7 @@ public class Map : MonoBehaviour
 	}
 
 	void UpdatePops() {
+		GrowPopulation();
 		CountPop();
     }
 	bool CheckSwapColors() {
@@ -358,11 +358,9 @@ public class Map : MonoBehaviour
 
 	void ConvertToTexture() {
 
-
 		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		teamOf.SetData(pixTeam);
 		Render.SetBuffer(0, "teamOf", teamOf);
-
 
 		SColor[] scolors = new SColor[numStates];
 		for(int i = 0; i < numStates; i++) {
@@ -385,6 +383,32 @@ public class Map : MonoBehaviour
 		colorBuffer.Release();
 		teamOf.Release();
 		mapMat.SetTexture("_MainTex", mapRT);
+	}
+
+	void GrowPopulation() {
+
+		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
+		teamOf.SetData(pixTeam);
+		GROWTH.SetBuffer(0, "teamOf", teamOf);
+		GROWTH.SetInts("dime", texelDimensions.x, texelDimensions.y);
+
+		ComputeBuffer popbuffer = new ComputeBuffer(pixelPop.Length, 4);
+		popbuffer.SetData(pixelPop);
+		GROWTH.SetBuffer(0, "popcount", popbuffer);
+
+		//write city distances
+		Inf[] cities = InfluenceMan.ins.UpdateCities();
+		GROWTH.SetInt("numInfs", cities.Length);
+		Debug.Log(cities.Length); 
+		ComputeBuffer infs = new ComputeBuffer(numCities, 20);
+		infs.SetData(cities);
+		GROWTH.SetBuffer(0, "infs", infs);
+
+		GROWTH.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
+		teamOf.Release();
+		popbuffer.GetData(pixelPop);
+		popbuffer.Release();
+		infs.Release();
 	}
 
 	public struct SColor {

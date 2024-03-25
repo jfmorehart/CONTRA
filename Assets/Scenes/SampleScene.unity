@@ -6432,7 +6432,7 @@ MonoBehaviour:
   CITYCOUNT: {fileID: 7200000, guid: 5301a3064133a49568e69b6caf8c2add, type: 3}
   state_populations: 
   rpoptocpop: 0.3
-  SwapColors: {fileID: 7200000, guid: 06130ae8001d844e6ae9bc699b05efb4, type: 3}
+  GROWTH: {fileID: 7200000, guid: 7c3875b0e2e25460db89e38f83b9ef3c, type: 3}
 --- !u!1 &1141850100
 GameObject:
   m_ObjectHideFlags: 0
@@ -9044,14 +9044,6 @@ PrefabInstance:
     - target: {fileID: 1294786886822812425, guid: 38f0568cf3b2c480e8644ee630753c3d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1897392409271277266, guid: 38f0568cf3b2c480e8644ee630753c3d, type: 3}
-      propertyPath: highPitch
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 1897392409271277266, guid: 38f0568cf3b2c480e8644ee630753c3d, type: 3}
-      propertyPath: noiseAccel
-      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 4561803285206020107, guid: 38f0568cf3b2c480e8644ee630753c3d, type: 3}
       propertyPath: m_Name

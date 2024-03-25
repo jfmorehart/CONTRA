@@ -14,7 +14,7 @@ public class LaunchSiren : MonoBehaviour
 	AudioSource src;
 	public bool sirenPlaying;
 	public float lowPitch, highPitch;
-	public float spinUpAmt, noiseAccel;
+	public float spinUpAmt, noiseAccel, maxVolume, ndrag;
  
 	public bool on;
 
@@ -35,7 +35,7 @@ public class LaunchSiren : MonoBehaviour
 				on = true;
 				SpinUp();
 			}
-			spinUpAmt -= noiseAccel * Time.deltaTime;
+			spinUpAmt *= 1 - Time.deltaTime * ndrag;
 		}
 		else {
 			if (UI.ins.incoming < 1)
@@ -50,11 +50,9 @@ public class LaunchSiren : MonoBehaviour
 		
 			
 		}
-
-		if (avel < 0.1f) return;
 		if (sirenPlaying) {
 			src.pitch = Mathf.Lerp(lowPitch, highPitch, spinUpAmt);
-			src.volume = Mathf.Lerp(0, 1, spinUpAmt * spinUpAmt);
+			src.volume = Mathf.Lerp(0, maxVolume, spinUpAmt * spinUpAmt);
 			if (spinUpAmt < 0) {
 				src.Stop();
 				src.volume = 0;
@@ -62,6 +60,7 @@ public class LaunchSiren : MonoBehaviour
 			}
 		}
 
+		if (avel < 0.1f) return;
 		spin.transform.Rotate(Vector3.up, avel * Time.deltaTime);
 		avel *= 1 - Time.deltaTime * drag;
 	}

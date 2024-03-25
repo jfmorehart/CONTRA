@@ -33,12 +33,13 @@ public class Army : Unit
 	public override void Awake()
 	{
 		base.Awake();
-		lastShot = Random.Range(0, 1f);
+
 		ROE.roeChange += StaggerPathTargetCheck;
 	}
 	public override void Start()
 	{
 		base.Start();
+		lastShot = Random.Range(0, 1f);
 		DisplayHandler.resetGame += Reset;
 	}
 
@@ -166,6 +167,7 @@ public class Army : Unit
     {
 		List<Unit> uns = UnitChunks.GetSurroundingChunkData(positionChunk);
 		for (int i = 0; i < uns.Count; i++) {
+			if (uns[i] == null) continue;
 			if (team == uns[i].team) continue;
 			if (!ROE.AreWeAtWar(team, uns[i].team)) {
 				continue;

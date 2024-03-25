@@ -215,6 +215,8 @@ MonoBehaviour:
   highPitch: 5
   spinUpAmt: 0
   noiseAccel: 0.05
+  maxVolume: 0.2
+  ndrag: 0.1
   on: 0
 --- !u!82 &4933548191531362702
 AudioSource:
@@ -223,7 +225,7 @@ AudioSource:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4561803285206020107}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 2976add28dc874e49af69815c8585e8a, type: 3}
