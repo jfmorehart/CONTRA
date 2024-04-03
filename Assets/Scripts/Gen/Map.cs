@@ -30,12 +30,15 @@ public class Map : MonoBehaviour
 	[Header("Compute Stuff")]
 	public ComputeShader POP;
 	ComputeBuffer popbuffer;
+	ComputeBuffer teamOf;
 	ComputeBuffer citybuffer;
 	ComputeBuffer colorBuffer;
-	public ComputeShader NUKE;
 
+	public ComputeShader NUKE;
 	public ComputeShader Influences;
 	ComputeBuffer stin;
+	public ComputeShader GROWTH;
+	public ComputeShader OCEANS;
 
 	[Header("Rendering")]
 
@@ -53,8 +56,7 @@ public class Map : MonoBehaviour
 
 	public float rpoptocpop;
 
-	//grow pop
-	public ComputeShader GROWTH;
+
 
 	private void Awake()
 	{
@@ -72,7 +74,10 @@ public class Map : MonoBehaviour
 
 		//Just city borders, used for army placement
 		BuildInfluences();
+
+		//if we're a lil nation, swap us with a bigger one
 		if (CheckSwapColors()) {
+			//complete the swap
 			BuildInfluences();
 		}
 		originalMap = new int[pixTeam.Length];
@@ -190,7 +195,11 @@ public class Map : MonoBehaviour
 		//Prep buffers
 		stateInfluence = new float[texelDimensions.x * texelDimensions.y * numStates];
 		pixTeam = new int[texelDimensions.x * texelDimensions.y];
+		teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		pixelPop = new float[texelDimensions.x * texelDimensions.y];
+
+		//Fill Oceans
+		CreateOcean();
 
 		//Create States, the different colored nations
 		state_centers = new Vector2Int[numStates];
@@ -249,7 +258,6 @@ public class Map : MonoBehaviour
 		stin = new ComputeBuffer(texelDimensions.x * texelDimensions.y * numStates, 4);
 		stin.SetData(stateInfluence);
 		Influences.SetBuffer(0, "stin", stin);
-		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		teamOf.SetData(pixTeam);
 		Influences.SetBuffer(0, "teamOf", teamOf);
 
@@ -262,11 +270,11 @@ public class Map : MonoBehaviour
 		}
 		//Probably unnecessary to update cities so frequently, but what the hell
 		Inf[] cities = InfluenceMan.ins.UpdateCities();
+		numCities = cities.Length;
+		Debug.Log(numCities);
 		Inf[] armies = InfluenceMan.ins.UpdateArmies();
 		Influences.SetInt("numInfs", numCities + armies.Length);
 		ComputeBuffer infs = new ComputeBuffer(numCities + armies.Length, 20);
-
-
 
 		Inf[] combined = new Inf[numCities + armies.Length];
 		for (int i = 0; i < numCities; i++) {
@@ -290,7 +298,7 @@ public class Map : MonoBehaviour
 		//disp
 
 		teamOf.GetData(pixTeam);
-		teamOf.Release();
+		//teamOf.Release();
 		atWar.Release();
 		stin.Release();
 		infs.Release();
@@ -298,7 +306,6 @@ public class Map : MonoBehaviour
 
 	public void CountPop()
 	{
-		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		teamOf.SetData(pixTeam);
 		COUNT.SetBuffer(0, "teamOf", teamOf);
 
@@ -320,7 +327,7 @@ public class Map : MonoBehaviour
 		COUNT.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 
 		popbuffer.Release();
-		teamOf.Release();
+		//teamOf.Release();
 
 		popCount.GetData(state_populations);
 		popCount.Release();
@@ -358,7 +365,6 @@ public class Map : MonoBehaviour
 
 	void ConvertToTexture() {
 
-		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		teamOf.SetData(pixTeam);
 		Render.SetBuffer(0, "teamOf", teamOf);
 
@@ -381,13 +387,11 @@ public class Map : MonoBehaviour
 		Render.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		popbuffer.Release();
 		colorBuffer.Release();
-		teamOf.Release();
+		//teamOf.Release();
 		mapMat.SetTexture("_MainTex", mapRT);
 	}
 
 	void GrowPopulation() {
-
-		ComputeBuffer teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		teamOf.SetData(pixTeam);
 		GROWTH.SetBuffer(0, "teamOf", teamOf);
 		GROWTH.SetInts("dime", texelDimensions.x, texelDimensions.y);
@@ -405,13 +409,25 @@ public class Map : MonoBehaviour
 		GROWTH.SetBuffer(0, "infs", infs);
 
 		GROWTH.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
-		teamOf.Release();
+		//teamOf.Release();
 		popbuffer.GetData(pixelPop);
 		popbuffer.Release();
 		infs.Release();
 	}
 
+	void CreateOcean() {
+		teamOf.SetData(pixTeam);
+		OCEANS.SetBuffer(0, "teamOf", teamOf);
+		OCEANS.SetFloat("seed", UnityEngine.Random.Range(-500f, 500f));
+		OCEANS.SetInts("dime", texelDimensions.x, texelDimensions.y);
+		OCEANS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
+		teamOf.GetData(pixTeam);
+	}
+
 	public struct SColor {
+		//struct color used for cleanly passing info to shaders
+		//dont ask why i didn't just use Vector4s.
+
 		public float r;
 		public float g;
 		public float b;

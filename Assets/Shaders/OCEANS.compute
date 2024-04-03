@@ -1,4 +1,6 @@
+// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
+
 
 float rand (float2 uv) { 
     return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
@@ -33,51 +35,22 @@ float fractal_noise (float2 uv) {
 }
 
 int2 dime;
-int numCities;
+RWStructuredBuffer<int> teamOf; // set -1 for ocean
 
-struct City
-{
-    int2 pos;
-    float pop;
-    int team;
-    int unused; // isarmy
-};
-
-StructuredBuffer<City> cityBuffer; 
-RWStructuredBuffer<float> popBuffer;
+float seed;
 
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    uint index = id.x + (id.y * dime.x);
+    int index = (id.y * dime.x) + id.x;
     float2 uv;
     uv.x = (float2)id.x / (float2)dime.x;
     uv.y = (float2)id.y / (float2)dime.y;
 
-    float cpop = 0;
+    float oval = fractal_noise(uv * 2 + seed);
+    oval += 0.5 * pow(abs(uv.x - 0.5) + 0.2, 2);
+    oval += 0.5 * pow(abs(uv.y - 0.5) + 0.2, 2);
 
-    for(int i = 0; i < numCities; i++){
-        float dist = distance(cityBuffer[i].pos, id.xy) + 0.01;
-        float loc = cityBuffer[i].pop * (1 / (dist * dist));
-        cpop += loc;
-    }
-    cpop = min(max(cpop, 0), 1);
-
-
-    float scale = 40;
-    float noise1 = fractal_noise(uv * scale * 2.8);
-    noise1 = pow(noise1, 3);
-
-    float noise2 = fractal_noise(uv * scale * 3);
-    noise2 = pow(noise2, 3);
-
-    noise1 += noise2;
-
-    cpop *= 0.8 + pow(noise1, 2) * 10;
-    cpop += pow(noise2, 1.8) * 2;
-    cpop = pow(cpop, 2) + 0.1;
-
-    //cpop = step(0.5, fractal_noise(uv * 2.01 + -103));
-
-    popBuffer[index] = cpop;
+    int omask = step(0.8, oval);
+    teamOf[index] = -omask; //-1 for ocean, 0 for other
 }

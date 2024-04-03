@@ -4,6 +4,7 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWStructuredBuffer<float> popcount;
+StructuredBuffer<float> growths;
 RWStructuredBuffer<int> teamOf;
 //StructuredBuffer<float> teamGrowth;
 int2 dime;
@@ -38,8 +39,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         //when cl is 0, write old distance
         md = dist * cl + (1 - cl) * md;
     }
-    float cityPower = 2 / pow(md, 0.7);
-    cityPower = clamp(cityPower, 0, 2);
+    float cityPower = 1 / pow(md, 0.7);
+    cityPower = clamp(cityPower, 0, 1);
     
     //ignore boundary texels
     if(id.x < (uint)1 || id.x > dime.x - (uint)1){
@@ -50,6 +51,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     //count surrounding population and "live" squares
     float totPop = 0;
     int sur = 0;
+    int lsur = 0;
     for(int x = 0; x < 3; x++){
         int xindex = index + (x - 1);
         int yindex;
@@ -57,39 +59,55 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         for(int y = 0; y < 3; y++){
             yindex = xindex + (y - 1) * dime.x;
             totPop += popcount[yindex];
-            sur += step(0.6, popcount[yindex]);
+
+            //this adds up high density cells used for overpop calculations
+            sur += step(0.8, popcount[yindex]);
+
+            //this adds up low density cells used for expansion
+            lsur += step(0.2, popcount[yindex]);
         }
     }
     float avg = totPop * 0.111;
     float mypop = popcount[index];
 
    // extant shrink step
-   // int minp = step(1, sur);
+   //int minp = step(1, sur);
 
     //only grow if there are some live tiles nearby
-    int growp = step(3, sur);
+    //int growp = step(3, sur);
 
     //imposes cellular automata growth pattern
-    int maxG = step(6, sur);
+    //int maxG = step(6, sur);
 
     //this step limits growth by distance from city
-    float maxPop = (1.2 + cityPower) * ((maxG * 0.1) + (1 - maxG)) * pow(cityPower + 0.05, 0.7);
-    maxPop = min(maxPop, 2.5);
-    int overp = step(maxPop, mypop);
+    //float maxPop = (1.2 + cityPower) * ((maxG * 0.1) + (1 - maxG)) * pow(cityPower + 0.05, 0.7);
+    //maxPop = min(maxPop, 2.5);
+    //int overp = step(maxPop, mypop);
 
-    overp = min(1, overp);
+    //overp = min(1, overp);
 
     float delt = 0.01;
-    float growth = (sur * delt * 2) * growp * (1 - overp) * cityPower;
-
+    //float growth = (sur * delt * 2) * growp * (1 - overp) * pow(cityPower, 1.4);
+    //growth += (delt) * growp * (1 - overp) * cityPower;
+    float growth = 0;
     float shrink = 0;
+
+    int patternMask = 1;//max(0, step(8, sur) - step(md, 2)); 
+    float cmaxPop = step(2, mypop * pow(md, 0.7) * 0.2);
+    int shrinkThresh = max(0, min(1, cmaxPop + step(12, totPop)));// * (patternMask)));
+    int growThresh = step(3, lsur);
+
+    growth += growThresh * delt * sur * (1 - shrinkThresh) * cityPower;
+    shrink += shrinkThresh * -delt * md;
     //shrink overpopulated areas
     //shrink = (1 - minp) * -delt * 0.1;
-    //shrink += overp * -delt * (totPop / 4) * 0.2;
+    //shrink = overp * -delt * (totPop / 2) * 0.2;
 
 
-    popcount[index] *= 1 + growth + shrink;
-
+    float newPop = mypop + growth + shrink;
+    float diff = newPop - mypop;
+    int floor = step(1.9, step(diff, 0) + step(cityPower * 2, mypop));
+    popcount[index] = floor * max(cityPower * 2, newPop) + (1 - floor) * newPop;
     //debug
-    //popcount[index] = cityPower;
+    //popcount[index] = max(cityPower * 4, popcount[index]);
 }

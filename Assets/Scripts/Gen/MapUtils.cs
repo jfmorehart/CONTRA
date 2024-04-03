@@ -22,6 +22,9 @@ public static class MapUtils
 				mteam = i;
 			}
 		}
+		//dont spawn a city in the ocean
+		if (Map.ins.GetPixTeam(posI) == -1) mteam = -1;
+
 		float popU = Random.Range(1, 10); //todo replace with popcount
 		return new Inf(posI, popU, mteam, 0);
     }

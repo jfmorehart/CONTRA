@@ -37,11 +37,13 @@ int IsBorder(int index){
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int index = (id.y * dime.x) + id.x;
+
+    if(teamOf[index] < 0) return;
+
     float3 col = float3(0, 0, 0);
     float3 scol = float3(stateColors[teamOf[index]].x,
         stateColors[teamOf[index]].y, 
 	    stateColors[teamOf[index]].z); 
-
 
     float pop = popBuffer[index];
     pop = clamp(pop, 0, pop);

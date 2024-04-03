@@ -51,32 +51,44 @@ public class InfluenceMan : MonoBehaviour
 
         for (int i = 0; i < numToSpawn; i++) {
             Vector2 wp = RandomPointOnMap();
+
+			if(Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+
             Transform t = Instantiate(armyPrefab, wp, Quaternion.identity, transform).transform;
             Army rm = t.GetComponent<Army>();
 		}
 
 		for(int i = 0; i < 10; i++) {
 			Vector2 wp = RandomPointOnMap();
+
+			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+
 			Transform t = Instantiate(siloPrefab, wp, Quaternion.identity, transform).transform;
 		}
 
 	}
 	public Army PlaceArmy(Vector2 worldPos)
 	{
+		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(worldPos)) < 0) return null;
+
 		Army ar = Instantiate(armyPrefab, worldPos, Quaternion.identity, transform).GetComponent<Army>();
 		return ar;
 	}
 	public void Spawn_CityLogic(int index, Inf city)
 	{
+		if (city.team == -1) return;
+
 		Vector3 p = MapUtils.CoordsToPoint(city.pos);
-		cities.Add(Instantiate(
+		City c = Instantiate(
 			cityPrefab, p,
 			Quaternion.identity,
 			transform
-			).GetComponent<City>());
+			).GetComponent<City>();
 
-		cities[index].SetUpCity(city.team, city.pop);
-		cities[index].name = index.ToString();
+		cities.Add(c);
+
+		c.SetUpCity(city.team, city.pop);
+		c.name = index.ToString();
 	}
 
 

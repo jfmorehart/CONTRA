@@ -64,6 +64,9 @@ public class City : MonoBehaviour
 		// This function finds the nearest army lads to check to see if 
 		// this city is being captured, so it can adjust its influence 
 		// on the map territory accordingly
+
+		if (team == -1) return;
+
 		float[] teaminfs = new float[Map.ins.numStates];
 		int[] keys = new int[Map.ins.numStates];
 		for (int i = 0; i < Map.ins.numStates; i++) {
