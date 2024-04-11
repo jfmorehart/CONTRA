@@ -1,0 +1,43 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+int2 dime;
+RWStructuredBuffer<uint> borderLengths;
+StructuredBuffer<int> teamOf;
+int numStates;
+
+int BorderTeam(int index, int3 id){
+
+    if((id.x - 5) > 0 && id.x + 5 < dime.x && (index + 1) < dime.x * (dime.y - 1)){
+        int di;
+        int border = 1; //width
+
+	    di = abs(teamOf[index] - teamOf[index + dime.x * border]);
+        if(di > 0) return teamOf[index + dime.x * border];
+
+        di = abs(teamOf[index] - teamOf[index - dime.x * border]);
+        if(di > 0) return teamOf[index - dime.x * border];
+
+        di = abs(teamOf[index] - teamOf[index + border]);
+        if(di > 0) return teamOf[index + border];
+
+        di = abs(teamOf[index] - teamOf[index - border]);
+        if(di > 0) return teamOf[index - border];
+
+        return -1;
+    }
+    return -1;
+}
+
+[numthreads(32,32,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    int index = (id.y * dime.x) + id.x;
+    int team = teamOf[index];
+
+    if(team < 0) return;
+    
+    int border = BorderTeam(index, id);
+    if(border == -1) return;
+    InterlockedAdd(borderLengths[team * numStates + border], 1);
+}

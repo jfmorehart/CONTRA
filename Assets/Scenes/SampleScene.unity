@@ -1243,6 +1243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2030d03cd579e42b1ad5f342cb983a0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BORDERS: {fileID: 0}
 --- !u!1 &224186573
 GameObject:
   m_ObjectHideFlags: 0
@@ -6434,6 +6435,7 @@ MonoBehaviour:
   CITYCOUNT: {fileID: 7200000, guid: 5301a3064133a49568e69b6caf8c2add, type: 3}
   state_populations: 
   rpoptocpop: 0.3
+  BORDERS: {fileID: 7200000, guid: 4addec614f9104f6e9fe9fa489bc50aa, type: 3}
 --- !u!1 &1141850100
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,6 +7,7 @@ using System.IO;
 
 public class AsyncPath : MonoBehaviour
 {
+
 	//Class for trying out async stuff
 	public static AsyncPath ins;
 
@@ -32,8 +33,8 @@ public class AsyncPath : MonoBehaviour
 
 	public void Setup() {
 		borders = new bool[Map.ins.numStates, Map.ins.numStates];
-		InvokeRepeating(nameof(CalcBorders), 0.1f, 5);
-    }
+		//InvokeRepeating(nameof(CalcBorders), 0.1f, 5);
+	}
 
 	public bool SharesBorder(int a, int b) {
 		int x = Mathf.Min(a, b);

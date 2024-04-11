@@ -12,12 +12,47 @@ struct Color{
 };
 
 int numStates; 
+float seed;
+float time;
 StructuredBuffer<Color> stateColors;
 
-int IsBorder(int index){
+float rand (float2 uv) { 
+    return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
+}
+
+float noise (float2 uv) {
+    float2 ipos = floor(uv);
+    float2 fpos = frac(uv); 
+                
+    float o  = rand(ipos);
+    float x  = rand(ipos + float2(1, 0));
+    float y  = rand(ipos + float2(0, 1));
+    float xy = rand(ipos + float2(1, 1));
+
+    float2 smooth = smoothstep(0, 1, fpos);
+    return lerp( lerp(o,  x, smooth.x), lerp(y, xy, smooth.x), smooth.y);
+}
+
+float fractal_noise (float2 uv) {
+    float n = 0;
+    // fractal noise is created by adding together "octaves" of a noise
+    // an octave is another noise value that is half the amplitude and double the frequency of the previously added noise
+    // below the uv is multiplied by a value double the previous. multiplying the uv changes the "frequency" or scale of the noise becuase it scales the underlying grid that is used to create the value noise
+    // the noise result from each line is multiplied by a value half of the previous value to change the "amplitude" or intensity or just how much that noise contributes to the overall resulting fractal noise.
+
+    n  = (1 / 2.0)  * noise( uv * 1);
+    n += (1 / 4.0)  * noise( uv * 2); 
+    n += (1 / 8.0)  * noise( uv * 4); 
+    n += (1 / 16.0) * noise( uv * 8);
+                
+    return n;
+}
+
+int IsBorder(int index, int3 id){
 
     //check to see if this is a valid index
     if((index - 3) > dime.x && (index + 3) < dime.x * (dime.y - 1)){
+    //if((id.x - 5) > 0 && id.x + 5 < dime.x && (index + 1) < dime.x * (dime.y - 1)){
         int border = 1;
         int di = 0;
 	    di = abs(teamOf[index] - teamOf[index + dime.x * border]);
@@ -29,7 +64,7 @@ int IsBorder(int index){
     }
 
     //return true if we're on the edge
-    return 1;
+    return 0;//1;
 }
 
 
@@ -37,10 +72,32 @@ int IsBorder(int index){
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int index = (id.y * dime.x) + id.x;
-
-    if(teamOf[index] < 0) return;
-
     float3 col = float3(0, 0, 0);
+
+    if(teamOf[index] < 0){
+         float2 uv;
+            uv.x = (float2)id.x / (float2)dime.x;
+            uv.y = (float2)id.y / (float2)dime.y;
+
+        float oval = fractal_noise(uv * 2 + seed); 
+        oval += 0.5 * pow(abs(uv.x - 0.5) + 0.2, 2);
+        oval += 0.5 * pow(abs(uv.y - 0.5) + 0.2, 2);
+        float otime = 0.5 * frac(0.5 * (1 + sin(time)));
+        int omask = step(0.8 + 0.5 * otime, oval) - step(0.805 + 0.5 * otime, oval);
+        omask -= step(0.5 * frac(0.5 * (1 + sin(time + 0.01))), otime);
+
+        //float otime2 = 0.5 * frac(0.5 * (1 + sin(time + 0.5)));
+        //int omask = step(0.8 + 0.5 * otime2, oval) - step(0.805 + 0.5 * otime2, oval);
+        //omask -= step(0.5 * frac(0.5 * (1 + sin(time + 0.01 + 0.5))), otime2); 
+
+
+        col += omask * float3(0, 0, 0.05);
+
+        Result[id.xy] = float4(col, 0);  
+        return;
+    }
+
+ 
     float3 scol = float3(stateColors[teamOf[index]].x,
         stateColors[teamOf[index]].y, 
 	    stateColors[teamOf[index]].z); 
@@ -60,7 +117,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     col *= yellow;
     // end 0.9 color effects
 
-    col += IsBorder(index) * scol;
+    col += IsBorder(index, id) * scol;
 
     Result[id.xy] = float4(col, 0);  
 }

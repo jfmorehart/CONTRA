@@ -26,6 +26,7 @@ public class Map : MonoBehaviour
 	int[] pixTeam;
 
 	int[] originalMap;
+	float mapSeed;
 
 	[Header("Compute Stuff")]
 	public ComputeShader POP;
@@ -56,11 +57,14 @@ public class Map : MonoBehaviour
 
 	public float rpoptocpop;
 
-
+	public ComputeShader BORDERS;
+	public ComputeBuffer brds;
+	int[] borderLengths;
 
 	private void Awake()
 	{
 		ins = this;
+		mapSeed = UnityEngine.Random.Range(-500f, 500f);
 		UnitChunks.Init();
 		ArmyUtils.Init();
 		Diplo.SetupDiplo();
@@ -82,8 +86,9 @@ public class Map : MonoBehaviour
 		}
 		originalMap = new int[pixTeam.Length];
 		Array.Copy(pixTeam, originalMap, pixTeam.Length);
-
 		state_populations = new uint[numStates];
+		borderLengths = new int[numStates * numStates];
+		brds = new ComputeBuffer(borderLengths.Length, 4);
 	}
 
 	public void Start()
@@ -126,6 +131,7 @@ public class Map : MonoBehaviour
 	void UpdatePops() {
 		GrowPopulation();
 		CountPop();
+		CountBorders();
     }
 	bool CheckSwapColors() {
 
@@ -271,7 +277,7 @@ public class Map : MonoBehaviour
 		//Probably unnecessary to update cities so frequently, but what the hell
 		Inf[] cities = InfluenceMan.ins.UpdateCities();
 		numCities = cities.Length;
-		Debug.Log(numCities);
+
 		Inf[] armies = InfluenceMan.ins.UpdateArmies();
 		Influences.SetInt("numInfs", numCities + armies.Length);
 		ComputeBuffer infs = new ComputeBuffer(numCities + armies.Length, 20);
@@ -367,7 +373,8 @@ public class Map : MonoBehaviour
 
 		teamOf.SetData(pixTeam);
 		Render.SetBuffer(0, "teamOf", teamOf);
-
+		Render.SetFloat("seed", mapSeed);
+		Render.SetFloat("time", Time.time);
 		SColor[] scolors = new SColor[numStates];
 		for(int i = 0; i < numStates; i++) {
 			scolors[i] = new SColor(state_colors[i].r, state_colors[i].g, state_colors[i].b);
@@ -403,7 +410,7 @@ public class Map : MonoBehaviour
 		//write city distances
 		Inf[] cities = InfluenceMan.ins.UpdateCities();
 		GROWTH.SetInt("numInfs", cities.Length);
-		Debug.Log(cities.Length); 
+		//Debug.Log(cities.Length); 
 		ComputeBuffer infs = new ComputeBuffer(numCities, 20);
 		infs.SetData(cities);
 		GROWTH.SetBuffer(0, "infs", infs);
@@ -414,11 +421,31 @@ public class Map : MonoBehaviour
 		popbuffer.Release();
 		infs.Release();
 	}
+	void CountBorders() {
+		borderLengths = new int[numStates * numStates];
+		brds.SetData(borderLengths);
+		BORDERS.SetBuffer(0, "borderLengths", brds);
+		BORDERS.SetBuffer(0, "teamOf", teamOf);
+		BORDERS.SetInt("numStates", numStates);
+		BORDERS.SetInts("dime", texelDimensions.x, texelDimensions.y);
+		BORDERS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
+		brds.GetData(borderLengths);
+
+		AsyncPath.borders = new bool[numStates, numStates];
+		for (int i = 0; i < numStates; i++) {
+			for (int j = 0; j < numStates; j++)
+			{
+				int index = numStates * j + i;
+				AsyncPath.borders[i, j] = (borderLengths[index] > 1);
+				//Debug.Log(i + " " + j + "  " + borderLengths[index]);
+			}
+		}
+	}
 
 	void CreateOcean() {
 		teamOf.SetData(pixTeam);
 		OCEANS.SetBuffer(0, "teamOf", teamOf);
-		OCEANS.SetFloat("seed", UnityEngine.Random.Range(-500f, 500f));
+		OCEANS.SetFloat("seed", mapSeed);
 		OCEANS.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		OCEANS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		teamOf.GetData(pixTeam);
