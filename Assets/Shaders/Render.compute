@@ -16,6 +16,9 @@ float seed;
 float time;
 StructuredBuffer<Color> stateColors;
 
+//build mode flag
+int buildMode;
+
 float rand (float2 uv) { 
     return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
 }
@@ -74,10 +77,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int index = (id.y * dime.x) + id.x;
     float3 col = float3(0, 0, 0);
 
+    float2 uv;
+    uv.x = (float2)id.x / (float2)dime.x;
+    uv.y = (float2)id.y / (float2)dime.y;
+
     if(teamOf[index] < 0){
-         float2 uv;
-            uv.x = (float2)id.x / (float2)dime.x;
-            uv.y = (float2)id.y / (float2)dime.y;
+
 
         float oval = fractal_noise(uv * 2 + seed); 
         oval += 0.5 * pow(abs(uv.x - 0.5) + 0.2, 2);
@@ -101,11 +106,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 scol = float3(stateColors[teamOf[index]].x,
         stateColors[teamOf[index]].y, 
 	    stateColors[teamOf[index]].z); 
+    //
 
-    float pop = popBuffer[index];
+    int flip = 1.3 * step(0.5, frac(-time * 1 - length(pow(2000 * uv, 0.5))));
+
+    float pop = popBuffer[index] * (1 - buildMode) + buildMode * (flip * 0.3);
     pop = clamp(pop, 0, pop);
     float stayZ = step(0.01, pop);
-    pop *= 1.3;
+    pop *= 1.3;//pow(pop + 0.2, 1.2);
     pop = pop * stayZ;
     col += scol * pop;
     col = clamp(col, 0, 1);

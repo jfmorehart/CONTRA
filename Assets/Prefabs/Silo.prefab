@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 3503173356756519159}
   - component: {fileID: 3726070124613907645}
   - component: {fileID: 671108478937253449}
-  m_Layer: 0
-  m_Name: defcon1
+  m_Layer: 6
+  m_Name: Silo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -99,4 +99,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   team: 0
   hP: 1
+  positionChunk: 0
   numMissiles: 20

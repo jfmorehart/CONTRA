@@ -13,6 +13,9 @@ public class PopulationScreen : MonoBehaviour
 
 	public float pop2Scale;
 
+	public int maxChartValue;
+	public float scaleFactor;
+
 	private void Start()
 	{
 		popChart = new RectTransform[Map.ins.numStates];
@@ -35,14 +38,27 @@ public class PopulationScreen : MonoBehaviour
 
 	private void Update()
 	{
+		//Shrink all the bars to fit the largest on screen
+		scaleFactor = 1;
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
-			Vector3 scale = new Vector3(1, pop2Scale * Map.ins.state_populations[i], 0);
+			if (Map.ins.state_populations[i] > maxChartValue)
+			{
+				float newScaleFactor = maxChartValue / (float)Map.ins.state_populations[i];
+				if (newScaleFactor < scaleFactor)
+				{
+					scaleFactor = newScaleFactor;
+				}
+			}
+		}
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			Vector3 scale = new Vector3(1, scaleFactor * pop2Scale * Map.ins.state_populations[i], 0);
 			popChart[i].transform.localScale = scale;
 			Vector2 pos = popChart[i].transform.localPosition;
 			popChart[i].transform.localPosition = new Vector3(pos.x, center.transform.localPosition.y - scale.y / 2, 0);
 
-			Vector3 ascale = new Vector3(armyWidth, pop2Scale * ArmyUtils.armies[i].Count, 0);
+			Vector3 ascale = new Vector3(armyWidth, scaleFactor * pop2Scale * ArmyUtils.armies[i].Count, 0);
 			armyChart[i].transform.localScale = ascale;
 			Vector2 apos = armyChart[i].transform.localPosition;
 			armyChart[i].transform.localPosition = new Vector3(apos.x, center.transform.localPosition.y - ascale.y / 2, 0);

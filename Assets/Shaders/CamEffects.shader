@@ -138,17 +138,18 @@ Shader "Unlit/CamEffects"
                 float2 uisUV = scale(i.uv, 100);
                 col += tex2D(_uiTex, uisUV);
 
-
-                float crtnoise = pow(fractal_noise(scale(i.uv.yy, 200) * 40 + scale(_t * 2, 5)), 4) * 0.2;
+                //pow(fractal_noise(scale(i.uv.yy, 200) * 40 + scale(_t * 2, 5)), 4) * 0.2;
+                float crtnoise = frac(uv.y * 20 + frac(_t * 0.2)) * 0.05;
+                crtnoise += frac(uv.x * 200) * 0.01;
                 //col += crtnoise;
                 //col += box_sample(sUV + float2(0, crtnoise) * 0.2) * 2;
 
                 col += sample(sUV + float2(0, crtnoise) * 0.1) * 2;
 
-                float2 nUV = rand(scale(sUV * 100 + _t, 10));
-                float lensnoise = 1.5 * pow(fractal_noise(nUV), 0.4) * length(luv);
+                float2 nUV = rand(scale(sUV * 100 + frac(-_t), 10));
+                float lensnoise = 1 * pow(noise(nUV), 0.7) * length(luv);
                 lensnoise *= 0.12 * (1 -  2 * crtnoise);
-		        lensnoise *= 1 - step(0.5, col); //cut the noise to preserve color
+		        lensnoise *= 1 - step(0.2, col); //cut the noise to preserve color
                 col += lensnoise;
 
                 return float4(col, 1);

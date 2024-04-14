@@ -69,9 +69,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     }
     float avg = totPop * 0.111;
     float mypop = popcount[index];
+    cityPower *= min(8, totPop * 0.5);
 
-   // extant shrink step
-   //int minp = step(1, sur);
+    // extant shrink step
+    //int minp = step(1, sur);
 
     //only grow if there are some live tiles nearby
     //int growp = step(3, sur);
@@ -86,28 +87,37 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     //overp = min(1, overp);
 
+    //amount change per tick (second)
     float delt = 0.01;
-    //float growth = (sur * delt * 2) * growp * (1 - overp) * pow(cityPower, 1.4);
-    //growth += (delt) * growp * (1 - overp) * cityPower;
-    float growth = 0;
-    float shrink = 0;
 
-    int patternMask = 1;//max(0, step(8, sur) - step(md, 2)); 
-    float cmaxPop = step(2, mypop * pow(md, 0.7) * 0.2);
-    int shrinkThresh = max(0, min(1, cmaxPop + step(12, totPop)));// * (patternMask)));
-    int growThresh = step(3, lsur);
+    //dynamic max pop calculation based on distance from city (md)
+    float cmaxPop = pow(cityPower * 1, 0.5) + pow(cityPower * 1, 2);
+    cmaxPop = min(2, cmaxPop);
+    cmaxPop -= step(7, sur);
 
-    growth += growThresh * delt * sur * (1 - shrinkThresh) * cityPower;
-    shrink += shrinkThresh * -delt * md;
-    //shrink overpopulated areas
-    //shrink = (1 - minp) * -delt * 0.1;
-    //shrink = overp * -delt * (totPop / 2) * 0.2;
+    //shrink if over population cap
+    int shrinkmask = step(cmaxPop, mypop);//max(0, min(1, cmaxPop)); //totPop?
 
 
-    float newPop = mypop + growth + shrink;
+    //grow if over min spec
+    int growmask = step(1.9, step(6, lsur) + step(2, sur)); 
+    int minigrowth = step(3, lsur) * (1 - step(2, sur)) * (1 - step(8, lsur));
+    minigrowth += step(mypop, avg * 0.8);
+    float growth = growmask * delt * sur * (1 - shrinkmask) * cityPower;
+    growth += minigrowth * delt * 1;
+
+    float shrink = shrinkmask * -delt * cityPower;// * (1 / lsur + 0.01);
+
+    float newPop = mypop + growth * (1 - shrinkmask) + shrink;
+
+    //step to prevent zero-ing out a cell
+    //the lower bound is twice the "cityPower", a nonlinear calculation that correlates
+    //with the distance from the current texel to the nearest city center
+
+    int alive = step(0.01, newPop);
     float diff = newPop - mypop;
-    int floor = step(1.9, step(diff, 0) + step(cityPower * 2, mypop));
-    popcount[index] = floor * max(cityPower * 2, newPop) + (1 - floor) * newPop;
-    //debug
-    //popcount[index] = max(cityPower * 4, popcount[index]);
+    int drop = step(diff, 0); //1 if pop is decreasing
+
+    float floor = alive * max(newPop, mypop);//(lsur * 0.11) * cityPower * 2);
+    popcount[index] = drop * floor + (1 - drop) * newPop;
 }

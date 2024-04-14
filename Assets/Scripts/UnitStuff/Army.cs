@@ -59,7 +59,13 @@ public class Army : Unit
 						currentPathNodeIndex++;
 						enroute = true;
 						dest = MapUtils.CoordsToPoint(path[currentPathNodeIndex]);
-						speedMod = ((Map.ins.GetOriginalMap(path[currentPathNodeIndex]) == team) ? 1.5f : 0.8f);
+
+						//Code to slow armies when traveling through enemy territory
+						//todo update original map image;
+						int teamOfCurrentDest = Map.ins.GetOriginalMap(path[currentPathNodeIndex]);
+						bool slowdown = (teamOfCurrentDest != team) && Map.ins.state_populations[teamOfCurrentDest] > 0;
+						speedMod = (slowdown? 0.8f : 1.5f);
+
 						int et = Map.ins.GetPixTeam(path[^1]);
 						if(Map.ins.GetPixTeam(path[currentPathNodeIndex]) != team) {
 							ren.material.color = Map.ins.state_colors[team] + Color.white * 0.2f;

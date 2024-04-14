@@ -38,7 +38,10 @@ public class Map : MonoBehaviour
 	public ComputeShader NUKE;
 	public ComputeShader Influences;
 	ComputeBuffer stin;
+
 	public ComputeShader GROWTH;
+	public float[] state_growthRates;
+
 	public ComputeShader OCEANS;
 
 	[Header("Rendering")]
@@ -89,6 +92,7 @@ public class Map : MonoBehaviour
 		state_populations = new uint[numStates];
 		borderLengths = new int[numStates * numStates];
 		brds = new ComputeBuffer(borderLengths.Length, 4);
+
 	}
 
 	public void Start()
@@ -203,6 +207,7 @@ public class Map : MonoBehaviour
 		pixTeam = new int[texelDimensions.x * texelDimensions.y];
 		teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		pixelPop = new float[texelDimensions.x * texelDimensions.y];
+		state_growthRates = new float[numStates];
 
 		//Fill Oceans
 		CreateOcean();
@@ -212,6 +217,7 @@ public class Map : MonoBehaviour
 		for (int i = 0; i < numStates; i++)
 		{
 			state_centers[i] = PlaceState(i);
+			state_growthRates[i] = 1;
 		}
 
 		InfluenceMan.ins.Setup();
@@ -369,11 +375,12 @@ public class Map : MonoBehaviour
 		return TexelPopToWorldPop(cpop[0]);
     }
 
-	void ConvertToTexture() {
+	public void ConvertToTexture() {
 
 		teamOf.SetData(pixTeam);
 		Render.SetBuffer(0, "teamOf", teamOf);
 		Render.SetFloat("seed", mapSeed);
+		Render.SetInt("buildMode", PlayerInput.ins.buildMode ? 1 : 0);
 		Render.SetFloat("time", Time.time);
 		SColor[] scolors = new SColor[numStates];
 		for(int i = 0; i < numStates; i++) {
@@ -401,6 +408,11 @@ public class Map : MonoBehaviour
 	void GrowPopulation() {
 		teamOf.SetData(pixTeam);
 		GROWTH.SetBuffer(0, "teamOf", teamOf);
+
+		ComputeBuffer growths = new ComputeBuffer(state_growthRates.Length, 4);
+		growths.SetData(state_growthRates);
+		GROWTH.SetBuffer(0, "growths", growths);
+
 		GROWTH.SetInts("dime", texelDimensions.x, texelDimensions.y);
 
 		ComputeBuffer popbuffer = new ComputeBuffer(pixelPop.Length, 4);
@@ -417,6 +429,7 @@ public class Map : MonoBehaviour
 
 		GROWTH.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		//teamOf.Release();
+		growths.Release();
 		popbuffer.GetData(pixelPop);
 		popbuffer.Release();
 		infs.Release();
