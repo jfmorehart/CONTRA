@@ -53,7 +53,8 @@ public class InfoPanel : MonoBehaviour
 		background.color = Color.black;
     }
 	void NewText(int nation) {
-		GameObject g = Instantiate(textPrefab, UI.ins.transform);
+		GameObject g = Instantiate(textPrefab, transform);
+		
 		TMP_Text tex = g.GetComponent<TMP_Text>();
 		texts.Add(tex);
 		Vector2 offset = spacer * texts.Count * Vector2.down;

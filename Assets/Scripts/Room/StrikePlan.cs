@@ -10,6 +10,7 @@ public class StrikePlan : MonoBehaviour
 {
 	public static StrikePlan ins;
 
+	public Camera strikeCam;
 	public RectTransform backGround;
 	public GameObject iconPrefab; //blank image
 
@@ -40,6 +41,17 @@ public class StrikePlan : MonoBehaviour
 		//GameObject go2 = Spawn(v2, siloSprite);
 		//DrawLine(go.transform.position, go2.transform.position);
 	}
+	private void Update()
+	{
+		if (UI.ins == null) return;
+		if (UI.ins.currentMenu == UI.ins.menu_strike) {
+			strikeCam.enabled = true;
+		}
+		else {
+			strikeCam.enabled = false;
+		}
+	}
+
 	public void DrawPlan(int warheads, List<Target> targets) {
 		ErasePlan();
 		

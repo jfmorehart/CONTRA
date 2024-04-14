@@ -8,11 +8,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using static ArmyUtils;
 
-public class UI : MonoBehaviour
+public class oldUI : MonoBehaviour
 {
 	//There is an ungodly amount of magic number hardcoded bullshit in this class
 
-	public static UI ins;
+	public static oldUI ins;
 
 
 	[System.Serializable]
@@ -203,7 +203,7 @@ public class UI : MonoBehaviour
 							float sat = 1;
 							sat = sl.value * 20;
 							int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
-							List<Target> tars = GetTargets(sati, values[0], values[1], values[2]);
+							List<Target> tars = GetTargets(nationSelected, sati, values[0], values[1], values[2]);
 							Launch(sati, tars);
 						}
 					}
@@ -262,22 +262,7 @@ public class UI : MonoBehaviour
 
 	}
 
-	List<Target> GetTargets(int saturation, bool nuclear, bool conventional, bool cities) {
-		List<Target> tars = new List<Target>();
-		if (nuclear)
-		{
-			tars.AddRange(NuclearTargets(nationSelected));
-		}
-		if (conventional)
-		{
-			tars.AddRange(ConventionalTargets(nationSelected, saturation));
-		}
-		if (cities)
-		{
-			tars.AddRange(CivilianTargets(nationSelected));
-		}
-		return tars;
-	}
+
 	void Launch(int saturation, List<Target> tars) {
 		State_AI player = Diplo.states[0] as State_AI;
 		player.ICBMStrike(saturation, TargetSort(tars.ToArray()).ToList());
@@ -289,7 +274,7 @@ public class UI : MonoBehaviour
 			sat = sl.value * 20;
 			int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
 
-			List<Target> tars = GetTargets(sati, values[0], values[1], values[2]);
+			List<Target> tars = GetTargets(nationSelected, sati, values[0], values[1], values[2]);
 			StrikePlan.ins.DrawPlan(sati, tars);
 		}
 	}

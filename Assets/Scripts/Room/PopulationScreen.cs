@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PopulationScreen : MonoBehaviour
 {
+	public Camera popCam;
+
 	public Transform[] popChart;
 	public Transform[] armyChart;
 	public GameObject chartPrefab;
@@ -22,14 +24,14 @@ public class PopulationScreen : MonoBehaviour
 		armyChart = new RectTransform[Map.ins.numStates];
 
 		for (int i = 0; i < Map.ins.numStates; i++) {
-			popChart[i] = Instantiate(chartPrefab, UI.ins.transform).transform;
+			popChart[i] = Instantiate(chartPrefab, transform).transform;
 			Vector2 spos = (Vector2)center.transform.position + Vector2.right * spacer * i;
 			//center 
 			spos -= Vector2.right * spacer * Map.ins.numStates * 0.5f;
 			popChart[i].transform.position = spos;
 			popChart[i].GetComponent<Image>().color = Map.ins.state_colors[i];
 
-			armyChart[i] = Instantiate(chartPrefab, UI.ins.transform).transform;
+			armyChart[i] = Instantiate(chartPrefab, transform).transform;
 			spos += Vector2.right * spacer * armySpacer;
 			armyChart[i].transform.position = spos;
 			armyChart[i].GetComponent<Image>().color = Color.white;
@@ -38,6 +40,15 @@ public class PopulationScreen : MonoBehaviour
 
 	private void Update()
 	{
+		if (UI.ins == null) return;
+		if (UI.ins.currentMenu == UI.ins.menu_strike) {
+			popCam.enabled = false;
+			return;
+		}
+		else {
+			popCam.enabled = true;
+		}
+
 		//Shrink all the bars to fit the largest on screen
 		scaleFactor = 1;
 		for (int i = 0; i < Map.ins.numStates; i++)

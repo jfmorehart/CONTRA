@@ -21,7 +21,7 @@ public class DisplayHandler : MonoBehaviour
 	}
 	private void Start()
 	{
-		UI.ins.UIScreenToggle(true);
+		//UI.ins.UIScreenToggle(true);
 		MoveCam.ins.canMove = true;
 	}
 	void Pause() {

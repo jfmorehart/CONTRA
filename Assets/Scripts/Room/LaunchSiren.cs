@@ -31,14 +31,14 @@ public class LaunchSiren : MonoBehaviour
 	{
 		//Debug.Log(UI.ins.incoming);
 		if (!on) { 
-			if(UI.ins.incoming > 0) {
+			if(UI.ins.incomingMissiles > 0) {
 				on = true;
 				SpinUp();
 			}
 			spinUpAmt *= 1 - Time.deltaTime * ndrag;
 		}
 		else {
-			if (UI.ins.incoming < 1)
+			if (UI.ins.incomingMissiles < 1)
 			{
 				on = false;
 				Off();

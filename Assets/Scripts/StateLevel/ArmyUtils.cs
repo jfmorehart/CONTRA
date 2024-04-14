@@ -53,6 +53,23 @@ public static class ArmyUtils
 		tars.AddRange(CivilianTargets(team));
 		return TargetSort(tars.ToArray());
 	}
+	public static List<Target> GetTargets(int team, int saturation, bool nuclear, bool conventional, bool cities)
+	{
+		List<Target> tars = new List<Target>();
+		if (nuclear)
+		{
+			tars.AddRange(NuclearTargets(team));
+		}
+		if (conventional)
+		{
+			tars.AddRange(ConventionalTargets(team, saturation));
+		}
+		if (cities)
+		{
+			tars.AddRange(CivilianTargets(team));
+		}
+		return tars;
+	}
 
 	public static Target[] TargetSort(Target[] tr) {
 		float[] keys = new float[tr.Length];
