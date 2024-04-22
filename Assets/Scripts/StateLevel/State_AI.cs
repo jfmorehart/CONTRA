@@ -287,11 +287,9 @@ public class State_AI : State
 	{
 		base.LaunchDetect(launcher, target, perp, victim);
 
-		if (victim == team)
+		if (victim == team && Diplo.relationships[team, perp] != Diplo.Relationship.NuclearWar)
 		{
-			Debug.Log(team + "fighting back agaisnt " + perp);
 			ROE.DeclareWar(team, perp);
-
 			Diplo.relationships[team, perp] = Diplo.Relationship.NuclearWar;
 		}
 	}

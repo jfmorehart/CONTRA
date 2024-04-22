@@ -12,9 +12,11 @@ public class InfluenceMan : MonoBehaviour
 	public GameObject statePrefab;
 	public GameObject playerPrefab;
 	public GameObject siloPrefab;
+	public GameObject constructionPrefab;
 
 	public List<Army> armies;
 	public List<Silo> silos;
+	public List<Unit> other;
 	public List<City> cities;
 
 	private void Awake()
@@ -96,17 +98,27 @@ public class InfluenceMan : MonoBehaviour
 
 		CleanArmies();
 		Unit[] tarmies = armies.ToArray();
-        Inf[] larmies = new Inf[tarmies.Length];
-        for(int i = 0; i < larmies.Length; i++) {
-            larmies[i] = new Inf(
+		Silo[] tsilos = silos.ToArray();
+        Inf[] linfs = new Inf[tarmies.Length + tsilos.Length];
+        for(int i = 0; i < tarmies.Length; i++) {
+            linfs[i] = new Inf(
                 MapUtils.PointToCoords(tarmies[i].transform.position),
                 Map.ins.armyInfluenceStrength,
                 tarmies[i].team,
 				1
                 );
 	    }
+		for (int i = tarmies.Length; i < tarmies.Length + tsilos.Length; i++)
+		{
+			linfs[i] = new Inf(
+				MapUtils.PointToCoords(tsilos[i - tarmies.Length].transform.position),
+				Map.ins.armyInfluenceStrength,
+				tsilos[i - tarmies.Length].team,
+				1
+				);
+		}
 
-        return larmies;
+		return linfs;
     }
 	public Inf[] UpdateCities()
 	{
@@ -193,6 +205,14 @@ public class InfluenceMan : MonoBehaviour
 		{
 			silos.Add(un as Silo);
 		}
+		else {
+			other.Add(un);
+
+			if (un is Construction)
+			{
+				Diplo.states[un.team].construction_sites.Add(un as Construction);
+			}
+		}
 	}
 
 	public void DeregisterUnit(Unit un)
@@ -204,6 +224,14 @@ public class InfluenceMan : MonoBehaviour
 		if (un is Silo)
 		{
 			silos.Remove(un as Silo);
+		}
+		else
+		{
+			other.Remove(un);
+
+			if(un is Construction) {
+				Diplo.states[un.team].construction_sites.Remove(un as Construction);
+			}
 		}
 	}
 

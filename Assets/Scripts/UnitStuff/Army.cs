@@ -71,7 +71,7 @@ public class Army : Unit
 							ren.material.color = Map.ins.state_colors[team] + Color.white * 0.2f;
 						}
 						else {
-							ren.material.color = Color.white;
+							ren.material.color = Color.grey;
 						}
 						int[] pas = ROE.Passables(team);
 						

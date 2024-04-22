@@ -45,6 +45,14 @@ public static class MapUtils
 				InfluenceMan.ins.silos[i].Kill();
 			}
 		}
+		for (int i = 0; i < InfluenceMan.ins.other.Count; i++)
+		{
+			float nd = Vector2.Distance(InfluenceMan.ins.other[i].transform.position, wpos);
+			if (nd < dist)
+			{
+				InfluenceMan.ins.other[i].Kill();
+			}
+		}
 	}
 	public static Vector2Int PlaceState(int index)
 	{

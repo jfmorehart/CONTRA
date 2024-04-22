@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: crt
-  m_Shader: {fileID: 4800000, guid: 311c1b2a3b91b4304871c8e4b1d2b2dd, type: 3}
+  m_Name: Circle
+  m_Shader: {fileID: 4800000, guid: 344f70fae36204d89bc3579de04d341c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -59,10 +59,6 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _uiTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _BumpScale: 1
@@ -81,10 +77,8 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _dist: 0.58
-    - _scale: 0.72
-    - _t: 585.79407
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _col: {r: 0.2627451, g: 0.67058825, b: 0.2627451, a: 0.56078434}
   m_BuildTextureStacks: []

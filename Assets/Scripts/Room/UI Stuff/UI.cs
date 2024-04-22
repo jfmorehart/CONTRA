@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using static ArmyUtils;
@@ -18,7 +19,10 @@ public class UI : MonoBehaviour
 	public int selected;
 	public int targetNation;
 
-	public UIMenu menu_main;
+	public UIMenu menu_home;
+	public UIMenu menu_diplo;
+	public UIMenu menu_build;
+	public UIMenu menu_build_confirm;
 	public UIMenu menu_nation;
 	public UIMenu menu_strike;
 
@@ -31,16 +35,26 @@ public class UI : MonoBehaviour
 	{
 		ins = this;
 		LaunchDetection.launchDetectedAction += LaunchDetect;
-		for(int i = 0; i < menu_main.children.Length; i++) {
-			UIOption op = menu_main.children[i];
-			Debug.Log(i);
+		DisplayHandler.resetGame += Reset;
+		menu_diplo.gameObject.SetActive(true);
+		for (int i = 0; i < menu_diplo.children.Length; i++) {
+			UIOption op = menu_diplo.children[i];
+			//Debug.Log(op.name);
+			//Debug.Log(op.name + " " + op.text.color + op.GetComponent<TMP_Text>().color);
 			op.text.color = Map.ins.state_colors[(int)op.value];
 			op.defaultColor = Map.ins.state_colors[(int)op.value];
 			op.plaintext = Diplo.state_names[(int)op.value];
 			op.text.text = Diplo.state_names[(int)op.value];
 		}
+		menu_home.gameObject.SetActive(true);
+		menu_diplo.gameObject.SetActive(false);
+		menu_build.gameObject.SetActive(false);
+		menu_build_confirm.gameObject.SetActive(false);
+		menu_nation.gameObject.SetActive(false);
+		menu_strike.gameObject.SetActive(false);
+
 		Cursor.lockState = CursorLockMode.Locked;
-		currentMenu.children[selected].Highlight();
+		currentMenu.children[0].Highlight();
 	}
 	private void Update()
 	{
@@ -74,7 +88,7 @@ public class UI : MonoBehaviour
 			}
 		}
 
-		if (Input.GetKey(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
 		{
 			switch(currentMenu.children[selected].kind) {
 				case UIOption.Kind.Button:
@@ -93,11 +107,20 @@ public class UI : MonoBehaviour
 		}
 		if (Input.GetKeyDown(KeyCode.Tab))
 		{
-			if(currentMenu.parent != null) {
-				SwitchMenus(currentMenu, currentMenu.parent);
-			}
-
+			Cancel();
 		}
+	}
+	public void DiplomacyScreen()
+	{
+		SwitchMenus(currentMenu, menu_diplo);
+	}
+	public void BuildScreen()
+	{
+		SwitchMenus(currentMenu, menu_build);
+		PlayerInput.ins.ToggleBuildMode(true);
+	}
+	public void SelectBuildConfirm() {
+		SwitchMenus(currentMenu, menu_build_confirm);
 	}
 	public void SelectNation() {
 		targetNation = (int)currentMenu.children[selected].value;
@@ -107,14 +130,31 @@ public class UI : MonoBehaviour
 	{
 		SwitchMenus(currentMenu, menu_strike);
 	}
+	public void Cancel() {
+		if (currentMenu.parent != null)
+		{
+			SwitchMenus(currentMenu, currentMenu.parent);
+		}
+	}
 	void SwitchMenus(UIMenu start, UIMenu end) {
+
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
+		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
+
 		start.children[selected].UnHighlight();
 		start.gameObject.SetActive(false);
 		currentMenu = end;
 		currentMenu.gameObject.SetActive(true);
-		selected = currentMenu.lastSelected;
-		if (selected > currentMenu.children.Length) selected = currentMenu.children.Length - 1;
+
+		if (currentMenu.preserveLastSelected)
+		{ 
+			selected = currentMenu.lastSelected;
+		}
+		else {
+			selected = currentMenu.defaultSelected;
+		}
+
+		if (selected >= currentMenu.children.Length) selected = currentMenu.children.Length - 1;
 		currentMenu.children[selected].Highlight();
 		if (currentMenu.stateColor != null)
 		{
@@ -142,35 +182,37 @@ public class UI : MonoBehaviour
 		int nsel = selected + dir;
 		if (nsel < 0) nsel = 0;
 		if (nsel > currentMenu.children.Length - 1) nsel = currentMenu.children.Length - 1;
+		if (osel > currentMenu.children.Length - 1) osel = currentMenu.children.Length - 1;
 		currentMenu.children[osel].UnHighlight();
 		currentMenu.children[nsel].Highlight();
 		selected = nsel;
 		currentMenu.lastSelected = selected;
+		if (selected > currentMenu.children.Length) selected = currentMenu.children.Length - 1;
 	}
 	public void ReconsiderStatehood() {
 		List<UIOption> toadd = new();
 		bool reselect = false;
-		for(int i = 0; i < menu_main.children.Length; i++) {
-			int team = (int)menu_main.children[i].value;
+		for(int i = 0; i < menu_diplo.children.Length; i++) {
+			int team = (int)menu_diplo.children[i].value;
 			if (Map.ins.state_populations[team] > 0) {
-				toadd.Add(menu_main.children[i]);
+				toadd.Add(menu_diplo.children[i]);
 			}
 			else {
-				Destroy(menu_main.children[i].gameObject);
+				Destroy(menu_diplo.children[i].gameObject);
 				reselect = true;
 			}
 		}
-		menu_main.children = toadd.ToArray();
+		menu_diplo.children = toadd.ToArray();
 		if (reselect) ChangeSelected(-1);
 		RedrawDiploMenu();
 
     }
 	void RedrawDiploMenu() {
-		for (int i = 0; i < menu_main.children.Length; i++)
+		for (int i = 0; i < menu_diplo.children.Length; i++)
 		{
 			Vector2 pos = textOrigin;
 			pos.y -= i * infoSpacer;
-			menu_main.children[i].transform.localPosition = pos;
+			menu_diplo.children[i].transform.localPosition = pos;
 		}
 	}
 

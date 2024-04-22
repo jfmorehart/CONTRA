@@ -15,6 +15,12 @@ public class State : MonoBehaviour
 
 	public float money; //unused so far
 
+	public List<Construction> construction_sites;
+
+	public float econ_military_max = 0.7f; // caps military spending
+
+	public Economics.Assesment assesment;
+
 	// the Grid location of the middle of the state
 	//really only used in generation but could be nice to have
 	public Vector2Int origin;
@@ -36,37 +42,88 @@ public class State : MonoBehaviour
 	protected virtual void StateUpdate() {
 		//called ever 5 seconds
 		//this function 
+		assesment = Economics.RunAssesment(team);
+		if(team == 0) {
+			Debug.Log(team + " " + assesment.net / assesment.buyingPower + "   o: "+ assesment.costOverrun + "  c:" + assesment.constructionPercentSpeed + " " + assesment.constructionCosts);
+		}
 		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
-		SpawnTroops();
+
+		ConstructionWork();
+
+		if (assesment.costOverrun < 0f) {
+			//half as many as the budget allows for per tick
+			//todo replace with mobilization decision
+
+			//spawning too many! use military budget cap for info
+			int spawnWave = Mathf.FloorToInt((-assesment.costOverrun / Economics.cost_armyUpkeep));
+			if(spawnWave > 0) {
+				SpawnTroops(spawnWave);
+			}
+
+		}
+		else if(assesment.costOverrun > 0.1f){
+			BudgetCuts(assesment.costOverrun);
+		}
+		
+
     }
 
-	protected virtual void SpawnTroops() {
+	void BudgetCuts(float budgetCut) {
+
+		//Army disbanding
+		Unit[] armies = ArmyUtils.GetArmies(team);
+		for (int i = 0; i < armies.Length; i++)
+		{
+			if(budgetCut > 0) {
+				armies[i].Kill();
+				budgetCut -= Economics.cost_armyUpkeep;
+			}
+			else {
+				Debug.Log(team + " disbanded " + i + " units");
+				return;
+			}
+		}
+		if (budgetCut < 0) return;
+
+		//Silo dereliction
+		Unit[] silos = ArmyUtils.GetSilos(team);
+		for (int i = 0; i < silos.Length; i++)
+		{
+			if (budgetCut > 0)
+			{
+				Debug.Log("derelict");
+				GameObject go = Instantiate(InfluenceMan.ins.constructionPrefab,
+					silos[i].transform.position, silos[i].transform.rotation,
+					InfluenceMan.ins.transform) ;
+				Construction co = go.GetComponent<Construction>();
+				co.team = team;
+				co.toBuild = silos[i];
+				co.manHoursRemaining = Mathf.Min(budgetCut, 1);
+				silos[i].Kill();
+				budgetCut -= Economics.cost_siloUpkeep;
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
+	protected virtual void SpawnTroops(int toSpawn) {
 
 		City[] cities = GetCities(team).ToArray();
 		int[] r = new int[cities.Length];
 		for (int i = 0; i < r.Length; i++)
 		{
-			r[i] = Random.Range(0, 100);
+			bool homeTurf = Map.ins.GetOriginalMap(cities[i].mpos) == team;
+			r[i] = homeTurf ? Random.Range(0, 100) : Mathf.Max(Random.Range(1, 100), Random.Range(1, 100));
 		}
 		System.Array.Sort(r, cities);
 
-		Unit[] armies = GetArmies(team);
-		int pop = (int)Map.ins.state_populations[team];
-		if (pop < 1) return;
-		int toSpawn = pop - armies.Length;
-		if (toSpawn < 1)
-		{
-			int index = Random.Range(0, armies.Length - 1);
-			armies[index].Kill();
-			return;
-		}
 		for (int i = 0; i < cities.Length; i++)
 		{
 			if (toSpawn == 0) return;
-			bool homeTurf = Map.ins.GetOriginalMap(cities[i].mpos) == team;
-			float amtDown = Mathf.Pow((toSpawn / (float)pop), 2f);
-			bool spin = amtDown * (cities[i].truepop / 50f) * (homeTurf ? 10 : 0.5f) >  Random.value;
-			if (!spin) continue;
+
 			toSpawn--;
 			Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);
 			p += cities[i].transform.position;
@@ -90,6 +147,14 @@ public class State : MonoBehaviour
 			InfluenceMan.ins.PlaceArmy(p);
 		}
 	}
+
+	protected virtual void ConstructionWork() {
+		//todo calc work per site
+		float workAmt = assesment.manHoursPerSite;
+		for(int i = 0; i < construction_sites.Count; i++) {
+			construction_sites[i].Work(workAmt);
+		}
+    }
 
 	public virtual void WarStarted(int by)
 	{

@@ -15,11 +15,7 @@ public class Silo : Unit
 			GroundCheck();
 		}
 	}
-	void GroundCheck() {
-		if(Map.ins.GetPixTeam(MapUtils.PointToCoords(transform.position)) != team) {
-			Kill();
-		}
-    }
+
 	public override void Direct(Order order)
 	{
 		base.Direct(order);

@@ -11,4 +11,7 @@ public class UIMenu : MonoBehaviour
 	public UIOption[] children;
 	public TMP_Text stateColor; //set to state color on load
 	public int lastSelected; //for preserving input between screens
+
+	public bool preserveLastSelected = true; // disable for confirmation screens
+	public int defaultSelected;
 }

@@ -207,7 +207,7 @@ public class Map : MonoBehaviour
 		pixTeam = new int[texelDimensions.x * texelDimensions.y];
 		teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		pixelPop = new float[texelDimensions.x * texelDimensions.y];
-		state_growthRates = new float[numStates];
+		//state_growthRates = new float[numStates];
 
 		//Fill Oceans
 		CreateOcean();
@@ -217,7 +217,7 @@ public class Map : MonoBehaviour
 		for (int i = 0; i < numStates; i++)
 		{
 			state_centers[i] = PlaceState(i);
-			state_growthRates[i] = 1;
+			//state_growthRates[i] = 1;
 		}
 
 		InfluenceMan.ins.Setup();

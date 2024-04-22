@@ -25,6 +25,15 @@ StructuredBuffer<Inf> infs;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int index = (id.y * dime.x) + id.x;
+    int team = teamOf[index];
+
+    if(team == -1) return;
+
+    //ignore boundary texels
+    if(id.x < (uint)1 || id.x > dime.x - (uint)1){
+        return;
+    }
+    if(id.y < (uint)1 || id.y > dime.y - (uint)1){return;}
 
     float md = 100000;
     for(int i = 0; i < numInfs; i++){ 
@@ -42,12 +51,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float cityPower = 1 / pow(md, 0.7);
     cityPower = clamp(cityPower, 0, 1);
     
-    //ignore boundary texels
-    if(id.x < (uint)1 || id.x > dime.x - (uint)1){
-        return;
-    }
-    if(id.y < (uint)1 || id.y > dime.y - (uint)1){return;}
-
     //count surrounding population and "live" squares
     float totPop = 0;
     int sur = 0;
@@ -70,34 +73,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float avg = totPop * 0.111;
     float mypop = popcount[index];
     cityPower *= min(8, totPop * 0.5);
-
-    // extant shrink step
-    //int minp = step(1, sur);
-
-    //only grow if there are some live tiles nearby
-    //int growp = step(3, sur);
-
-    //imposes cellular automata growth pattern
-    //int maxG = step(6, sur);
-
-    //this step limits growth by distance from city
-    //float maxPop = (1.2 + cityPower) * ((maxG * 0.1) + (1 - maxG)) * pow(cityPower + 0.05, 0.7);
-    //maxPop = min(maxPop, 2.5);
-    //int overp = step(maxPop, mypop);
-
-    //overp = min(1, overp);
-
+    
     //amount change per tick (second)
     float delt = 0.01;
 
+    float growth_remap = pow(pow(2, growths[team]), 0.2);
     //dynamic max pop calculation based on distance from city (md)
     float cmaxPop = pow(cityPower * 1, 0.5) + pow(cityPower * 1, 2);
-    cmaxPop = min(2, cmaxPop);
+    cmaxPop *= growth_remap;
+    cmaxPop = min(2 * growth_remap, cmaxPop);
     cmaxPop -= step(7, sur);
 
-    //shrink if over population cap
+    int growthSwitch = step(0, growths[team]);
+    //growth mechanism
     int shrinkmask = step(cmaxPop, mypop);//max(0, min(1, cmaxPop)); //totPop?
-
 
     //grow if over min spec
     int growmask = step(1.9, step(6, lsur) + step(2, sur)); 
@@ -106,9 +95,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float growth = growmask * delt * sur * (1 - shrinkmask) * cityPower;
     growth += minigrowth * delt * 1;
 
-    float shrink = shrinkmask * -delt * cityPower;// * (1 / lsur + 0.01);
+    float shrink = delt * avg;
+    float newPop = mypop + growth * (1 - shrinkmask) * growthSwitch;
+    newPop -= shrink * (1 - growthSwitch) * 15 * (1 - growth_remap);
 
-    float newPop = mypop + growth * (1 - shrinkmask) + shrink;
 
     //step to prevent zero-ing out a cell
     //the lower bound is twice the "cityPower", a nonlinear calculation that correlates
@@ -118,6 +108,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float diff = newPop - mypop;
     int drop = step(diff, 0); //1 if pop is decreasing
 
-    float floor = alive * max(newPop, mypop);//(lsur * 0.11) * cityPower * 2);
+    float floor = alive * (growthSwitch * mypop + (1 - growthSwitch) * newPop); 
     popcount[index] = drop * floor + (1 - drop) * newPop;
 }

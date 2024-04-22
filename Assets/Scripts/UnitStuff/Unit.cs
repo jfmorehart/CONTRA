@@ -71,4 +71,13 @@ public class Unit : MonoBehaviour
 		UnitChunks.RemoveFromChunk(positionChunk, this);
 		Destroy(gameObject);
 	}
+
+	//only for use in sensitive units like buildings
+	protected void GroundCheck()
+	{
+		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(transform.position)) != team)
+		{
+			Kill();
+		}
+	}
 }

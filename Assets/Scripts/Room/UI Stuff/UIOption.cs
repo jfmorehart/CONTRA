@@ -22,11 +22,10 @@ public class UIOption : MonoBehaviour
 
 	private void Awake()
 	{
-		if(text == null) {
+		if (text == null) {
 			text = GetComponent<TMP_Text>();
 		}
-
-		if(parentMenu == null) {
+		if (parentMenu == null) {
 			parentMenu = transform.parent.GetComponent<UIMenu>();
 		}
 		plaintext = text.text;
