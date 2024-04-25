@@ -40,7 +40,7 @@ public class Map : MonoBehaviour
 	ComputeBuffer stin;
 
 	public ComputeShader GROWTH;
-	public float[] state_growthRates;
+	public int[] state_growth_this_tick;
 
 	public ComputeShader OCEANS;
 
@@ -72,7 +72,7 @@ public class Map : MonoBehaviour
 		ArmyUtils.Init();
 		Diplo.SetupDiplo();
 		ROE.SetUpRoe();
-
+		Economics.SetupEconomics();
 
 		//Create basic info
 		NewMap();
@@ -97,12 +97,13 @@ public class Map : MonoBehaviour
 
 	public void Start()
 	{
+		//Prep the screen for rendering the map
 		mapRT = new RenderTexture(texelDimensions.x, texelDimensions.y, 0);
 		mapRT.enableRandomWrite = true;
 		mapRT.filterMode = FilterMode.Point;
 		mapRT.Create();
 
-
+		//spawn in some starting armies and silos randomly
 		InfluenceMan.ins.RandomArmies(200);
 
 		//Rebuild borders now with army info
@@ -113,13 +114,12 @@ public class Map : MonoBehaviour
 
 		// Modern era peace :)
 		// Lock borders at war-state, but now moving armies
-		// wont override peacetime borders
+		// wont override peacetime borders.
 		ROE.SetAllExceptIdentity(0);
 
 		CountPop();
 
-
-		InvokeRepeating(nameof(UpdatePops), 1, 1);
+		InvokeRepeating(nameof(UpdatePops), 1, 0.25f);
 
 	}
 
@@ -133,39 +133,13 @@ public class Map : MonoBehaviour
 	}
 
 	void UpdatePops() {
+		//Called every 0.25 seconds. Sorta heavy.
+		state_growth_this_tick = Economics.NewGrowthTick();
 		GrowPopulation();
 		CountPop();
 		CountBorders();
     }
-	bool CheckSwapColors() {
 
-		CountPop();
-
-		int[] ranks = new int[state_populations.Length];
-		for (int i = 1; i < state_populations.Length; i++)
-		{
-			ranks[i] = i;
-		}
-		System.Array.Sort(state_populations, ranks);
-		System.Array.Reverse(ranks);
-		int myrank = 0;
-		for (int i = 1; i < state_populations.Length; i++)
-		{
-			if (ranks[i] == 0) {
-				myrank = i;
-				break;
-			}
-		}
-		Debug.Log("ranked" + myrank);
-		if (myrank < 3) return false;
-
-		Debug.Log("switching you with " + ranks[1]);
-		InfluenceMan.ins.SwapTeamsCities(0, ranks[1]);
-		Vector2Int rpos = state_centers[0];
-		state_centers[0] = state_centers[ranks[1]];
-		state_centers[ranks[1]] = rpos;
-		return true;
-	}
 
 	public void Detonate(Vector2 wpos, float radius, int dteam) {
 		Pool.ins.Explode().Nuke(wpos, radius);
@@ -200,14 +174,21 @@ public class Map : MonoBehaviour
 
     }
 
-	public void NewMap() { 
-    
+	public void NewMap() {
+
 		//Prep buffers
+
+		// The stin array is just room for the GPU to make its calculations
+		// We never need to read this, and the GPU can reset it,
+		// so we dont actually need to update this with every Influences Dispatch.
 		stateInfluence = new float[texelDimensions.x * texelDimensions.y * numStates];
+		stin = new ComputeBuffer(texelDimensions.x * texelDimensions.y * numStates, 4);
+		stin.SetData(stateInfluence); //3.2 MB of 0's :)  // god bless preallocation
+		Influences.SetBuffer(0, "stin", stin); //fire and forget
+
 		pixTeam = new int[texelDimensions.x * texelDimensions.y];
 		teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
 		pixelPop = new float[texelDimensions.x * texelDimensions.y];
-		//state_growthRates = new float[numStates];
 
 		//Fill Oceans
 		CreateOcean();
@@ -217,7 +198,6 @@ public class Map : MonoBehaviour
 		for (int i = 0; i < numStates; i++)
 		{
 			state_centers[i] = PlaceState(i);
-			//state_growthRates[i] = 1;
 		}
 
 		InfluenceMan.ins.Setup();
@@ -267,9 +247,7 @@ public class Map : MonoBehaviour
 	}
 
 	void BuildInfluences() {
-		stin = new ComputeBuffer(texelDimensions.x * texelDimensions.y * numStates, 4);
-		stin.SetData(stateInfluence);
-		Influences.SetBuffer(0, "stin", stin);
+
 		teamOf.SetData(pixTeam);
 		Influences.SetBuffer(0, "teamOf", teamOf);
 
@@ -312,7 +290,7 @@ public class Map : MonoBehaviour
 		teamOf.GetData(pixTeam);
 		//teamOf.Release();
 		atWar.Release();
-		stin.Release();
+		//stin.Release(); we're gonna leave this allocated
 		infs.Release();
 	}
 
@@ -401,7 +379,7 @@ public class Map : MonoBehaviour
 		Render.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		popbuffer.Release();
 		colorBuffer.Release();
-		//teamOf.Release();
+		//teamOf.Release(); keep it allocated
 		mapMat.SetTexture("_MainTex", mapRT);
 	}
 
@@ -409,8 +387,8 @@ public class Map : MonoBehaviour
 		teamOf.SetData(pixTeam);
 		GROWTH.SetBuffer(0, "teamOf", teamOf);
 
-		ComputeBuffer growths = new ComputeBuffer(state_growthRates.Length, 4);
-		growths.SetData(state_growthRates);
+		ComputeBuffer growths = new ComputeBuffer(state_growth_this_tick.Length, 4);
+		growths.SetData(state_growth_this_tick);
 		GROWTH.SetBuffer(0, "growths", growths);
 
 		GROWTH.SetInts("dime", texelDimensions.x, texelDimensions.y);
@@ -422,19 +400,19 @@ public class Map : MonoBehaviour
 		//write city distances
 		Inf[] cities = InfluenceMan.ins.UpdateCities();
 		GROWTH.SetInt("numInfs", cities.Length);
-		//Debug.Log(cities.Length); 
 		ComputeBuffer infs = new ComputeBuffer(numCities, 20);
 		infs.SetData(cities);
 		GROWTH.SetBuffer(0, "infs", infs);
 
 		GROWTH.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
-		//teamOf.Release();
+		//teamOf.Release(); keep it allocated
 		growths.Release();
 		popbuffer.GetData(pixelPop);
 		popbuffer.Release();
 		infs.Release();
 	}
 	void CountBorders() {
+		//this function counts the length of the border between each pair of states
 		borderLengths = new int[numStates * numStates];
 		brds.SetData(borderLengths);
 		BORDERS.SetBuffer(0, "borderLengths", brds);
@@ -444,17 +422,16 @@ public class Map : MonoBehaviour
 		BORDERS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		brds.GetData(borderLengths);
 
+		//if the border is longer than one unit, we'll consider the states adjacent
 		AsyncPath.borders = new bool[numStates, numStates];
 		for (int i = 0; i < numStates; i++) {
 			for (int j = 0; j < numStates; j++)
 			{
 				int index = numStates * j + i;
 				AsyncPath.borders[i, j] = (borderLengths[index] > 1);
-				//Debug.Log(i + " " + j + "  " + borderLengths[index]);
 			}
 		}
 	}
-
 	void CreateOcean() {
 		teamOf.SetData(pixTeam);
 		OCEANS.SetBuffer(0, "teamOf", teamOf);
@@ -462,6 +439,40 @@ public class Map : MonoBehaviour
 		OCEANS.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		OCEANS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		teamOf.GetData(pixTeam);
+	}
+
+	bool CheckSwapColors()
+	{
+		/*
+			This function swaps the player team (zero) with a larger power.
+			This is just to hopefully avoid guaranteed losses without having to
+			regenerate the map to find a more favorable position for our player.
+		*/
+		CountPop();
+
+		int[] ranks = new int[state_populations.Length];
+		for (int i = 1; i < state_populations.Length; i++)
+		{
+			ranks[i] = i;
+		}
+		System.Array.Sort(state_populations, ranks);
+		System.Array.Reverse(ranks);
+		int myrank = 0;
+		for (int i = 1; i < state_populations.Length; i++)
+		{
+			if (ranks[i] == 0)
+			{
+				myrank = i;
+				break;
+			}
+		}
+		Debug.Log("Your nation is ranked " + (myrank + 1) + "st in population");
+		if (myrank < 3) return false;
+		Debug.Log("Thats bad, so we're switching you with team " + ranks[1] + ".");
+
+		InfluenceMan.ins.SwapTeamsCities(0, ranks[1]);
+		(state_centers[ranks[1]], state_centers[0]) = (state_centers[0], state_centers[ranks[1]]);
+		return true;
 	}
 
 	public struct SColor {

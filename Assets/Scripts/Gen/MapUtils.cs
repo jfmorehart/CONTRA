@@ -5,6 +5,7 @@ using UnityEngine;
 public static class MapUtils
 {
 	static readonly int ICBMspeed = 50;
+
 	public static Inf PlaceCity(int index) {
 		Vector2Int posI = new Vector2Int(
 			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
@@ -65,6 +66,9 @@ public static class MapUtils
 	}
 
 	public static Vector3Int STIN_FromIndex(int index) {
+		// presently unused, but don't want to delete in case i ever need it
+		// since I don't really remember how the STIN array works
+
 		if (!Map.ins) return Vector3Int.zero;
 		int rowSize = Map.ins.numStates * Map.ins.texelDimensions.x;
 		float fy = index / (float)(rowSize);
@@ -79,6 +83,9 @@ public static class MapUtils
     }
 
 	public static int STIN_ToIndex(Vector3Int seperate) {
+		// presently unused, but don't want to delete in case i ever need it
+		// since I don't really remember how the STIN array works
+
 		if (!Map.ins) return 0;
 		int state = seperate.z;
 		int x = seperate.x;

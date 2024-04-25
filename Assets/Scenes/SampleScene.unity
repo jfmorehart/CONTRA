@@ -7707,20 +7707,14 @@ MonoBehaviour:
   - {r: 0.41509432, g: 0, b: 0, a: 1}
   - {r: 0.4528302, g: 0.337933, b: 0, a: 1}
   - {r: 0.3945112, g: 0, b: 0.4339623, a: 1}
-  - {r: 0, g: 0.0854901, b: 0.6037736, a: 1}
+  - {r: 0, g: 0.05490196, b: 0.45490196, a: 1}
   - {r: 0, g: 0.3679245, b: 0.35466596, a: 1}
   - {r: 0.0413968, g: 0.3962264, b: 0, a: 1}
   POP: {fileID: 7200000, guid: e3d15e96982554a4aab0e46060b84918, type: 3}
   NUKE: {fileID: 7200000, guid: bfb7cd7044f254dffa5b939359a3138c, type: 3}
   Influences: {fileID: 7200000, guid: b1b6293562a7744659b72426dd9a8510, type: 3}
   GROWTH: {fileID: 7200000, guid: 7c3875b0e2e25460db89e38f83b9ef3c, type: 3}
-  state_growthRates:
-  - 1
-  - -1
-  - 0
-  - 0
-  - 0
-  - 0
+  state_growth_this_tick: 
   OCEANS: {fileID: 7200000, guid: 248db20a5e6b947a2a8e46b3a56d132f, type: 3}
   Render: {fileID: 7200000, guid: 1dde6cf48e6bb43118f4f5f0fb477ad7, type: 3}
   mapMat: {fileID: 2100000, guid: f7b458a6423fd4171bcf06c0f40381dc, type: 2}

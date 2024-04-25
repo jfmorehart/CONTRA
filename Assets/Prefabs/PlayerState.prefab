@@ -99,8 +99,7 @@ MonoBehaviour:
   team: 0
   money: 0
   construction_sites: []
-  econ_military: 0.7
-  econ_mil_construction: 0.5
+  econ_military_max: 1
   origin: {x: 0, y: 0}
   troopAllocations: []
   sharesBorder: 

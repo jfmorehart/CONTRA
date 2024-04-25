@@ -5,13 +5,90 @@ using UnityEngine;
 public static class Economics
 {
 	public static float buyingPowerPerPopulation = 1f;
-	public static float cost_siloUpkeep = 10f;
-	public static float cost_armyUpkeep = 1;
-	public static float maxPowerPerSite = 20;
+	public static float cost_siloUpkeep = 20f;
+	public static float cost_armyUpkeep = 2;
+	public static float maxPowerPerSite = 30;
+
+	public static int[][] state_recent_growth;
+	//x array is time, y array is state
+
+	const int numStoredTicks = 16; // size of x array
+	public static int overwriteIndex; //last overwritten timeslot
+
+	public static Assesment[] state_assesments;
+
+	public const float tickDiff = 1 / (float)numStoredTicks;
+
+	public static void SetupEconomics() {
+		state_assesments = new Assesment[Map.ins.numStates];
+		state_recent_growth = new int[numStoredTicks][];  //store 16 sets of data
+		for (int i = 0; i < numStoredTicks; i++) {
+			//store one int for each state per set
+			state_recent_growth[i] = new int[Map.ins.numStates];
+		}
+    }
+	public static int[] NewGrowthTick() {
+		int[] newgrowth = new int[Map.ins.numStates];
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			float pctg = Mathf.Pow(Mathf.Abs(state_assesments[i].percentGrowth), 0.5f);
+			pctg *= Mathf.Sign(state_assesments[i].percentGrowth);
+			float rta = RecentTickAvg(i);
+
+			//only grow if growing would not exceed the desired avg
+			if (pctg > rta + tickDiff) { 
+				newgrowth[i] = 1;
+			}
+			else if(pctg < rta - tickDiff){
+				//only shrink if growing would not subceed the desired avg
+				newgrowth[i] = -1;
+			}
+			else {
+				//so pretty much just trend towards zero growth lmao
+				newgrowth[i] = 0;
+			}
+			//Debug.Log(i + " " + pctg + " " + rta + " " + newgrowth[i]);
+		}
+		//overwrite state_growth_recent data
+		state_recent_growth[overwriteIndex] = newgrowth; //weirdly elegant
+		overwriteIndex++;
+		if (overwriteIndex >= numStoredTicks) overwriteIndex = 0;
+
+		//string debug = "";
+		//for (int i = 0; i < numStoredTicks; i++) {
+		//	debug += "\n";
+		//	for (int j = 0; j < Map.ins.numStates; j++)
+		//	{
+		//		debug += state_recent_growth[i][j].ToString();
+		//	}
+		//}
+		//Debug.Log(debug);
+
+		return newgrowth;
+	}
+
+	public static float RecentTickAvg(int team) {
+		float avg = 0;
+		for(int i = 0; i < numStoredTicks; i++) {
+			avg += state_recent_growth[i][team];
+		}
+		return avg / (float)numStoredTicks;
+	}
 
 	public static Assesment RunAssesment(int team) {
 		State state = Diplo.states[team];
-		float buyingPower = buyingPowerPerPopulation * Map.ins.state_populations[team];
+
+
+		float gross = buyingPowerPerPopulation * Map.ins.state_populations[team];
+
+		//spread out debt payment
+		float debtPayment = Mathf.Min(Diplo.states[team].manHourDebt * 0.5f, gross * 0.3f);
+		float buyingPower = gross - debtPayment;
+
+		Diplo.states[team].manHourDebt -= debtPayment;
+		if(Diplo.states[team].manHourDebt < 1) {
+			Diplo.states[team].manHourDebt = 0;
+		}
 
 		//despite this split, unused military budget will return to net;
 		float militaryBuyingPower = state.econ_military_max * buyingPower;
@@ -22,6 +99,7 @@ public static class Economics
 
 		//negative is military surplus, used for construction and unit aquisition
 		float overrun = upkeep - militaryBuyingPower;
+
 
 		//Find remaining power for new construction
 		float conPower = Mathf.Max(0, militaryBuyingPower - upkeep);
@@ -42,7 +120,9 @@ public static class Economics
 		float manHoursPerSite = totalConstructionCosts / (state.construction_sites.Count + 0.01f);
 
 		float net = (buyingPower - upkeep) - totalConstructionCosts;
-		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite );
+		float percentGrowth = net / gross; //used for growing the country
+
+		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth);
     }
 
 	public struct Assesment {
@@ -58,8 +138,10 @@ public static class Economics
 		public float constructionPercentSpeed; // how quickly buildings will build (0 to 1)
 		public float manHoursPerSite; // capped at 20 per tick
 
+		public float percentGrowth; // (net / buyingPower) used for growth metrics
+
 		public Assesment(float buying, float upkeep, float over, float constr, float ne, 
-	    float conperspeed, float manHoursPS) {
+	    float conperspeed, float manHoursPS, float pctG) {
 
 			buyingPower = buying;
 			upkeepCosts = upkeep;
@@ -69,6 +151,7 @@ public static class Economics
 
 			constructionPercentSpeed = conperspeed;
 			manHoursPerSite = manHoursPS;
+			percentGrowth = pctG;
 		}
     }
 }

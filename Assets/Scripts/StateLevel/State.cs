@@ -17,7 +17,10 @@ public class State : MonoBehaviour
 
 	public List<Construction> construction_sites;
 
-	public float econ_military_max = 0.7f; // caps military spending
+	public float econ_military_max;
+	// caps military spending. guarantees some city growth if less than one
+
+	public float manHourDebt;
 
 	public Economics.Assesment assesment;
 
@@ -43,8 +46,10 @@ public class State : MonoBehaviour
 		//called ever 5 seconds
 		//this function 
 		assesment = Economics.RunAssesment(team);
+		Economics.state_assesments[team] = assesment;
+
 		if(team == 0) {
-			Debug.Log(team + " " + assesment.net / assesment.buyingPower + "   o: "+ assesment.costOverrun + "  c:" + assesment.constructionPercentSpeed + " " + assesment.constructionCosts);
+			Debug.Log(team + "  pg " + assesment.percentGrowth + "  net " + assesment.net + " uk " + assesment.upkeepCosts + " cc " + assesment.constructionCosts +  " bp " + assesment.buyingPower);
 		}
 		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
 

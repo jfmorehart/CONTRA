@@ -4,7 +4,7 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWStructuredBuffer<float> popcount;
-StructuredBuffer<float> growths;
+StructuredBuffer<int> growths;
 RWStructuredBuffer<int> teamOf;
 //StructuredBuffer<float> teamGrowth;
 int2 dime;
@@ -28,6 +28,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int team = teamOf[index];
 
     if(team == -1) return;
+    if(growths[team] == 0) return;
 
     //ignore boundary texels
     if(id.x < (uint)1 || id.x > dime.x - (uint)1){
@@ -75,7 +76,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     cityPower *= min(8, totPop * 0.5);
     
     //amount change per tick (second)
-    float delt = 0.01;
+    float delt = 0.0025;
 
     float growth_remap = pow(pow(2, growths[team]), 0.2);
     //dynamic max pop calculation based on distance from city (md)

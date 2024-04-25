@@ -98,5 +98,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   team: 0
   money: 0
+  construction_sites: []
+  econ_military_max: 1
   origin: {x: 0, y: 0}
   troopAllocations: []
+  sharesBorder: 
