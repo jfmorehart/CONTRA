@@ -5,9 +5,10 @@ using UnityEngine;
 public static class Economics
 {
 	public static float buyingPowerPerPopulation = 1f;
-	public static float cost_siloUpkeep = 20f;
+	public static float cost_siloUpkeep = 10f;
 	public static float cost_armyUpkeep = 2;
-	public static float maxPowerPerSite = 30;
+	public static float cost_armySpawn = 5;
+	public static float maxPowerPerSite = 20;
 
 	public static int[][] state_recent_growth;
 	//x array is time, y array is state
@@ -78,17 +79,17 @@ public static class Economics
 	public static Assesment RunAssesment(int team) {
 		State state = Diplo.states[team];
 
-
+		//Where we get our money
 		float gross = buyingPowerPerPopulation * Map.ins.state_populations[team];
+		//todo add in trade
 
+		//Debt is used to hamstring an economy after over-constription
 		//spread out debt payment
-		float debtPayment = Mathf.Min(Diplo.states[team].manHourDebt * 0.5f, gross * 0.3f);
+		float debtPayment = Mathf.Min(Diplo.states[team].manHourDebt, gross * 0.5f);
 		float buyingPower = gross - debtPayment;
 
 		Diplo.states[team].manHourDebt -= debtPayment;
-		if(Diplo.states[team].manHourDebt < 1) {
-			Diplo.states[team].manHourDebt = 0;
-		}
+
 
 		//despite this split, unused military budget will return to net;
 		float militaryBuyingPower = state.econ_military_max * buyingPower;
@@ -138,7 +139,7 @@ public static class Economics
 		public float constructionPercentSpeed; // how quickly buildings will build (0 to 1)
 		public float manHoursPerSite; // capped at 20 per tick
 
-		public float percentGrowth; // (net / buyingPower) used for growth metrics
+		public float percentGrowth; // (net / gross= used for growth metrics
 
 		public Assesment(float buying, float upkeep, float over, float constr, float ne, 
 	    float conperspeed, float manHoursPS, float pctG) {

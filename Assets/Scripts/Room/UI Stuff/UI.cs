@@ -21,6 +21,7 @@ public class UI : MonoBehaviour
 
 	public UIMenu menu_home;
 	public UIMenu menu_diplo;
+	public UIMenu menu_defense;
 	public UIMenu menu_build;
 	public UIMenu menu_build_confirm;
 	public UIMenu menu_nation;
@@ -49,6 +50,7 @@ public class UI : MonoBehaviour
 		menu_home.gameObject.SetActive(true);
 		menu_diplo.gameObject.SetActive(false);
 		menu_build.gameObject.SetActive(false);
+		menu_defense.gameObject.SetActive(false);
 		menu_build_confirm.gameObject.SetActive(false);
 		menu_nation.gameObject.SetActive(false);
 		menu_strike.gameObject.SetActive(false);
@@ -114,6 +116,9 @@ public class UI : MonoBehaviour
 	{
 		SwitchMenus(currentMenu, menu_diplo);
 	}
+	public void DefenseScreen() {
+		SwitchMenus(currentMenu, menu_defense);
+    }
 	public void BuildScreen()
 	{
 		SwitchMenus(currentMenu, menu_build);
@@ -162,10 +167,20 @@ public class UI : MonoBehaviour
 			currentMenu.stateColor.text = Diplo.state_names[targetNation];
 		}
 	}
+	public void ConscriptTroops() {
+		Diplo.states[0].SpawnTroops(5);
+    }
+	public void DisbandTroops()
+	{
+		ConsolePanel.Log("placing men on leave");
+		Diplo.states[0].DisbandTroops(5);
+	}
+
 	public void DeclareWar() {
 		ROE.DeclareWar(0, targetNation);
 	}
 	public void LaunchMissiles() {
+		DeclareWar();
 		float sat = (menu_strike as UIStrikeMenu).saturationSlider.value * 20;
 		int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
 

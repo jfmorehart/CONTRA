@@ -40,6 +40,7 @@ public class Map : MonoBehaviour
 	ComputeBuffer stin;
 
 	public ComputeShader GROWTH;
+	public bool growthDebugMode;
 	public int[] state_growth_this_tick;
 
 	public ComputeShader OCEANS;
@@ -134,7 +135,9 @@ public class Map : MonoBehaviour
 
 	void UpdatePops() {
 		//Called every 0.25 seconds. Sorta heavy.
-		state_growth_this_tick = Economics.NewGrowthTick();
+		if (!growthDebugMode) {
+			state_growth_this_tick = Economics.NewGrowthTick();
+		}
 		GrowPopulation();
 		CountPop();
 		CountBorders();

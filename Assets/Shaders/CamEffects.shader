@@ -7,6 +7,7 @@ Shader "Unlit/CamEffects"
         _dist ("dist", Range(-1, 1)) = 0
         _scale ("scale", Range(-1, 1)) = 0
         _t ("time", Float) = 0
+        _noiseAmt ("noise power", Float) = 0
     }
     SubShader
     {
@@ -43,6 +44,7 @@ Shader "Unlit/CamEffects"
             float _dist;
             float _scale;
             float _t;
+            float _noiseAmt;
 
             float3 sample(float2 uv){
                 return tex2D(_MainTex, uv).rgb;
@@ -144,13 +146,13 @@ Shader "Unlit/CamEffects"
                 //col += crtnoise;
                 //col += box_sample(sUV + float2(0, crtnoise) * 0.2) * 2;
 
-                col += sample(sUV + float2(0, crtnoise) * 0.1) * 2;
+                col += sample(sUV + float2(0, crtnoise) * 0.1 * _noiseAmt) * 2;
 
                 float2 nUV = rand(scale(sUV * 100 + frac(-_t), 10));
                 float lensnoise = 1 * pow(noise(nUV), 0.7) * length(luv);
                 lensnoise *= 0.12 * (1 -  2 * crtnoise);
 		        lensnoise *= 1 - step(0.2, col); //cut the noise to preserve color
-                col += lensnoise;
+                col += lensnoise * _noiseAmt;
 
                 return float4(col, 1);
             }

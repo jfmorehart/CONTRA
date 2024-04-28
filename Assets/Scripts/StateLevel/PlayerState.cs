@@ -1,9 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerState : State_AI
 {
+	// This class is barely modded from State_AI.
+	// it only adds some player guidance for troop allocations
+
+	// player input for troop allocations, will be blended with internal figures
+	// to minimize necessary slider micromanagement
 
 	public float[] troopAllocPlayerInput;
 
@@ -49,4 +56,26 @@ public class PlayerState : State_AI
 		}
 	}
 
+	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
+	{
+		base.LaunchDetect(launcher, target, perp, victim);
+		if(perp == team) {
+			Debug.Log("LAUNCH DETECT  " + launcher + "   " + target);
+			string str = "<color=\"red\">" + " Launching Missile" + "</color> at ";
+			str += ConsolePanel.ColoredName(victim);
+			ConsolePanel.Log(str);
+		}
+
+		if(victim == team)
+		{
+			string str = "<color=\"red\">" + " Launch Detected" + "</color>" + " !!! origin: ";
+			str += ConsolePanel.ColoredName(perp);
+			ConsolePanel.Log(str);
+		}
+	}
+
+	public override void WarStarted(int by)
+	{
+		base.WarStarted(by);
+	}
 }

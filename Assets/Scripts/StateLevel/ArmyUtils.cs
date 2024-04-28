@@ -108,8 +108,9 @@ public static class ArmyUtils
 		int t = 0;
 		while (tars.Count < numTargets) {
 			t++;
-			if(t > 50) {
-				Debug.Log("borken");
+			if(t > 25) {
+				//no guarantees that there will be good targets, 
+				// so we'll only look at the most promising chunks
 				break;
 			}
 			Vector2 testPos = UnitChunks.ChunkIndexToMapPos(indexes[t]);

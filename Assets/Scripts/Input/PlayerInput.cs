@@ -35,8 +35,15 @@ public class PlayerInput : MonoBehaviour
 	}
 
 	public void BuildSilo() {
+
 		Vector2 wp = transform.GetChild(0).transform.position;
-		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) != 0) return; //todo explain
+		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) != 0) {
+
+			ConsolePanel.Log("unsuitable construction location");
+			return;
+		}
+
+		ConsolePanel.Log("New ICBM Silo being constructed at: " + ((Vector2)(transform.position)).ToString());
 
 		Transform t = Instantiate(InfluenceMan.ins.constructionPrefab,
 	     wp, Quaternion.identity, InfluenceMan.ins.transform).transform;

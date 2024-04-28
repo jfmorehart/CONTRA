@@ -11,6 +11,9 @@ public class EnemyState : State_AI
 	{
 		base.StateUpdate();
 
+		float combinedConfidenceOfVictory = 1;
+
+		//COMBAT STUFF
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
@@ -20,9 +23,11 @@ public class EnemyState : State_AI
 			//Debug.Log(team + " " + i + " " + eval.pVictory);
 			if (ROE.AreWeAtWar(team, i))
 			{
+				combinedConfidenceOfVictory *= eval.pVictory;
 				if (Map.ins.state_populations[i] < 1) ROE.MakePeace(team, i);
 
 				War war = War.Peer;
+				//the war type determines nuclear targets
 				if (eval.popRatio < 0.5f)
 				{
 					war = War.Colonial;
@@ -42,28 +47,59 @@ public class EnemyState : State_AI
 				if (AsyncPath.ins == null) return;
 				if (AsyncPath.ins.SharesBorder(team, i))
 				{
+					//todo replace with more sophisticated method for mimicking anger
 					if (Time.timeSinceLevelLoad> 10 && eval.pVictory > 0.65f && !ROE.AreWeAtWar(team))
 					{
-						Debug.Log(team + " starting a war with " + i);
 						ROE.DeclareWar(team, i);
 						ConductWar_Update(i, War.Colonial);
-						//Vector2 ep = Diplo.states[i].transform.position;
-						//List<Unit> troops = GetArmies(team, 30, ep, recentlyOrdered).ToList();
-						//SendTroopsToBorder(i, troops);
-					}
-					else {  
-						//TEST hack remove when done plz
-						//if(!Diplo.HasAllies(team) && !Diplo.HasAllies(i)) {
-						//	Diplo.JoinAlliance(i, team);
-						//}
 					}
 				}
+			}
+		}
+
+		//THINKING STUFF
+		if (ROE.AreWeAtWar(team)) {
+
+			//AT WAR
+			if (combinedConfidenceOfVictory < 0.8f)
+			{
+				int spawnWave = Mathf.FloorToInt((-assesment.costOverrun / (Economics.cost_armyUpkeep * combinedConfidenceOfVictory)));
+				if (spawnWave > 0)
+				{
+					SpawnTroops(spawnWave);
+				}
+			}
+			else if (combinedConfidenceOfVictory < 1 && assesment.costOverrun > 0)
+			{
+				//this will shrink spending by disbanding troops and mothballing silos
+				BalanceBudget(assesment.costOverrun * combinedConfidenceOfVictory);
+			}
+		}
+		else {
+			//AT PEACE
+			if (ArmyUtils.conventionalCount[team] < Map.ins.state_populations[team] * 0.1f)
+			{
+				//if our standing army is too small, grow it by a tenth of the surplus cash
+				int spawnWave = Mathf.FloorToInt((-assesment.costOverrun * 0.1f) / Economics.cost_armyUpkeep);
+				if (spawnWave > 0)
+				{
+					SpawnTroops(spawnWave);
+				}
+			}
+			else if(ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team] * 0.25f)
+			{
+				BalanceBudget(Map.ins.state_populations[team] * 0.05f * Economics.cost_armyUpkeep);
 			}
 		}
 	}
 
 	protected override void ConductWar_Update(int enemy, War war)
 	{
+		// this function is called every StateUpdate tick, once for every war
+		// that the base state is invoved in. 
+
+		// In this higher level inherited class it just handles Nuclear Strike policy
+		// todo overhaul strike policies to better understand limited nuclear warfare
 
 		base.ConductWar_Update(enemy, war);
 		List<Target> targets = new List<Target>();

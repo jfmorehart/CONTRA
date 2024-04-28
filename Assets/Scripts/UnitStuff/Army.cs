@@ -198,24 +198,4 @@ public class Army : Unit
 		ROE.roeChange -= StaggerPathTargetCheck;
 		DisplayHandler.resetGame -= Reset;
 	}
-
-	//private void OnTriggerEnter2D(Collider2D collision)
-	//{
-	//	if (!collision.CompareTag("Unit")) return;
-	//	if (collision.gameObject.TryGetComponent(out Unit un)){
-	//		if (un.team == team) return;
-	//		if (inView.Contains(un)) return;
-	//		inView.Add(un);
-	//	}
-	//}
-	//private void OnTriggerExit2D(Collider2D collision)
-	//{
-	//	if (!collision.CompareTag("Unit")) return;
-
-	//	if (collision.gameObject.TryGetComponent(out Unit un))
-	//	{
-	//		if (un.team == team) return;
-	//		inView.Remove(un);
-	//	}
-	//}
 }

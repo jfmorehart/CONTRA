@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -55,6 +56,8 @@ public static class ROE
 
 	//More readable interfaces
 	public static void DeclareWar(int t1, int t2) {
+		if (AreWeAtWar(t1, t2)) return;
+
 		SetState(t1, t2, 1);
 		if (t1 == t2) return;
 		if(Diplo.IsMyAlly(t1, t2)) {
@@ -62,6 +65,17 @@ public static class ROE
 		}
 		Diplo.states[t2].WarStarted(t1);
 		Diplo.states[t1].WarStarted(t2);
+
+		if (t1 == 0)
+		{
+			ConsolePanel.Log("you declared <color=\"red\"> war </color> on " + ConsolePanel.ColoredName(t2));
+		}
+		else if(t2 == 0) { 
+			ConsolePanel.Log(ConsolePanel.ColoredName(t1) + " has declared war on <color=\"red\"> YOU </color>");
+		}
+		else { 
+			ConsolePanel.Log(ConsolePanel.ColoredName(t1) + " has declared war on " + ConsolePanel.ColoredName(t2));
+		}
 	}
 	public static void MakePeace(int t1, int t2)
 	{

@@ -5,32 +5,42 @@ using static ArmyUtils;
 
 public class State : MonoBehaviour
 {
-	// this base class represents a country, and is inherited by State_AI which
-	// adds on more advanced functionality. in reality there doesn't need to be 
-	// a seperation, but State_AI was initially intended to be purely for NPCs, 
-	// and was later made the base class for both the player and the NPCS due to 
-	// the redesign to make gameplay less micromanagey.
+	// this base class represents a country, and contains a lot of the basic 
+	// levers of power that a state has: spending, troop recruitment, etc.
 
+	// it is inherited by State_AI, which expands on the framework to do 
+	// more advanced controls that in a normal RTS would be handled by the
+	// player— but in this more indirect RTS, are abstracted back to the machine
+
+	//0 through numStates
 	public int team;
 
-	public float money; //unused so far
-
+	//We tell the sites how quickly to build themselves
 	public List<Construction> construction_sites;
 
-	public float econ_military_max;
 	// caps military spending. guarantees some city growth if less than one
+	public float econ_military_max;
 
+	//used for hamstringing the economy
 	public float manHourDebt;
 
+	//general economic information from the last StateUpdate tick
 	public Economics.Assesment assesment;
 
 	// the Grid location of the middle of the state
-	//really only used in generation but could be nice to have
+	// NOTE this is really only for generation:
+	// it is not guaranteed to even lie within the State!
 	public Vector2Int origin;
 
 	protected virtual void Awake()
 	{
 		LaunchDetection.launchDetectedAction += LaunchDetect;
+		DisplayHandler.resetGame += Reset;
+	}
+
+	protected virtual void Reset() {
+		DisplayHandler.resetGame -= Reset;
+		LaunchDetection.launchDetectedAction -= LaunchDetect;
 	}
 
 	public virtual void Setup(int i, Vector2Int pos) {
@@ -44,7 +54,6 @@ public class State : MonoBehaviour
 
 	protected virtual void StateUpdate() {
 		//called ever 5 seconds
-		//this function 
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
 
@@ -55,25 +64,14 @@ public class State : MonoBehaviour
 
 		ConstructionWork();
 
-		if (assesment.costOverrun < 0f) {
-			//half as many as the budget allows for per tick
-			//todo replace with mobilization decision
-
-			//spawning too many! use military budget cap for info
-			int spawnWave = Mathf.FloorToInt((-assesment.costOverrun / Economics.cost_armyUpkeep));
-			if(spawnWave > 0) {
-				SpawnTroops(spawnWave);
-			}
-
-		}
-		else if(assesment.costOverrun > 0.1f){
-			BudgetCuts(assesment.costOverrun);
+		//delete all troops if you have no cities left
+		if (Map.ins.state_populations[team] < 2) {
+			DisbandTroops(100);
 		}
 		
-
     }
 
-	void BudgetCuts(float budgetCut) {
+	protected virtual void BalanceBudget (float budgetCut) {
 
 		//Army disbanding
 		Unit[] armies = ArmyUtils.GetArmies(team);
@@ -113,8 +111,18 @@ public class State : MonoBehaviour
 			}
 		}
 	}
+	public void DisbandTroops(int toDisband) {
+		Unit[] armies = ArmyUtils.GetArmies(team);
+		int disbanded = 0;
+		for (int i = 0; i < armies.Length; i++)
+		{
+			armies[i].Kill();
+			disbanded++;
+			if (disbanded > toDisband) return;
+		}
+	}
 
-	protected virtual void SpawnTroops(int toSpawn) {
+	public void SpawnTroops(int toSpawn) {
 
 		City[] cities = GetCities(team).ToArray();
 		int[] r = new int[cities.Length];
@@ -127,9 +135,20 @@ public class State : MonoBehaviour
 
 		for (int i = 0; i < cities.Length; i++)
 		{
-			if (toSpawn == 0) return;
+			if (toSpawn == 0) {
+				if(team == 0)ConsolePanel.Log("conscripting additional men");
+				return;
+			}
 
 			toSpawn--;
+			if(manHourDebt > assesment.buyingPower * 2) {
+				//Debug.Log("we dont have the funds to train more troops right now");
+				if(team == 0) {
+					ConsolePanel.Log("insufficient funding to train new troops");
+				}
+				return; //do not let us get too far into debt
+			}
+			manHourDebt += Economics.cost_armySpawn;
 			Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);
 			p += cities[i].transform.position;
 			if (p.x > Map.ins.transform.localScale.x - 5)
@@ -166,8 +185,8 @@ public class State : MonoBehaviour
 
 	}
 
-	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) { 
-    
+	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) {
+
     }
 		
 	public virtual void ReadyForOrders(Unit un) {

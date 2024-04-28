@@ -187,7 +187,15 @@ public class State_AI : State
 			int[] pas = ROE.Passables(team); //which states we can pass over
 
 			//find us the closest legal square to the desired one
-			Vector2Int con = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(mpos, c.mpos, pas, 4));
+			Vector2Int con;
+
+			if (ROE.AreWeAtWar(team, borderwith)) {
+				con = c.mpos;
+			}
+			else {
+				con = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(mpos, c.mpos, pas, 4));
+			}
+			
 			Vector2 moveto = MapUtils.CoordsToPoint(con);
 			Vector2 edit = moveto;
 			int tries = 0;

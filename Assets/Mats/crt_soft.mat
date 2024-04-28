@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: crt
+  m_Name: crt_soft
   m_Shader: {fileID: 4800000, guid: 311c1b2a3b91b4304871c8e4b1d2b2dd, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -81,9 +81,9 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _dist: 0.58
-    - _noiseAmt: 1
-    - _scale: 0.72
+    - _dist: 0.2
+    - _noiseAmt: 0.3
+    - _scale: 0.78
     - _t: 1020.5817
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

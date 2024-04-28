@@ -96,19 +96,20 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float growth = growmask * delt * sur * (1 - shrinkmask) * cityPower;
     growth += minigrowth * delt * 1;
 
-    float shrink = delt * avg;
+    float shrink = delt * step(4, lsur) * (1 - step(7, lsur)) * 5;
+    shrink += delt * step(6, lsur) * (1 - step(8, lsur)) * 2.5;
     float newPop = mypop + growth * (1 - shrinkmask) * growthSwitch;
     newPop -= shrink * (1 - growthSwitch) * 15 * (1 - growth_remap);
-
+    newPop = max(newPop, 0.02);
 
     //step to prevent zero-ing out a cell
     //the lower bound is twice the "cityPower", a nonlinear calculation that correlates
     //with the distance from the current texel to the nearest city center
 
-    int alive = step(0.01, newPop);
+    int alive = step(0.01, mypop);
     float diff = newPop - mypop;
     int drop = step(diff, 0); //1 if pop is decreasing
 
     float floor = alive * (growthSwitch * mypop + (1 - growthSwitch) * newPop); 
-    popcount[index] = drop * floor + (1 - drop) * newPop;
+    popcount[index] = drop * floor + (1 - drop) * newPop * alive;
 }
