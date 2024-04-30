@@ -59,7 +59,7 @@ public class InfoPanel : MonoBehaviour
 		texts.Add(tex);
 		Vector2 offset = spacer * texts.Count * Vector2.down;
 		g.transform.position = (Vector2)textOrigin.transform.position + offset;
-		tex.text = Diplo.state_names[nation]; //todo replace with nation names
+		tex.text = Diplomacy.state_names[nation]; //todo replace with nation names
 		tex.color = Map.ins.state_colors[nation];
 	}
 

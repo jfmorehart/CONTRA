@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using UnityEngine;
+using static ConsolePanel;
 
 public static class ROE
 {
@@ -57,24 +58,25 @@ public static class ROE
 	//More readable interfaces
 	public static void DeclareWar(int t1, int t2) {
 		if (AreWeAtWar(t1, t2)) return;
+		Diplomacy.RemovePeaceOffer(t1, t2);
 
 		SetState(t1, t2, 1);
 		if (t1 == t2) return;
-		if(Diplo.IsMyAlly(t1, t2)) {
+		if(Diplomacy.IsMyAlly(t1, t2)) {
 			Debug.LogError("trying to invade current ally :(");
 		}
-		Diplo.states[t2].WarStarted(t1);
-		Diplo.states[t1].WarStarted(t2);
+		Diplomacy.states[t2].WarStarted(t1);
+		Diplomacy.states[t1].WarStarted(t2);
 
 		if (t1 == 0)
 		{
-			ConsolePanel.Log("you declared <color=\"red\"> war </color> on " + ConsolePanel.ColoredName(t2));
+			Log(you + " declared war on " + ColoredName(t2));
 		}
 		else if(t2 == 0) { 
-			ConsolePanel.Log(ConsolePanel.ColoredName(t1) + " has declared war on <color=\"red\"> YOU </color>");
+			Log(ColoredName(t1) + " has declared war on " + you);
 		}
 		else { 
-			ConsolePanel.Log(ConsolePanel.ColoredName(t1) + " has declared war on " + ConsolePanel.ColoredName(t2));
+			Log(ColoredName(t1) + " has declared war on " + ColoredName(t2));
 		}
 	}
 	public static void MakePeace(int t1, int t2)
@@ -114,8 +116,8 @@ public static class ROE
 	public static int[] Passables(int team) {
 		List<int> pas = new();
 		// Return countries that we are at war with or have open borders with
-		if (Diplo.HasAllies(team)) {
-			pas.AddRange(Diplo.AlliesOf(team));
+		if (Diplomacy.HasAllies(team)) {
+			pas.AddRange(Diplomacy.AlliesOf(team));
 		}
 
 		for(int i = 0; i < Map.ins.numStates; i++) {

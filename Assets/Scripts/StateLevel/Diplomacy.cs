@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static ConsolePanel;
 
-public static class Diplo
+public static class Diplomacy
 {
 	public enum Relationship { 
 		Ally,
@@ -22,6 +23,8 @@ public static class Diplo
 	public static Action StatesReady;
 	//public static DiploCall StatesReady;
 
+	public static bool[,] peaceOffers;
+
 	public static string[] state_names;
 
 	static int numreg = 0;
@@ -34,6 +37,7 @@ public static class Diplo
 		states = new State[Map.ins.numStates];
 		state_names = new string[Map.ins.numStates];
 		relationships = new Relationship[states.Length, states.Length];
+		peaceOffers = new bool[states.Length, states.Length];
 		for (int i = 0; i < states.Length; i++)
 		{
 			for (int j = 0; j < states.Length; j++)
@@ -49,6 +53,28 @@ public static class Diplo
 		for(int i = 0; i < alliances.Length; i++) {
 			alliances[i] = new List<int>();
 		}
+	}
+
+	public static void OfferPeace(int t1, int t2) {
+		if (peaceOffers[t1, t2]) return; //already true;
+	
+			peaceOffers[t1, t2] = true;
+		if (peaceOffers[t2, t1])
+		{
+			ROE.MakePeace(t1, t2);
+			//reset for the next war lmao
+			peaceOffers[t1, t2] = false;
+			peaceOffers[t2, t1] = false;
+		}
+
+		if (t2 == 0)
+		{
+			Log(ColoredName(t1) + " has offered" + you + "peace");
+		}
+	}
+	public static void RemovePeaceOffer(int t1, int t2)
+	{
+		peaceOffers[t1, t2] = false;
 	}
 
 	public static void JoinAlliance(int joining, int host) {
@@ -199,7 +225,7 @@ public static class Diplo
 		"p",
 		"rus",
 		"am",
-		"sr",
+		"fr",
 		"obr",
 		"art",
 		"corb",

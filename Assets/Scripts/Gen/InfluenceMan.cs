@@ -210,7 +210,7 @@ public class InfluenceMan : MonoBehaviour
 
 			if (un is Construction)
 			{
-				Diplo.states[un.team].construction_sites.Add(un as Construction);
+				Diplomacy.states[un.team].construction_sites.Add(un as Construction);
 			}
 		}
 	}
@@ -230,7 +230,7 @@ public class InfluenceMan : MonoBehaviour
 			other.Remove(un);
 
 			if(un is Construction) {
-				Diplo.states[un.team].construction_sites.Remove(un as Construction);
+				Diplomacy.states[un.team].construction_sites.Remove(un as Construction);
 			}
 		}
 	}

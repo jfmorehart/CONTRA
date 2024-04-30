@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using static Diplo;
+using static Diplomacy;
 
 public class AlliancePanel : MonoBehaviour
 {
@@ -30,7 +30,7 @@ public class AlliancePanel : MonoBehaviour
 					-spacer_r * j,
 					0);
 				TMP_Text tex = go.GetComponent<TMP_Text>();
-				tex.text = Diplo.state_names[alliances[i][j]];
+				tex.text = Diplomacy.state_names[alliances[i][j]];
 				tex.color = Map.ins.state_colors[alliances[i][j]];
 				tex.fontSize = fontSize;
 				tex.alignment = TextAlignmentOptions.TopLeft;

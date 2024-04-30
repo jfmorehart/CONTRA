@@ -3,9 +3,17 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using static ArmyUtils;
+using Unity.VisualScripting;
 
 public class EnemyState : State_AI
 {
+	StateEval[] rivals;
+
+	protected override void Awake()
+	{
+		base.Awake();
+		rivals = new StateEval[Map.ins.numStates];
+	}
 
 	protected override void StateUpdate()
 	{
@@ -17,10 +25,14 @@ public class EnemyState : State_AI
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
-			if (Diplo.IsMyAlly(team, i)) continue;
+			if (Diplomacy.IsMyAlly(team, i)) continue;
+			if (Map.ins.state_populations[i] < 1) {
+				ROE.MakePeace(team, i);
+				continue;
+			}
 
 			StateEval eval = new StateEval(team, i);
-			//Debug.Log(team + " " + i + " " + eval.pVictory);
+			rivals[i] = eval;
 			if (ROE.AreWeAtWar(team, i))
 			{
 				combinedConfidenceOfVictory *= eval.pVictory;
@@ -91,7 +103,22 @@ public class EnemyState : State_AI
 				BalanceBudget(Map.ins.state_populations[team] * 0.05f * Economics.cost_armyUpkeep);
 			}
 		}
+
+		if(combinedConfidenceOfVictory < 0.5f) {
+			AttemptDeescalation();
+		}
 	}
+	void AttemptDeescalation() {
+		//offer peace to the smaller one
+		int smallestEnemy = team;
+		float highestCOV = 0;
+		foreach(int i in ROE.GetEnemies(team)) {
+			if (rivals[i].pVictory > highestCOV) {
+				smallestEnemy = i;
+			}
+		}
+		Diplomacy.OfferPeace(team, smallestEnemy);
+    }
 
 	protected override void ConductWar_Update(int enemy, War war)
 	{

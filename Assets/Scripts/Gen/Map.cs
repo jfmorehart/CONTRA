@@ -71,7 +71,7 @@ public class Map : MonoBehaviour
 		mapSeed = UnityEngine.Random.Range(-500f, 500f);
 		UnitChunks.Init();
 		ArmyUtils.Init();
-		Diplo.SetupDiplo();
+		Diplomacy.SetupDiplo();
 		ROE.SetUpRoe();
 		Economics.SetupEconomics();
 
@@ -148,7 +148,7 @@ public class Map : MonoBehaviour
 		Pool.ins.Explode().Nuke(wpos, radius);
 		uint dead = NukePop(wpos, radius);
 		MapUtils.NukeObjs(wpos, radius);
-		Diplo.Nuked(dteam, GetPixTeam(PointToCoords(wpos)), dead);
+		Diplomacy.Nuked(dteam, GetPixTeam(PointToCoords(wpos)), dead);
 	}
 
 	public uint NukePop(Vector2 wpos, float radius) {

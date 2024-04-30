@@ -98,7 +98,7 @@ public class Army : Unit
 	}
 	void Idle() {
 		enroute = false;
-		Diplo.states[team].ReadyForOrders(this);
+		Diplomacy.states[team].ReadyForOrders(this);
 		secondsSinceSaidReady = 0;
 	}
 

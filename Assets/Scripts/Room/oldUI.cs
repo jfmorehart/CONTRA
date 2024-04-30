@@ -89,7 +89,7 @@ public class oldUI : MonoBehaviour
 		for (int i = 1; i < Map.ins.numStates; i++){
 			TMP_Text t = options[0][i - 1];
 			t.color = Map.ins.state_colors[i];
-			t.text = Diplo.state_names[i];
+			t.text = Diplomacy.state_names[i];
 		}
 
 		for(int i = 0; i < 3; i++) {
@@ -163,7 +163,7 @@ public class oldUI : MonoBehaviour
 		void UpdateSlider(Slider sl) { 
 			if(currentMenu == Menu.state) {
 				//this is the troop slider
-				PlayerState pl = Diplo.states[0] as PlayerState;
+				PlayerState pl = Diplomacy.states[0] as PlayerState;
 				pl.troopAllocPlayerInput[nationSelected] = sl.value - 0.5f;
 			}
 		}
@@ -222,9 +222,9 @@ public class oldUI : MonoBehaviour
 			options[(int)currentMenu][selected].color = Color.white;
 		}
 		strikeNationText.color = Map.ins.state_colors[nationSelected];
-		strikeNationText.text = Diplo.state_names[nationSelected];
+		strikeNationText.text = Diplomacy.state_names[nationSelected];
 		diploNationText.color = Map.ins.state_colors[nationSelected];
-		diploNationText.text = Diplo.state_names[nationSelected];
+		diploNationText.text = Diplomacy.state_names[nationSelected];
 		menus[(int)currentMenu].SetActive(false);
 		currentMenu = (Menu)newMenu;
 		menus[(int)currentMenu].SetActive(true);
@@ -239,7 +239,7 @@ public class oldUI : MonoBehaviour
 			DisplayHandler.ins.TogglePopStrikeScreen(false);
 			if (options[(int)currentMenu][0].transform.GetChild(0).TryGetComponent(out Slider sl))
 			{
-				PlayerState pl = Diplo.states[0] as PlayerState;
+				PlayerState pl = Diplomacy.states[0] as PlayerState;
 				sl.value = pl.troopAllocPlayerInput[nationSelected] + 0.5f;
 			}
 		}
@@ -264,7 +264,7 @@ public class oldUI : MonoBehaviour
 
 
 	void Launch(int saturation, List<Target> tars) {
-		State_AI player = Diplo.states[0] as State_AI;
+		State_AI player = Diplomacy.states[0] as State_AI;
 		player.ICBMStrike(saturation, TargetSort(tars.ToArray()).ToList());
 	}
 	void UpdateStrikePlanning() {

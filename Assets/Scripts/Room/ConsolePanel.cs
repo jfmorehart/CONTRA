@@ -24,6 +24,8 @@ public class ConsolePanel : MonoBehaviour
 	public Vector2 offset;
 
 	const string carat = "<color=\"yellow\"> > </color>";
+	const string greencarat = "<color=\"green\"> > </color>";
+	public const string you = "<color=\"red\"> you </color>";
 
 	private void Start()
 	{
@@ -50,9 +52,11 @@ public class ConsolePanel : MonoBehaviour
 		{
 			string line = "";
 			if(lines.Count > i) {
-				line = carat + " " + lines[i].text;
 				if(i == lines.Count - 1) {
-					line = "<color=\"green\">" + line + " </color>";
+					line = greencarat + lines[i].text;
+				}
+				else {
+					line = carat + lines[i].text;
 				}
 				if (lines[i].mult > 1)
 				{
@@ -82,6 +86,6 @@ public class ConsolePanel : MonoBehaviour
 	}
 
 	public static string ColoredName(int team) {
-		return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + Diplo.state_names[team] + "</color >";
+		return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + Diplomacy.state_names[team] + "</color >";
 	}
 }

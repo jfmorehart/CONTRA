@@ -44,8 +44,8 @@ public class UI : MonoBehaviour
 			//Debug.Log(op.name + " " + op.text.color + op.GetComponent<TMP_Text>().color);
 			op.text.color = Map.ins.state_colors[(int)op.value];
 			op.defaultColor = Map.ins.state_colors[(int)op.value];
-			op.plaintext = Diplo.state_names[(int)op.value];
-			op.text.text = Diplo.state_names[(int)op.value];
+			op.plaintext = Diplomacy.state_names[(int)op.value];
+			op.text.text = Diplomacy.state_names[(int)op.value];
 		}
 		menu_home.gameObject.SetActive(true);
 		menu_diplo.gameObject.SetActive(false);
@@ -164,23 +164,34 @@ public class UI : MonoBehaviour
 		if (currentMenu.stateColor != null)
 		{
 			currentMenu.stateColor.color = Map.ins.state_colors[targetNation];
-			currentMenu.stateColor.text = Diplo.state_names[targetNation];
+			currentMenu.stateColor.text = Diplomacy.state_names[targetNation];
 		}
 	}
 	public void ConscriptTroops() {
-		Diplo.states[0].SpawnTroops(5);
+		Diplomacy.states[0].SpawnTroops(5);
     }
 	public void DisbandTroops()
 	{
 		ConsolePanel.Log("placing men on leave");
-		Diplo.states[0].DisbandTroops(5);
+		Diplomacy.states[0].DisbandTroops(5);
 	}
 
-	public void DeclareWar() {
-		ROE.DeclareWar(0, targetNation);
+	public void WarToggle() {
+		if(ROE.AreWeAtWar(0, targetNation)) {
+			if (Diplomacy.peaceOffers[0, targetNation]) {
+				//withdraw peace offer
+				Diplomacy.peaceOffers[0, targetNation] = false;
+			}
+			else { 
+				Diplomacy.OfferPeace(0, targetNation);
+			}
+		}
+		else {
+			ROE.DeclareWar(0, targetNation);
+		}
 	}
 	public void LaunchMissiles() {
-		DeclareWar();
+		ROE.DeclareWar(0, targetNation);
 		float sat = (menu_strike as UIStrikeMenu).saturationSlider.value * 20;
 		int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
 
@@ -189,7 +200,7 @@ public class UI : MonoBehaviour
 		menu_strike.children[1].value == 1,
 		menu_strike.children[2].value == 1);
 
-		State_AI player = Diplo.states[0] as State_AI;
+		State_AI player = Diplomacy.states[0] as State_AI;
 		player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList());
 	}
 	void ChangeSelected(int dir) {

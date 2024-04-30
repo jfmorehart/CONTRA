@@ -68,7 +68,7 @@ public class PlayerState : State_AI
 
 		if(victim == team)
 		{
-			string str = "<color=\"red\">" + " Launch Detected" + "</color>" + " !!! origin: ";
+			string str = "<color=\"red\">" + " Launch Detected" + "</color>" + " from: ";
 			str += ConsolePanel.ColoredName(perp);
 			ConsolePanel.Log(str);
 		}

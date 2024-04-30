@@ -21,14 +21,14 @@ public class AsyncPath : MonoBehaviour
 			return;
 		}
 		ins = this;
-		Diplo.StatesReady += Setup;
+		Diplomacy.StatesReady += Setup;
 	}
 	private void Start()
 	{
 		DisplayHandler.resetGame += Reset;
 	}
 	void Reset() {
-		Diplo.StatesReady -= Setup;
+		Diplomacy.StatesReady -= Setup;
     }
 
 	public void Setup() {
@@ -47,8 +47,8 @@ public class AsyncPath : MonoBehaviour
 			for (int j = i + 1; j < Map.ins.numStates; j++)
 			{
 				if ((i >= j)) continue;
-				Vector2Int st = MapUtils.PointToCoords(Diplo.states[i].transform.position);
-				Vector2Int en = MapUtils.PointToCoords(Diplo.states[j].transform.position);
+				Vector2Int st = MapUtils.PointToCoords(Diplomacy.states[i].transform.position);
+				Vector2Int en = MapUtils.PointToCoords(Diplomacy.states[j].transform.position);
 				int[] pas = new int[] { i, j }; //strict interpretation
 				Vector2Int[] path = await Task.Run(() => Path(st, en, pas.ToArray(), 1, 4000));
 				borders[i, j] = (path != null);

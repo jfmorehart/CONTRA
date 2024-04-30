@@ -34,7 +34,7 @@ public class StrikePlan : MonoBehaviour
 	}
 	private void Start()
 	{
-		player = (Diplo.states[0] as State_AI);
+		player = (Diplomacy.states[0] as State_AI);
 		//Vector2 v1 = MapPositionToLocalPosition((new Vector2(0, 0)));
 		//GameObject go = Spawn(v1, siloSprite) ;
 		//Vector2 v2 = MapPositionToLocalPosition((new Vector2(1920, 1080)));

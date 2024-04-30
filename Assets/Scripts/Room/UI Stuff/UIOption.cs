@@ -9,7 +9,7 @@ public class UIOption : MonoBehaviour
 	public UIMenu parentMenu;
 	//this class goes on selectable menu options
 
-	public bool selected;
+	public bool highlighted;
 	public bool highlight_recolors_sprite = true;
 	public Kind kind;
 	public float value; //0 to 1 for slider, 0 or 1 for switch
@@ -18,6 +18,7 @@ public class UIOption : MonoBehaviour
 
 	[HideInInspector] public TMP_Text text;
 	[HideInInspector] public Color defaultColor;
+
 	public UnityEvent onSelect;
 
 	private void Awake()
@@ -34,6 +35,7 @@ public class UIOption : MonoBehaviour
 
 	public void Highlight()
 	{
+		highlighted = true;
 		if (highlight_recolors_sprite) {
 			text.color = Color.yellow;
 		}
@@ -48,6 +50,7 @@ public class UIOption : MonoBehaviour
 
 	public void UnHighlight()
 	{
+		highlighted = false;
 		if (highlight_recolors_sprite)
 		{
 			text.color = defaultColor;

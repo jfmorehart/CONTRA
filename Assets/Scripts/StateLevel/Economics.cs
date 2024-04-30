@@ -77,7 +77,7 @@ public static class Economics
 	}
 
 	public static Assesment RunAssesment(int team) {
-		State state = Diplo.states[team];
+		State state = Diplomacy.states[team];
 
 		//Where we get our money
 		float gross = buyingPowerPerPopulation * Map.ins.state_populations[team];
@@ -85,10 +85,10 @@ public static class Economics
 
 		//Debt is used to hamstring an economy after over-constription
 		//spread out debt payment
-		float debtPayment = Mathf.Min(Diplo.states[team].manHourDebt, gross * 0.5f);
+		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt, gross * 0.5f);
 		float buyingPower = gross - debtPayment;
 
-		Diplo.states[team].manHourDebt -= debtPayment;
+		Diplomacy.states[team].manHourDebt -= debtPayment;
 
 
 		//despite this split, unused military budget will return to net;

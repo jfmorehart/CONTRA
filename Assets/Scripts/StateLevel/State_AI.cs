@@ -59,9 +59,9 @@ public class State_AI : State
 		NuclearTargets(team);
 	}
 	public override void WarStarted(int by) {
-		if (!Diplo.HasAllies(team)) return;
-		int al = Diplo.AllianceOfTeam(team);
-		Diplo.AllianceWarsUpdate(al);
+		if (!Diplomacy.HasAllies(team)) return;
+		int al = Diplomacy.AllianceOfTeam(team);
+		Diplomacy.AllianceWarsUpdate(al);
     }
 	protected override void StateUpdate()
 	{
@@ -119,8 +119,8 @@ public class State_AI : State
 			if (team == i) continue;
 		
 			StateEval eval = new StateEval(team, i); //not that expensive really
-			tas[i] = eval.armyRatio * Diplo.CanIReachEnemyThroughAllies(team, i) * 0.3f;
-			tas[i] *= (Diplo.IsMyAlly(team, i) ? 0.1f : 1);
+			tas[i] = eval.armyRatio * Diplomacy.CanIReachEnemyThroughAllies(team, i) * 0.3f;
+			tas[i] *= (Diplomacy.IsMyAlly(team, i) ? 0.1f : 1);
 			sharesBorder[i] = AsyncPath.ins.SharesBorder(team, i); //todo fix sharesborder
 			if (ROE.AreWeAtWar(team, i) && AsyncPath.ins.SharesBorder(team, i)){
 				// weight troop allocation by necessity
@@ -295,10 +295,10 @@ public class State_AI : State
 	{
 		base.LaunchDetect(launcher, target, perp, victim);
 
-		if (victim == team && Diplo.relationships[team, perp] != Diplo.Relationship.NuclearWar)
+		if (victim == team && Diplomacy.relationships[team, perp] != Diplomacy.Relationship.NuclearWar)
 		{
 			ROE.DeclareWar(team, perp);
-			Diplo.relationships[team, perp] = Diplo.Relationship.NuclearWar;
+			Diplomacy.relationships[team, perp] = Diplomacy.Relationship.NuclearWar;
 		}
 	}
 
@@ -318,7 +318,7 @@ public class State_AI : State
 			if (troopAllocations[i] < 0.01f) continue;
 			allotment[i] = Mathf.FloorToInt(uns.Length * troopAllocations[i]);
 			if (allotment[i] < 1) continue;
-			Vector2 ep = Diplo.states[i].transform.position;
+			Vector2 ep = Diplomacy.states[i].transform.position;
 			Unit[] alo = GetArmies(team, allotment[i], ep, assigned);
 			for (int u = 0; u < alo.Length; u++)
 			{

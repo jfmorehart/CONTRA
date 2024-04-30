@@ -47,7 +47,7 @@ public class State : MonoBehaviour
 		//Called a few ms after start
 		team = i;
 		origin = pos;
-		Diplo.RegisterState(this);
+		Diplomacy.RegisterState(this);
 		Invoke(nameof(StateUpdate), 0.08f);
 		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 5);
     }
@@ -144,7 +144,7 @@ public class State : MonoBehaviour
 			if(manHourDebt > assesment.buyingPower * 2) {
 				//Debug.Log("we dont have the funds to train more troops right now");
 				if(team == 0) {
-					ConsolePanel.Log("insufficient funding to train new troops");
+					ConsolePanel.Log("insufficient funding for new troops");
 				}
 				return; //do not let us get too far into debt
 			}
