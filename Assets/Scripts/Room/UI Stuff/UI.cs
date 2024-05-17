@@ -167,14 +167,6 @@ public class UI : MonoBehaviour
 			currentMenu.stateColor.text = Diplomacy.state_names[targetNation];
 		}
 	}
-	public void ConscriptTroops() {
-		Diplomacy.states[0].SpawnTroops(5);
-    }
-	public void DisbandTroops()
-	{
-		ConsolePanel.Log("placing men on leave");
-		Diplomacy.states[0].DisbandTroops(5);
-	}
 
 	public void WarToggle() {
 		if(ROE.AreWeAtWar(0, targetNation)) {

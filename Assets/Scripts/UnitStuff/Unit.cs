@@ -30,6 +30,7 @@ public class Unit : MonoBehaviour
 		InfluenceMan.ins.RegisterUnit(this);
 		ren = GetComponent<Renderer>();
 		ren.material = new Material(ren.material);
+		Pool.ins.GetRingEffect().Spawn(transform.position);
 		//ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
 	}
 	public void Check4ChunkUpdate() {

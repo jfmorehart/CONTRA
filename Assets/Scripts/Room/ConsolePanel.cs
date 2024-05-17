@@ -86,6 +86,9 @@ public class ConsolePanel : MonoBehaviour
 	}
 
 	public static string ColoredName(int team) {
+		if(team == 0) {
+			return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + "you" + "</color >";
+		}
 		return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + Diplomacy.state_names[team] + "</color >";
 	}
 }

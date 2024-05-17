@@ -57,19 +57,19 @@ public static class Diplomacy
 
 	public static void OfferPeace(int t1, int t2) {
 		if (peaceOffers[t1, t2]) return; //already true;
-	
+
 			peaceOffers[t1, t2] = true;
+
 		if (peaceOffers[t2, t1])
 		{
 			ROE.MakePeace(t1, t2);
 			//reset for the next war lmao
 			peaceOffers[t1, t2] = false;
 			peaceOffers[t2, t1] = false;
+			Log(ColoredName(t1) + " and " + (ColoredName(t2) + " have made peace"));
 		}
-
-		if (t2 == 0)
-		{
-			Log(ColoredName(t1) + " has offered" + you + "peace");
+		else {
+			Log(ColoredName(t1) + " has offered " + (ColoredName(t2) + " peace"));
 		}
 	}
 	public static void RemovePeaceOffer(int t1, int t2)

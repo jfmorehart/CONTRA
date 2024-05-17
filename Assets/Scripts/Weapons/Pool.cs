@@ -21,6 +21,11 @@ public class Pool : MonoBehaviour
 	public Missile[] mpool;
 	int mcham;
 
+	public int rsize;
+	public GameObject rPrefab;
+	public AppearEffect[] rpool;
+	int rcham;
+
 	private void Awake()
 	{
 		ins = this;
@@ -37,6 +42,12 @@ public class Pool : MonoBehaviour
 		for (int i = 0; i < msize; i++)
 		{
 			mpool[i] = Instantiate(mPrefab, transform).transform.GetComponent<Missile>();
+		}
+
+		rpool = new AppearEffect[rsize];
+		for (int i = 0; i < rsize; i++)
+		{
+			rpool[i] = Instantiate(rPrefab, transform).transform.GetComponent<AppearEffect>();
 		}
 	}
 
@@ -56,5 +67,11 @@ public class Pool : MonoBehaviour
 		if (mcham >= msize - 2) mcham = -1;
 		mcham++;
 		return mpool[mcham];
+	}
+	public AppearEffect GetRingEffect()
+	{
+		if (rcham >= rsize - 2) rcham = -1;
+		rcham++;
+		return rpool[rcham];
 	}
 }

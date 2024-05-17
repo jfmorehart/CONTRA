@@ -192,4 +192,11 @@ public class State : MonoBehaviour
 	public virtual void ReadyForOrders(Unit un) {
 
     }
+
+	public void SendAid(int to)
+	{
+		ConsolePanel.Log(ConsolePanel.ColoredName(team) + " sent aid to " + ConsolePanel.ColoredName(to)); ;
+		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 5;
+		Diplomacy.states[to].manHourDebt -= Economics.cost_armySpawn * 5;
+	}
 }

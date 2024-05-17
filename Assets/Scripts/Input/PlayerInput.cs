@@ -52,4 +52,26 @@ public class PlayerInput : MonoBehaviour
 		co.toBuild = InfluenceMan.ins.siloPrefab.GetComponent<Unit>();
 		co.team = 0;
 	}
+
+	public void PlayerSendAid() {
+		if (Diplomacy.states[0].manHourDebt > Diplomacy.states[0].assesment.buyingPower * 2)
+		{
+			ConsolePanel.Log("Insufficient funds to send aid");
+		}
+		else {
+
+			Diplomacy.states[0].SendAid(UI.ins.targetNation);
+		}
+	
+    }
+
+	public void ConscriptTroops()
+	{
+		Diplomacy.states[0].SpawnTroops(5);
+	}
+	public void DisbandTroops()
+	{
+		ConsolePanel.Log("placing men on leave");
+		Diplomacy.states[0].DisbandTroops(5);
+	}
 }

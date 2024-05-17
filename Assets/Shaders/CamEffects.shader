@@ -8,6 +8,9 @@ Shader "Unlit/CamEffects"
         _scale ("scale", Range(-1, 1)) = 0
         _t ("time", Float) = 0
         _noiseAmt ("noise power", Float) = 0
+        _fuzzAmt ("fuzz power", Float) = 1
+        _sls("scanline strength", Float) = 1
+        _lines("numscanlines", Integer) = 90
     }
     SubShader
     {
@@ -45,6 +48,9 @@ Shader "Unlit/CamEffects"
             float _scale;
             float _t;
             float _noiseAmt;
+            float _fuzzAmt;
+            float _sls;
+            int _lines;
 
             float3 sample(float2 uv){
                 return tex2D(_MainTex, uv).rgb;
@@ -140,19 +146,32 @@ Shader "Unlit/CamEffects"
                 float2 uisUV = scale(i.uv, 100);
                 col += tex2D(_uiTex, uisUV);
 
+
                 //pow(fractal_noise(scale(i.uv.yy, 200) * 40 + scale(_t * 2, 5)), 4) * 0.2;
                 float crtnoise = frac(uv.y * 20 + frac(_t * 0.2)) * 0.05;
                 crtnoise += frac(uv.x * 200) * 0.01;
                 //col += crtnoise;
                 //col += box_sample(sUV + float2(0, crtnoise) * 0.2) * 2;
 
-                col += sample(sUV + float2(0, crtnoise) * 0.1 * _noiseAmt) * 2;
+                col += sample(sUV + float2(0, crtnoise) * 0.2 * _noiseAmt) * 2;
+                col = min(0.9, col);
 
                 float2 nUV = rand(scale(sUV * 100 + frac(-_t), 10));
                 float lensnoise = 1 * pow(noise(nUV), 0.7) * length(luv);
                 lensnoise *= 0.12 * (1 -  2 * crtnoise);
 		        lensnoise *= 1 - step(0.2, col); //cut the noise to preserve color
-                col += lensnoise * _noiseAmt;
+                col += lensnoise * _fuzzAmt * 1;
+
+                int pixMask = 0;
+                //pixMask += 1 - step(frac(i.uv.x * 100), 0.9);
+                //pixMask += 1 - step(frac(i.uv.y * 90), 0.6);
+                //pixMask = min(1, pixMask);
+                //col = max(0.06 * (1 - length(nUV - 0.5)), col);
+                //col *= 1 * (1 - pixMask) + 0.8 * (pixMask); 
+
+                float ny = frac(lerp(i.uv.y, nUV.y, 0.0015) * _lines);
+                float sld = pow(2 * abs(round(ny) - ny), 4);
+                col *= lerp(1, max(min(1, sld * 5), 0.6), _sls);
 
                 return float4(col, 1);
             }

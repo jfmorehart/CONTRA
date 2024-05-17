@@ -45,25 +45,28 @@ public static class Economics
 				newgrowth[i] = -1;
 			}
 			else {
-				//so pretty much just trend towards zero growth lmao
+				//so pretty much just trend towards zero growth 
 				newgrowth[i] = 0;
 			}
-			//Debug.Log(i + " " + pctg + " " + rta + " " + newgrowth[i]);
 		}
+
 		//overwrite state_growth_recent data
 		state_recent_growth[overwriteIndex] = newgrowth; //weirdly elegant
 		overwriteIndex++;
 		if (overwriteIndex >= numStoredTicks) overwriteIndex = 0;
 
-		//string debug = "";
-		//for (int i = 0; i < numStoredTicks; i++) {
-		//	debug += "\n";
-		//	for (int j = 0; j < Map.ins.numStates; j++)
-		//	{
-		//		debug += state_recent_growth[i][j].ToString();
-		//	}
-		//}
-		//Debug.Log(debug);
+		/*
+		string debug = "";
+		for (int i = 0; i < numStoredTicks; i++)
+		{
+			debug += "\n";
+			for (int j = 0; j < Map.ins.numStates; j++)
+			{
+				debug += state_recent_growth[i][j].ToString();
+			}
+		}
+		Debug.Log(debug);
+		*/
 
 		return newgrowth;
 	}
@@ -85,7 +88,7 @@ public static class Economics
 
 		//Debt is used to hamstring an economy after over-constription
 		//spread out debt payment
-		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt, gross * 0.5f);
+		float debtPayment = Mathf.Min(Mathf.Max(-gross * 0.5f, Diplomacy.states[team].manHourDebt), gross * 0.5f);
 		float buyingPower = gross - debtPayment;
 
 		Diplomacy.states[team].manHourDebt -= debtPayment;
@@ -122,6 +125,11 @@ public static class Economics
 
 		float net = (buyingPower - upkeep) - totalConstructionCosts;
 		float percentGrowth = net / gross; //used for growing the country
+
+		if(buyingPower > gross) {
+			//re-credit surplus money
+			Diplomacy.states[team].manHourDebt -= buyingPower - gross;
+		}
 
 		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth);
     }
