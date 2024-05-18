@@ -25,7 +25,6 @@ public class AppearEffect : MonoBehaviour
         ren.enabled = true;
         live = true;
         startTime = Time.time;
-        Debug.Log("spawn");
     }
 
 	void Update()
@@ -35,7 +34,6 @@ public class AppearEffect : MonoBehaviour
         if (Time.time - startTime > length) {
             live = false;
             ren.enabled = false;
-			Debug.Log("die");
 			return;
         }
 

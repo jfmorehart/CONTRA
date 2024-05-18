@@ -105,7 +105,7 @@ public class State_AI : State
 	protected virtual void ConductWar_Update(int enemy, War war)
 	{
 		if (Map.ins.state_populations[enemy] < 1) ROE.MakePeace(team, enemy);
-		CaptureACity(enemy); //slow
+		//CaptureACity(enemy); //slow
 	}
 	public virtual void GenerateTroopAllocations()
 	{

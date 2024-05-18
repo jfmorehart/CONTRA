@@ -101,4 +101,4 @@ MonoBehaviour:
   hP: 0
   positionChunk: 0
   toBuild: {fileID: 0}
-  manHoursRemaining: 40
+  manHoursRemaining: 200

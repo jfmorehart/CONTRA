@@ -49,7 +49,7 @@ public class State : MonoBehaviour
 		origin = pos;
 		Diplomacy.RegisterState(this);
 		Invoke(nameof(StateUpdate), 0.08f);
-		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 5);
+		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 1f);
     }
 
 	protected virtual void StateUpdate() {
@@ -57,9 +57,9 @@ public class State : MonoBehaviour
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
 
-		if(team == 0) {
-			Debug.Log(team + "  pg " + assesment.percentGrowth + "  net " + assesment.net + " uk " + assesment.upkeepCosts + " cc " + assesment.constructionCosts +  " bp " + assesment.buyingPower);
-		}
+		//if(team == 0) {
+		//	Debug.Log(team + "  pg " + assesment.percentGrowth + "  net " + assesment.net + " uk " + assesment.upkeepCosts + " cc " + assesment.constructionCosts +  " bp " + assesment.buyingPower);
+		//}
 		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
 
 		ConstructionWork();
@@ -68,7 +68,10 @@ public class State : MonoBehaviour
 		if (Map.ins.state_populations[team] < 2) {
 			DisbandTroops(100);
 		}
-		
+		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team]) {
+			int diff = ArmyUtils.conventionalCount[team] - (int)Map.ins.state_populations[team];
+			BalanceBudget(Economics.cost_armyUpkeep * diff);
+		}
     }
 
 	protected virtual void BalanceBudget (float budgetCut) {
@@ -144,9 +147,17 @@ public class State : MonoBehaviour
 			if(manHourDebt > assesment.buyingPower * 2) {
 				//Debug.Log("we dont have the funds to train more troops right now");
 				if(team == 0) {
-					ConsolePanel.Log("insufficient funding for new troops");
+					ConsolePanel.Log("insufficient funding to train new troops");
 				}
 				return; //do not let us get too far into debt
+			}
+			if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team])
+			{
+				if (team == 0)
+				{
+					ConsolePanel.Log("insufficient population to conscript new troops");
+				}
+				return; //do not let us recruit more than entire population
 			}
 			manHourDebt += Economics.cost_armySpawn;
 			Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);

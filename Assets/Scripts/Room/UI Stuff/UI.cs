@@ -145,6 +145,7 @@ public class UI : MonoBehaviour
 
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
+		if(end == menu_diplo) targetNation = 0;
 
 		start.children[selected].UnHighlight();
 		start.gameObject.SetActive(false);
@@ -221,7 +222,7 @@ public class UI : MonoBehaviour
 			}
 		}
 		menu_diplo.children = toadd.ToArray();
-		if (reselect) ChangeSelected(-1);
+		if (reselect && currentMenu == menu_diplo) ChangeSelected(-1);
 		RedrawDiploMenu();
 
     }

@@ -431,7 +431,7 @@ public class Map : MonoBehaviour
 			for (int j = 0; j < numStates; j++)
 			{
 				int index = numStates * j + i;
-				AsyncPath.borders[i, j] = (borderLengths[index] > 1);
+				AsyncPath.borders[i, j] = (borderLengths[index] > 5);
 			}
 		}
 	}

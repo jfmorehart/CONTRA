@@ -199,23 +199,28 @@ public static class Diplomacy
 
 	public static string RandomName() {
 		string name = "";
+		int tries = 0;
+
 		int index;
 		do
 		{
+			tries++;
 			index = UnityEngine.Random.Range(0, firsts.Length);
-		} while (ftaken.Contains(index));
+		} while (ftaken.Contains(index) && tries < 500);
 		name += firsts[index];
 		ftaken.Add(index);
 		do
 		{
+			tries++;
 			index = UnityEngine.Random.Range(0, seconds.Length);
-		} while (staken.Contains(index));
+		} while (staken.Contains(index) && tries < 500);
 		name += seconds[index];
 		staken.Add(index);
 		do
 		{
+			tries++;
 			index = UnityEngine.Random.Range(0, thirds.Length);
-		} while (ttaken.Contains(index));
+		} while (ttaken.Contains(index) && tries < 500);
 		name += thirds[index];
 		ttaken.Add(index);
 		return name;

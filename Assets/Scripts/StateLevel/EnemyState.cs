@@ -81,11 +81,15 @@ public class EnemyState : State_AI
 					SpawnTroops(spawnWave);
 				}
 			}
-			else if (combinedConfidenceOfVictory < 1 && assesment.costOverrun > 0)
+			else if (assesment.costOverrun > 1 && combinedConfidenceOfVictory > 0.9)
 			{
+				//economy is bad, and we're winning
+				//we should cut back on troops
+
 				//this will shrink spending by disbanding troops and mothballing silos
 				BalanceBudget(assesment.costOverrun * combinedConfidenceOfVictory);
 			}
+
 		}
 		else {
 			//AT PEACE
