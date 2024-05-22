@@ -133,6 +133,7 @@ public static class ArmyUtils
 		List<Target> tars = new List<Target>();
 		foreach (City sl in GetCities(team))
 		{
+			if (Map.ins.GetPixTeam(sl.mpos) != team) continue;
 			tars.Add(new Target(sl.transform.position, sl.truepop, Tar.Civilian));
 		}
 		return tars.ToArray();

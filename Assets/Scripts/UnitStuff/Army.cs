@@ -68,6 +68,7 @@ public class Army : Unit
 
 						int et = Map.ins.GetPixTeam(path[^1]);
 						if(Map.ins.GetPixTeam(path[currentPathNodeIndex]) != team) {
+							//recolor army when on ally's territory
 							ren.material.color = Map.ins.state_colors[team] + Color.white * 0.2f;
 						}
 						else {
@@ -138,7 +139,7 @@ public class Army : Unit
 		Vector2Int cpos = MapUtils.PointToCoords(transform.position);
 		Vector2Int opos = MapUtils.PointToCoords(pathOrder.pos);
 		int[] pas = ROE.Passables(team);
-		path = await Task.Run(() => AsyncPath.ins.Path(cpos, opos, pas.ToArray(), 2));
+		path = await Task.Run(() => AsyncPath.ins.Path(cpos, opos, pas.ToArray(), 2, 1600));
 		PathIsSet();
 	}
 

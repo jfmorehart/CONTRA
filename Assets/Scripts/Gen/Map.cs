@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static MapUtils;
 
@@ -64,6 +65,9 @@ public class Map : MonoBehaviour
 	public ComputeShader BORDERS;
 	public ComputeBuffer brds;
 	int[] borderLengths;
+	int[] borderDataPoints;
+	public List<Vector2Int>[][] borderPoints; 
+	public ComputeBuffer brdPts;
 
 	private void Awake()
 	{
@@ -91,9 +95,28 @@ public class Map : MonoBehaviour
 		originalMap = new int[pixTeam.Length];
 		Array.Copy(pixTeam, originalMap, pixTeam.Length);
 		state_populations = new uint[numStates];
-		borderLengths = new int[numStates * numStates];
-		brds = new ComputeBuffer(borderLengths.Length, 4);
 
+		//this array is used for state border detection
+		borderLengths = new int[numStates * numStates];
+		//this one is used in an intermediary step
+		borderDataPoints = new int[texelDimensions.x * texelDimensions.y];
+
+		//and this one stores a ton of Vector2s that are points along specific borders
+		//array + list hell
+		borderPoints = new List<Vector2Int>[numStates][];
+		for(int i= 0; i < numStates; i++) {
+			borderPoints[i] = new List<Vector2Int>[numStates];
+			for (int j = 0; j< numStates; j++)
+			{
+				borderPoints[i][j] = new List<Vector2Int>();
+			}
+		}
+
+		//border compute buffer housekeeping
+		brds = new ComputeBuffer(borderLengths.Length, 4);
+		brdPts = new ComputeBuffer(borderDataPoints.Length, 4);
+
+		//Debug.Log(BitwiseTeams(33)[0] + " " + BitwiseTeams(33)[1]);
 	}
 
 	public void Start()
@@ -417,13 +440,41 @@ public class Map : MonoBehaviour
 	void CountBorders() {
 		//this function counts the length of the border between each pair of states
 		borderLengths = new int[numStates * numStates];
+		borderDataPoints = new int[texelDimensions.x * texelDimensions.y];
+
 		brds.SetData(borderLengths);
+		brdPts.SetData(borderDataPoints);
 		BORDERS.SetBuffer(0, "borderLengths", brds);
+		BORDERS.SetBuffer(0, "otherTeam", brdPts);
 		BORDERS.SetBuffer(0, "teamOf", teamOf);
 		BORDERS.SetInt("numStates", numStates);
 		BORDERS.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		BORDERS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		brds.GetData(borderLengths);
+		brdPts.GetData(borderDataPoints);
+
+		int[] count = new int[numStates];
+		for (int i = 0; i < numStates; i++)
+		{
+			for (int j = 0; j < numStates; j++)
+			{
+				//int index = numStates * j + i;
+				borderPoints[i][j].Clear();
+			}
+		}
+		for (int x = 0; x < texelDimensions.x * texelDimensions.y; x++)
+		{
+			int team = pixTeam[x];
+			int other = borderDataPoints[x];
+
+			if (team < 0) continue;
+			if (other < 0) continue;
+
+			borderPoints[team][other].Add(IndexToCoords(x));
+			//Debug.Log(team + " borders " + other + " at " + IndexToCoords(x));
+			count[team]++;
+		}
+
 
 		//if the border is longer than one unit, we'll consider the states adjacent
 		AsyncPath.borders = new bool[numStates, numStates];

@@ -132,4 +132,21 @@ public static class MapUtils
 	public static float Tau(Vector2 p1, Vector2 p2) {
 		return Vector2.Distance(p1, p2) / ICBMspeed;
 	}
+	public static Vector2Int IndexToCoords(int index) {
+		int x = index % Map.ins.texelDimensions.x;
+		int y = Mathf.FloorToInt(index / Map.ins.texelDimensions.x);
+		return new Vector2Int(x, y);
+    }
+
+
+
+	public static int[] BitwiseTeams(int parse) {
+		List<int> teams = new List<int>();
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			if ((parse & Mathf.RoundToInt(Mathf.Pow(2, i))) > 0) {
+				teams.Add(i);
+			}
+		}
+		return teams.ToArray();
+    }
 }

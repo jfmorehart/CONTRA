@@ -3,8 +3,10 @@
 
 int2 dime;
 RWStructuredBuffer<uint> borderLengths;
+RWStructuredBuffer<uint> otherTeam;
 StructuredBuffer<int> teamOf;
 int numStates;
+
 
 int BorderTeam(int index, int3 id){
 
@@ -32,12 +34,15 @@ int BorderTeam(int index, int3 id){
 [numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    // uint3 id = idu * 2;
+
     int index = (id.y * dime.x) + id.x;
     int team = teamOf[index];
 
     if(team < 0) return;
     
     int border = BorderTeam(index, id);
+    otherTeam[index] = border;
     if(border == -1) return;
     InterlockedAdd(borderLengths[team * numStates + border], 1);
 }

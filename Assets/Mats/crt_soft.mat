@@ -87,7 +87,7 @@ Material:
     - _noiseAmt: 0.5
     - _scale: 0.78
     - _sls: 0.5
-    - _t: 58.043175
+    - _t: 424.9551
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

@@ -16,11 +16,15 @@ public class Unit : MonoBehaviour
 	protected int maxHP;
 	protected Renderer ren;
 
+	[HideInInspector]
+	public int id;
+
 	public virtual void Awake() {
 		maxHP = hP;
 		Vector2Int pt = MapUtils.PointToCoords(transform.position);
 		team = Map.ins.GetPixTeam(pt);
-		gameObject.name = team.ToString() + Random.Range(0, 10000).ToString();
+		id = Random.Range(0, 10000);
+		gameObject.name = team.ToString() + id.ToString();
 		positionChunk = UnitChunks.ChunkLookup(transform.position);
 		UnitChunks.AddToChunk(positionChunk, this);
 	}

@@ -181,22 +181,37 @@ public class State_AI : State
 			Vector2 pos = (troops[i] as Army).wpos;
 			Vector2Int mpos = MapUtils.PointToCoords(pos);
 
-			//honestly stupid expensive
-			City c = await Task.Run(() => NearestCity(pos, borderwith, null));
-			if (c == null) return; // alexander wept
+			//honestly stupid expensive city-oriented method
+			//City c = await Task.Run(() => NearestCity(pos, borderwith, null));
+			//if (c == null) return; // alexander wept
+
+
+			Vector2Int dest;
+			if (ROE.AreWeAtWar(team, borderwith) && Random.Range(0, 1f) > 0.25f)
+			{
+				//honestly stupid expensive city-oriented method
+				//capture enemy cities during wartime
+				City c = await Task.Run(() => NearestCity(pos, borderwith, null));
+				if (c == null) return; // alexander wept
+				dest = c.mpos;
+			}
+			else
+			{
+				//newer border-oriented method
+				//spread out troops defensively across the border in peacetime
+				int borderSize = Map.ins.borderPoints[team][borderwith].Count;
+				if (borderSize < 1) continue;
+				dest = Map.ins.borderPoints[team][borderwith][troops[i].id % borderSize];
+			}
+
+
 			int[] pas = ROE.Passables(team); //which states we can pass over
 
 			//find us the closest legal square to the desired one
-			Vector2Int con;
+			// was previously used for peacetime positioning
+			//	con = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(mpos, dest, pas, 4));
 
-			if (ROE.AreWeAtWar(team, borderwith)) {
-				con = c.mpos;
-			}
-			else {
-				con = await Task.Run(() => AsyncPath.ins.CheapestOpenNode(mpos, c.mpos, pas, 4));
-			}
-			
-			Vector2 moveto = MapUtils.CoordsToPoint(con);
+			Vector2 moveto = MapUtils.CoordsToPoint(dest);
 			Vector2 edit = moveto;
 			int tries = 0;
 			bool goodToGo; 

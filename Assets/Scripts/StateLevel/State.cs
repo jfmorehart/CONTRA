@@ -159,27 +159,39 @@ public class State : MonoBehaviour
 				}
 				return; //do not let us recruit more than entire population
 			}
-			manHourDebt += Economics.cost_armySpawn;
-			Vector3 p = Random.insideUnitCircle * Random.Range(10, 50);
-			p += cities[i].transform.position;
-			if (p.x > Map.ins.transform.localScale.x - 5)
-			{
-				p.x = Map.ins.transform.localScale.x - 5;
+
+			//occupied cities are much more expensive to recruit new troops in
+			int originalTeam = Map.ins.GetOriginalMap(cities[i].mpos);
+			bool hometurf = originalTeam == team;
+			hometurf = hometurf && (Map.ins.state_populations[originalTeam] > 1);
+			manHourDebt += hometurf ? Economics.cost_armySpawn : Economics.cost_armySpawn * 5;
+
+			//ensure that we dont spawn the troops in the wrong country;
+			Vector3 spawnPos = Random.insideUnitCircle * Random.Range(10, 50);
+			if(Map.ins.GetPixTeam(MapUtils.PointToCoords(spawnPos)) != team) {
+				//remove offset
+				spawnPos = Vector3.zero;
 			}
-			if (p.y > Map.ins.transform.localScale.y - 5)
+			spawnPos += cities[i].transform.position;
+
+			if (spawnPos.x > Map.ins.transform.localScale.x - 5)
 			{
-				p.y = Map.ins.transform.localScale.y - 5;
+				spawnPos.x = Map.ins.transform.localScale.x - 5;
 			}
-			if (p.x < 5)
+			if (spawnPos.y > Map.ins.transform.localScale.y - 5)
 			{
-				p.x = 5;
+				spawnPos.y = Map.ins.transform.localScale.y - 5;
 			}
-			if (p.y < 5)
+			if (spawnPos.x < 5)
 			{
-				p.y = 5;
+				spawnPos.x = 5;
+			}
+			if (spawnPos.y < 5)
+			{
+				spawnPos.y = 5;
 			}
 
-			InfluenceMan.ins.PlaceArmy(p);
+			InfluenceMan.ins.PlaceArmy(spawnPos);
 		}
 	}
 
