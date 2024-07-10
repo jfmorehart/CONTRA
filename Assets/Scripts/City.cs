@@ -111,7 +111,7 @@ public class City : MonoBehaviour
 		Vector2[] sample_pos = ArmyUtils.Encircle(transform.position, sample_radius, numSamples);
 
         for(int i = 0; i < numSamples; i++) {
-			sample_teams[MapUtils.PointToTeam(sample_pos[i])] += 1;
+			sample_teams[MapUtils.WorldPosToTeam(sample_pos[i])] += 1;
 		}
 
 		int mteam = 0;

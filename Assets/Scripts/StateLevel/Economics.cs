@@ -5,10 +5,10 @@ using UnityEngine;
 public static class Economics
 {
 	public static float buyingPowerPerPopulation = 1f;
-	public static float cost_siloUpkeep = 10f;
+	public static float cost_siloUpkeep = 20f;
 	public static float cost_armyUpkeep = 2;
 	public static float cost_armySpawn = 5;
-	public static float maxPowerPerSite = 20;
+	public static float maxPowerPerSite = 30;
 
 	public static int[][] state_recent_growth;
 	//x array is time, y array is state
@@ -88,7 +88,7 @@ public static class Economics
 
 		//Debt is used to hamstring an economy after over-constription
 		//spread out debt payment
-		float debtPayment = Mathf.Min(Mathf.Max(-gross * 0.5f, Diplomacy.states[team].manHourDebt), gross * 0.5f);
+		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt * 0.3f, gross * 0.2f);
 		float buyingPower = gross - debtPayment;
 
 		Diplomacy.states[team].manHourDebt -= debtPayment;
@@ -128,7 +128,7 @@ public static class Economics
 
 		if(buyingPower > gross) {
 			//re-credit surplus money
-			Diplomacy.states[team].manHourDebt -= buyingPower - gross;
+			Diplomacy.states[team].manHourDebt -= (buyingPower - gross) * 0.8f;
 		}
 
 		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth);

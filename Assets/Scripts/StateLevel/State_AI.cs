@@ -35,6 +35,10 @@ public class State_AI : State
 	//list of units assigned to each border organized by enemyborder team#
 	public List<Unit>[] garrisons;
 
+	//test
+	public int directs;
+	public int readies;
+
 	protected override void Awake()
 	{
 		base.Awake();
@@ -84,11 +88,15 @@ public class State_AI : State
 		{
 			discrepancy += Mathf.Abs((garrisons[r].Count / total)  - troopAllocations[r]);
 		}
-		if(discrepancy > 0.25f) {
+
+
+		if (discrepancy > 0.25f)
+		{
 			//expensive 
 			ReAssignGarrisons(true);
 		}
-		else {
+		else
+		{
 			//bit cheaper
 			ReAssignGarrisons(false);
 		}
@@ -111,7 +119,6 @@ public class State_AI : State
 	{
 		float[] tas = new float[Map.ins.numStates];
 		float tasum = 0;
-
 
 		//this function should generate fresh data for troopAllocations
 		for (int i = 0; i < Map.ins.numStates; i++)
@@ -138,7 +145,6 @@ public class State_AI : State
 	public void ICBMStrike(int warheads, List<Target> targets)
 	{
 		//Nice little self contained function for obliterating civilization
-
 		Silo[] silos = ArmyUtils.GetSilos(team);
 		if (silos.Length < 1) return;
 		int slcham = 0;
@@ -151,7 +157,9 @@ public class State_AI : State
 			bool target_aquired = false;
 			do
 			{
-				if (targets.Count <= i) return;
+				if (targets.Count <= i) {
+					return;
+				}
 
 				target = targets[i];
 				if (targetHashList.Contains(target.hash))
@@ -165,10 +173,20 @@ public class State_AI : State
 
 			}
 			while (!target_aquired);
-
+			while (silos[slcham].numMissiles < 1) {
+				if (slcham >= silos.Length - 1) break;
+				slcham++;
+			}
 			SiloFire(silos[slcham], target, 1);
 			slcham++;
 		}
+
+		if(slcham > 0) {
+			//HACK inform diplomacy
+			Debug.Log(team + "informing");
+			LaunchDetection.Launched(silos[0].transform.position, targets[0].wpos);
+		}
+
 	}
 
 	protected async void DistributedPositions(int borderwith, List<Unit> troops, bool teleport = false)
@@ -184,7 +202,6 @@ public class State_AI : State
 			//honestly stupid expensive city-oriented method
 			//City c = await Task.Run(() => NearestCity(pos, borderwith, null));
 			//if (c == null) return; // alexander wept
-
 
 			Vector2Int dest;
 			if (ROE.AreWeAtWar(team, borderwith) && Random.Range(0, 1f) > 0.25f)
@@ -203,7 +220,6 @@ public class State_AI : State
 				if (borderSize < 1) continue;
 				dest = Map.ins.borderPoints[team][borderwith][troops[i].id % borderSize];
 			}
-
 
 			int[] pas = ROE.Passables(team); //which states we can pass over
 
@@ -232,6 +248,7 @@ public class State_AI : State
 			else {
 				troops[i].Direct(o);
 				recentlyOrdered.Add(troops[i]);
+				directs++;
 			}
 		}
 	}
@@ -303,12 +320,13 @@ public class State_AI : State
 		{
 			units[i].Direct(new Order(Order.Type.MoveTo, pos[i]));
 			recentlyOrdered.Add(units[i]);
+			directs++;
 		}
 	}
 
-	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
+	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim, bool provoked)
 	{
-		base.LaunchDetect(launcher, target, perp, victim);
+		base.LaunchDetect(launcher, target, perp, victim, provoked);
 
 		if (victim == team && Diplomacy.relationships[team, perp] != Diplomacy.Relationship.NuclearWar)
 		{
@@ -323,8 +341,11 @@ public class State_AI : State
 		ClearGarrisons();
 		Unit[] uns = ArmyUtils.GetArmies(team);
 		List<Unit> assigned = new List<Unit>(); 
-		if (!overwriteRecentOrders) {
-			//assigned = recentlyOrdered;
+		if (overwriteRecentOrders) {
+			recentlyOrdered.Clear();
+		}
+		else {
+			assigned = new List<Unit>(recentlyOrdered);
 		}
 		
 		int[] allotment = new int[Map.ins.numStates];
@@ -348,16 +369,23 @@ public class State_AI : State
 	{
 		base.ReadyForOrders(un);
 		recentlyOrdered.Remove(un);
+		readies++;
+		if(team == 0) {
+			//Debug.Log(recentlyOrdered.Count());
+		}
 	}
 
-	protected void SiloFire(Silo sl, Target t, int warheads)
+	protected bool SiloFire(Silo sl, Target t, int warheads)
 	{
-		if (sl.numMissiles < 1) return;
+		if (sl.numMissiles < 1) return false;
 		Order or = new Order(Order.Type.Attack, t.wpos);
-		ArmyUtils.Salvo(sl, or, warheads);
-		//todo only add to hashlist if a missile really was fired
-		targetHashList.Add(t.hash);
-		StartCoroutine(RemoveFromHash(t.hash, MapUtils.Tau(sl.transform.position, t.wpos)));
+		if(ArmyUtils.Salvo(sl, or, warheads)) {
+			//todo only add to hashlist if a missile really was fired
+			targetHashList.Add(t.hash);
+			StartCoroutine(RemoveFromHash(t.hash, MapUtils.Tau(sl.transform.position, t.wpos)));
+			return true;
+		}
+		return false;
 	}
 
 	protected void ClearGarrisons() { 

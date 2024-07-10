@@ -65,6 +65,31 @@ public static class MapUtils
 		return posI;
 	}
 
+	public static Vector2Int RandomPointInState(int state) {
+		Vector2Int posI = new Vector2Int(
+		Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
+		Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+		int tries = 0;
+		while (Map.ins.GetPixTeam(posI) != state) {
+			tries++;
+			if(tries > 2000) {
+				Debug.Log("No suitable location found " + tries);
+				return Vector2Int.zero;
+			}
+			posI = new Vector2Int(
+				Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
+				Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+		}
+		return posI;
+	}
+	public static int[] LiveTeamsBuffer() {
+		int[] liveteams = new int[Map.ins.numStates];
+		for(int i = 0; i < liveteams.Length; i++) {
+			liveteams[i] = Diplomacy.states[i].alive ? 1 : 0;
+		}
+		return liveteams;
+    }
+
 	public static Vector3Int STIN_FromIndex(int index) {
 		// presently unused, but don't want to delete in case i ever need it
 		// since I don't really remember how the STIN array works
@@ -119,7 +144,7 @@ public static class MapUtils
 		return point;
     }
 
-	public static int PointToTeam(Vector2 point) {
+	public static int WorldPosToTeam(Vector2 point) {
 		Vector2Int coords = PointToCoords(point);
 		return Map.ins.GetPixTeam(coords);
     }
@@ -137,8 +162,6 @@ public static class MapUtils
 		int y = Mathf.FloorToInt(index / Map.ins.texelDimensions.x);
 		return new Vector2Int(x, y);
     }
-
-
 
 	public static int[] BitwiseTeams(int parse) {
 		List<int> teams = new List<int>();

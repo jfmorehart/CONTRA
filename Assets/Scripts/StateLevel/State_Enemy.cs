@@ -5,15 +5,23 @@ using UnityEngine;
 using static ArmyUtils;
 using Unity.VisualScripting;
 
-public class EnemyState : State_AI
+public class State_Enemy : State_AI
 {
+	//this class is super fucked
+	//its trying to mimic a nation state in the cold war so its a little spaghetti
+
 	StateEval[] rivals;
+	public float[] opinion;
 
 	protected override void Awake()
 	{
 		base.Awake();
 		rivals = new StateEval[Map.ins.numStates];
-	}
+		opinion = new float[Map.ins.numStates];
+		for(int i =0; i < Map.ins.numStates; i++) {
+			opinion[i] = Random.Range(0.45f, 0.55f);
+		}
+ 	}
 
 	protected override void StateUpdate()
 	{
@@ -21,21 +29,29 @@ public class EnemyState : State_AI
 
 		float combinedConfidenceOfVictory = 1;
 
-		//COMBAT STUFF
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
 			if (Diplomacy.IsMyAlly(team, i)) continue;
-			if (Map.ins.state_populations[i] < 1) {
+			if (!Diplomacy.states[i].alive) {
 				ROE.MakePeace(team, i);
 				continue;
 			}
 
 			StateEval eval = new StateEval(team, i);
 			rivals[i] = eval;
+
+			//COMBAT STUFF
 			if (ROE.AreWeAtWar(team, i))
 			{
-				combinedConfidenceOfVictory *= eval.pVictory;
+				if (sharesBorder[i]) {
+					combinedConfidenceOfVictory *= eval.pVictory;
+				}
+				else {
+					//todo make more sophisticated
+					Diplomacy.OfferPeace(team, i);
+				}
+
 				if (Map.ins.state_populations[i] < 1) ROE.MakePeace(team, i);
 
 				War war = War.Peer;
@@ -54,19 +70,12 @@ public class EnemyState : State_AI
 				}
 				ConductWar_Update(i, war);
 			}
-			else
-			{
-				if (AsyncPath.ins == null) return;
-				if (AsyncPath.ins.SharesBorder(team, i))
-				{
-					//todo replace with more sophisticated method for mimicking anger
-					if (Time.timeSinceLevelLoad> 10 && eval.pVictory > 0.65f && !ROE.AreWeAtWar(team))
-					{
-						ROE.DeclareWar(team, i);
-						ConductWar_Update(i, War.Colonial);
-					}
-				}
-			}
+		}
+
+		//can support foreign adventures
+		if(combinedConfidenceOfVictory > 0.6f && assesment.percentGrowth > 0.3f) {
+
+			ForeignAdventures(combinedConfidenceOfVictory);
 		}
 
 		//THINKING STUFF
@@ -93,6 +102,11 @@ public class EnemyState : State_AI
 		}
 		else {
 			//AT PEACE
+			if (nuclearCount[team] + (2 * construction_sites.Count) < (assesment.buyingPower / 60) - 1)
+			{
+				InfluenceMan.ins.NewConstruction(team, MapUtils.RandomPointInState(team));
+			}
+
 			if (ArmyUtils.conventionalCount[team] < Map.ins.state_populations[team] * 0.1f)
 			{
 				//if our standing army is too small, grow it by a tenth of the surplus cash
@@ -112,17 +126,52 @@ public class EnemyState : State_AI
 			AttemptDeescalation();
 		}
 	}
-	void AttemptDeescalation() {
-		//offer peace to the smaller one
-		int smallestEnemy = team;
-		float highestCOV = 0;
-		foreach(int i in ROE.GetEnemies(team)) {
-			if (rivals[i].pVictory > highestCOV) {
-				smallestEnemy = i;
+	void ForeignAdventures(float confidence) {
+		//lets think about declaring war
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (team == i) continue;
+			if (Diplomacy.IsMyAlly(team, i)) continue;
+			if (!Diplomacy.states[i].alive) continue;
+
+			if (sharesBorder[i])
+			{
+				//todo replace with more sophisticated method for mimicking anger
+				//Debug.Log(team + " " + i + "  " + rivals[i].pVictory);
+				if (confidence * rivals[i].pVictory > opinion[i] * 1.5f && rivals[i].pVictory > 0.5f)
+				{
+					confidence *= rivals[i].pVictory;
+					ROE.DeclareWar(team, i);
+				}
+				else if (rivals[i].pVictory < 0.7)
+				{
+					List<int> enemiesOfEnemy = ROE.GetEnemies(i);
+					foreach (int e in enemiesOfEnemy)
+					{
+						Debug.Log(team + " says " + e + " is an enemy of " + i);
+						if (opinion[e] > 0.5 && rivals[e].pVictory > rivals[i].pVictory)
+						{
+							SendAid(e);
+							opinion[e] *= 1.05f;
+							Debug.Log(team + "donating to " + e);
+						}
+					}
+				}
 			}
 		}
-		Diplomacy.OfferPeace(team, smallestEnemy);
-    }
+	}
+	void AttemptDeescalation()
+	{
+		//offer peace to the smaller one
+		foreach (int i in ROE.GetEnemies(team))
+		{
+			if (rivals[i].pVictory < opinion[i] * 1.5)
+			{
+				Diplomacy.OfferPeace(team, i);
+				return;
+			}
+		}
+	}
 
 	protected override void ConductWar_Update(int enemy, War war)
 	{
@@ -138,9 +187,13 @@ public class EnemyState : State_AI
 		{
 			case War.Peer:
 				// Conventional Invasion
-				// Maintain countervalue threat
-				targets.AddRange(NuclearTargets(enemy));
-				ICBMStrike(20, targets);
+				// Limited countervalue attack if no counterforce threat
+				if (rivals[enemy].nukeRatio < 0.1) {
+					targets.AddRange(CivilianTargets(enemy));
+					targets.AddRange(ConventionalTargets(enemy));
+					ICBMStrike(5, targets);
+				}
+
 				break;
 			case War.Colonial:
 				// Conventional Invasion
@@ -169,4 +222,44 @@ public class EnemyState : State_AI
 				break;
 		}
 	}
+
+	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim, bool provoked)
+	{
+		base.LaunchDetect(launcher, target, perp, victim, provoked);
+		if(victim == team) {
+			opinion[perp] *= 0.5f;
+			Debug.Log(team + " bad");
+		}
+		else if(ROE.AreWeAtWar(team, victim)) {
+			opinion[perp] *= 1.1f;
+			Debug.Log(team + " good");
+		}
+		else {
+			//mm yummy magic number soup
+			float opmult = OpinionMultiplier(victim, 0.1f) * 0.95f;
+			Debug.Log(team + " " + perp + " *= " + opmult);
+			opinion[perp] *= opmult;
+		}
+		
+
+	}
+
+	public override void RecieveAid(int from)
+	{
+		base.RecieveAid(from);
+		Debug.Log("recieved aid from " + from);
+		opinion[from] *= 1.05f;
+	}
+
+	public override void WarStarted(int by)
+	{
+		base.WarStarted(by);
+		if (by == team) return;
+		opinion[by] *= 0.25f;
+	}
+
+	public float OpinionMultiplier(int victim, float scale) {
+		return (1 - ((opinion[victim] - 0.5f) * scale));
+	}
+
 }

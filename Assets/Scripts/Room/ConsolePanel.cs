@@ -12,9 +12,13 @@ public class ConsolePanel : MonoBehaviour
 	public struct Logline{
 		public string text;
 		public int mult;
-		public Logline(string l, int m) {
+		public float startTime;
+		public float lifeTime;
+		public Logline(string l, int m, float start, float life) {
 			text = l;
 			mult = m;
+			startTime = start;
+			lifeTime = life;
 		}
 	}
 	public static List<Logline> lines;
@@ -46,16 +50,30 @@ public class ConsolePanel : MonoBehaviour
 		}
 	}
 
-	private void Update()
+	void Update()
 	{
+		List<Logline> expired = new List<Logline>();
+		for(int i = 0; i < lines.Count; i++) { 
+			if(Time.time - lines[i].startTime > lines[i].lifeTime) {
+				expired.Add(lines[i]);
+			}
+		}
+		foreach(Logline log in expired) {
+			lines.Remove(log);
+		}
+
+
 		for (int i = 0; i < linecount; i++)
 		{
 			string line = "";
-			if(lines.Count > i) {
-				if(i == lines.Count - 1) {
+			if (lines.Count > i)
+			{
+				if (i == lines.Count - 1)
+				{
 					line = greencarat + lines[i].text;
 				}
-				else {
+				else
+				{
 					line = carat + lines[i].text;
 				}
 				if (lines[i].mult > 1)
@@ -67,19 +85,19 @@ public class ConsolePanel : MonoBehaviour
 			spaces[i].text = line;
 
 		}
-
 	}
 
-	public static void Log(string str) {
+	public static void Log(string str, float lifeTime = 10) {
 		if(lines.Count > 0) {
-			if (lines[^1].text.Contains(str))
+			int repeatCheck = LineThatContains(str);
+			if (repeatCheck != -1)
 			{
-				lines[^1] = new Logline(lines[^1].text, lines[^1].mult + 1);
+				lines[repeatCheck] = new Logline(lines[repeatCheck].text, lines[repeatCheck].mult + 1, Time.time, lines[repeatCheck].lifeTime);
 				return;
 			}
 		}
 
-		lines.Add(new Logline(str, 1));
+		lines.Add(new Logline(str, 1, Time.time, lifeTime));
 		if(lines.Count > linecount) {
 			lines.RemoveAt(0);
 		}
@@ -90,5 +108,12 @@ public class ConsolePanel : MonoBehaviour
 			return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + "you" + "</color >";
 		}
 		return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + Diplomacy.state_names[team] + "</color >";
+	}
+
+	public static int LineThatContains(string str) { 
+		for(int i =0; i < lines.Count; i++) {
+			if (lines[i].text.Contains(str)) return i;
+		}
+		return -1;
 	}
 }

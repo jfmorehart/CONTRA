@@ -163,7 +163,7 @@ public class oldUI : MonoBehaviour
 		void UpdateSlider(Slider sl) { 
 			if(currentMenu == Menu.state) {
 				//this is the troop slider
-				PlayerState pl = Diplomacy.states[0] as PlayerState;
+				State_Player pl = Diplomacy.states[0] as State_Player;
 				pl.troopAllocPlayerInput[nationSelected] = sl.value - 0.5f;
 			}
 		}
@@ -239,7 +239,7 @@ public class oldUI : MonoBehaviour
 			DisplayHandler.ins.TogglePopStrikeScreen(false);
 			if (options[(int)currentMenu][0].transform.GetChild(0).TryGetComponent(out Slider sl))
 			{
-				PlayerState pl = Diplomacy.states[0] as PlayerState;
+				State_Player pl = Diplomacy.states[0] as State_Player;
 				sl.value = pl.troopAllocPlayerInput[nationSelected] + 0.5f;
 			}
 		}
@@ -322,7 +322,7 @@ public class oldUI : MonoBehaviour
 		}
 	}
 
-	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim) {
+	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim, bool provoked) {
 		if (victim == playerTeam)
 		{
 			//osc = true;

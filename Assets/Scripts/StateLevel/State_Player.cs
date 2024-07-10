@@ -4,7 +4,7 @@ using System.Drawing;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class PlayerState : State_AI
+public class State_Player : State_AI
 {
 	// This class is barely modded from State_AI.
 	// it only adds some player guidance for troop allocations
@@ -56,9 +56,9 @@ public class PlayerState : State_AI
 		}
 	}
 
-	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
+	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim, bool provoked)
 	{
-		base.LaunchDetect(launcher, target, perp, victim);
+		base.LaunchDetect(launcher, target, perp, victim, provoked);
 		if(perp == team) {
 			Debug.Log("LAUNCH DETECT  " + launcher + "   " + target);
 			string str = "<color=\"red\">" + " Launching Missile" + "</color> at ";

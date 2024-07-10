@@ -275,11 +275,12 @@ public static class ArmyUtils
 		return enc;
 	}
    
-	public static void Salvo(Silo sl, Order or, int repeat) {
+	public static bool Salvo(Silo sl, Order or, int repeat) {
 		int n = Mathf.Min(repeat, sl.numMissiles);
 		for (int i = 0; i < n; i++) {
 			sl.Direct(or);
 		}
+		return n > 0; //return true if we fired
     }
 
 	//public static List<Army> FetchStoredArmyData(int team) { 

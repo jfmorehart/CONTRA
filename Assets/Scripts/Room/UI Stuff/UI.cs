@@ -32,21 +32,39 @@ public class UI : MonoBehaviour
 	public Vector2 textOrigin;
 	public float infoSpacer;
 
+	public GameObject diploStateOptionPrefab;
+
 	public void Start()
 	{
 		ins = this;
 		LaunchDetection.launchDetectedAction += LaunchDetect;
 		DisplayHandler.resetGame += Reset;
 		menu_diplo.gameObject.SetActive(true);
-		for (int i = 0; i < menu_diplo.children.Length; i++) {
+
+		menu_diplo.children = new UIOption[Map.ins.numStates - 1]; //skip player
+		for (int i = 0; i < Map.ins.numStates - 1; i++)
+		{
+			GameObject g = Instantiate(diploStateOptionPrefab, menu_diplo.transform);
+			g.GetComponent<RectTransform>().position = new Vector3(200, -50, 0);
+			menu_diplo.children[i] = g.GetComponent<UIOption>();
 			UIOption op = menu_diplo.children[i];
-			//Debug.Log(op.name);
-			//Debug.Log(op.name + " " + op.text.color + op.GetComponent<TMP_Text>().color);
+			op.onSelect.AddListener(SelectNation);
+			op.value = i + 1; //skip 0 (player state)
 			op.text.color = Map.ins.state_colors[(int)op.value];
 			op.defaultColor = Map.ins.state_colors[(int)op.value];
 			op.plaintext = Diplomacy.state_names[(int)op.value];
 			op.text.text = Diplomacy.state_names[(int)op.value];
 		}
+
+		//for (int i = 0; i < menu_diplo.children.Length; i++) {
+		//	UIOption op = menu_diplo.children[i];
+		//	//Debug.Log(op.name);
+		//	//Debug.Log(op.name + " " + op.text.color + op.GetComponent<TMP_Text>().color);
+		//	op.text.color = Map.ins.state_colors[(int)op.value];
+		//	op.defaultColor = Map.ins.state_colors[(int)op.value];
+		//	op.plaintext = Diplomacy.state_names[(int)op.value];
+		//	op.text.text = Diplomacy.state_names[(int)op.value];
+		//}
 		menu_home.gameObject.SetActive(true);
 		menu_diplo.gameObject.SetActive(false);
 		menu_build.gameObject.SetActive(false);
@@ -212,11 +230,11 @@ public class UI : MonoBehaviour
 		List<UIOption> toadd = new();
 		bool reselect = false;
 		for(int i = 0; i < menu_diplo.children.Length; i++) {
-			int team = (int)menu_diplo.children[i].value;
-			if (Map.ins.state_populations[team] > 0) {
+			if (Diplomacy.states[Mathf.RoundToInt(menu_diplo.children[i].value)].alive) {
 				toadd.Add(menu_diplo.children[i]);
 			}
 			else {
+				Debug.Log("deleting state " + i + 1);
 				Destroy(menu_diplo.children[i].gameObject);
 				reselect = true;
 			}
@@ -241,7 +259,7 @@ public class UI : MonoBehaviour
 		LaunchDetection.launchDetectedAction -= LaunchDetect;
 	}
 
-	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim)
+	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim, bool provoked)
 	{
 		if (victim == playerTeam)
 		{

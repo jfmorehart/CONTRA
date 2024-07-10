@@ -97,9 +97,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
-  money: 0
+  alive: 1
   construction_sites: []
   econ_military_max: 1
+  manHourDebt: 0
   origin: {x: 0, y: 0}
   troopAllocations: []
   sharesBorder: 
+  directs: 0
+  readies: 0
+  opinion: []

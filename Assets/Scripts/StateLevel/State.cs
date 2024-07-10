@@ -14,6 +14,7 @@ public class State : MonoBehaviour
 
 	//0 through numStates
 	public int team;
+	public bool alive = true;
 
 	//We tell the sites how quickly to build themselves
 	public List<Construction> construction_sites;
@@ -53,6 +54,8 @@ public class State : MonoBehaviour
     }
 
 	protected virtual void StateUpdate() {
+		if (!alive) return;
+
 		//called ever 5 seconds
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
@@ -65,8 +68,9 @@ public class State : MonoBehaviour
 		ConstructionWork();
 
 		//delete all troops if you have no cities left
-		if (Map.ins.state_populations[team] < 2) {
+		if (Map.ins.state_populations[team] < 5 || (GetCities(team).Count < 1)) {
 			DisbandTroops(100);
+			alive = false;
 		}
 		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team]) {
 			int diff = ArmyUtils.conventionalCount[team] - (int)Map.ins.state_populations[team];
@@ -85,7 +89,7 @@ public class State : MonoBehaviour
 				budgetCut -= Economics.cost_armyUpkeep;
 			}
 			else {
-				Debug.Log(team + " disbanded " + i + " units");
+				//Debug.Log(team + " disbanded " + i + " units");
 				return;
 			}
 		}
@@ -119,6 +123,7 @@ public class State : MonoBehaviour
 		int disbanded = 0;
 		for (int i = 0; i < armies.Length; i++)
 		{
+			manHourDebt -= Economics.cost_armySpawn * 0.5f;
 			armies[i].Kill();
 			disbanded++;
 			if (disbanded > toDisband) return;
@@ -139,7 +144,7 @@ public class State : MonoBehaviour
 		for (int i = 0; i < cities.Length; i++)
 		{
 			if (toSpawn == 0) {
-				if(team == 0)ConsolePanel.Log("conscripting additional men");
+				if(team == 0)ConsolePanel.Log("conscripting additional men", 5);
 				return;
 			}
 
@@ -147,7 +152,7 @@ public class State : MonoBehaviour
 			if(manHourDebt > assesment.buyingPower * 2) {
 				//Debug.Log("we dont have the funds to train more troops right now");
 				if(team == 0) {
-					ConsolePanel.Log("insufficient funding to train new troops");
+					ConsolePanel.Log("insufficient funding to train new troops", 5);
 				}
 				return; //do not let us get too far into debt
 			}
@@ -208,7 +213,7 @@ public class State : MonoBehaviour
 
 	}
 
-	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) {
+	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim, bool provoked) {
 
     }
 		
@@ -216,10 +221,15 @@ public class State : MonoBehaviour
 
     }
 
-	public void SendAid(int to)
+	public virtual void SendAid(int to)
 	{
 		ConsolePanel.Log(ConsolePanel.ColoredName(team) + " sent aid to " + ConsolePanel.ColoredName(to)); ;
 		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 5;
 		Diplomacy.states[to].manHourDebt -= Economics.cost_armySpawn * 5;
+		Diplomacy.states[to].RecieveAid(team);
 	}
+
+	public virtual void RecieveAid(int from) { 
+		
+    }
 }

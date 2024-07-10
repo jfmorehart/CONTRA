@@ -46,7 +46,7 @@ public static class ROE
 
 	public static List<int> GetEnemies(int team) {
 		List<int> enemies = new();
-		for(int i =0; i < Map.ins.numStates; i++) {
+		for(int i = 0; i < Map.ins.numStates; i++) {
 			if (team == i) continue;
 			if(AreWeAtWar(team, i)) {
 				enemies.Add(i);
@@ -70,13 +70,13 @@ public static class ROE
 
 		if (t1 == 0)
 		{
-			Log(you + " declared war on " + ColoredName(t2));
+			Log(you + " declared war on " + ColoredName(t2), 30);
 		}
 		else if(t2 == 0) { 
-			Log(ColoredName(t1) + " has declared war on " + you);
+			Log(ColoredName(t1) + " has declared war on " + you, 30);
 		}
 		else { 
-			Log(ColoredName(t1) + " has declared war on " + ColoredName(t2));
+			Log(ColoredName(t1) + " has declared war on " + ColoredName(t2), 30);
 		}
 	}
 	public static void MakePeace(int t1, int t2)

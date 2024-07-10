@@ -83,6 +83,7 @@ public class Map : MonoBehaviour
 		NewMap();
 		//Borders are initially set by state of war
 		ROE.SetAllExceptIdentity(1);
+		Influences.SetInt("defenseBias", 0);
 
 		//Just city borders, used for army placement
 		BuildInfluences();
@@ -140,6 +141,9 @@ public class Map : MonoBehaviour
 		// Lock borders at war-state, but now moving armies
 		// wont override peacetime borders.
 		ROE.SetAllExceptIdentity(0);
+
+		// bias the influence system towards holding territory
+		Influences.SetInt("defenseBias", 1);
 
 		CountPop();
 
@@ -280,6 +284,10 @@ public class Map : MonoBehaviour
 		ComputeBuffer atWar = new ComputeBuffer(numStates * numStates, 4);
 		atWar.SetData(ROE.atWar);
 		Influences.SetBuffer(0, "atWar", atWar);
+
+		ComputeBuffer liveteams = new ComputeBuffer(numStates, 4);
+		liveteams.SetData(MapUtils.LiveTeamsBuffer());
+		Influences.SetBuffer(0, "liveTeams", liveteams);
 
 		if(InfluenceMan.ins == null) {
 			InfluenceMan.ins = FindObjectOfType<InfluenceMan>();

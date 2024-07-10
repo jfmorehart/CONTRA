@@ -6,8 +6,10 @@ public class Construction : Unit
 {
     public Unit toBuild;
     public float manHoursRemaining;
-
     
+    //Sites are registered on Awake as construction_sites in their team's State class
+    // they are then Worked until completed, where they're replaced by the stored toBuild unit
+
 	public void Work(float workAmt)
     {
         manHoursRemaining -= workAmt;

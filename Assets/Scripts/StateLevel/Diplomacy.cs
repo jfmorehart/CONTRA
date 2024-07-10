@@ -66,10 +66,10 @@ public static class Diplomacy
 			//reset for the next war lmao
 			peaceOffers[t1, t2] = false;
 			peaceOffers[t2, t1] = false;
-			Log(ColoredName(t1) + " and " + (ColoredName(t2) + " have made peace"));
+			Log(ColoredName(t1) + " and " + (ColoredName(t2) + " have made peace"), 30);
 		}
 		else {
-			Log(ColoredName(t1) + " has offered " + (ColoredName(t2) + " peace"));
+			Log(ColoredName(t1) + " has offered " + (ColoredName(t2) + " peace"), 30);
 		}
 	}
 	public static void RemovePeaceOffer(int t1, int t2)

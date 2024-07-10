@@ -39,11 +39,11 @@ public class PlayerInput : MonoBehaviour
 		Vector2 wp = transform.GetChild(0).transform.position;
 		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) != 0) {
 
-			ConsolePanel.Log("unsuitable construction location");
+			ConsolePanel.Log("unsuitable construction location", 5);
 			return;
 		}
 
-		ConsolePanel.Log("New ICBM Silo being constructed at: " + ((Vector2)(transform.position)).ToString());
+		ConsolePanel.Log("New ICBM Silo being constructed at: " + wp.ToString());
 
 		Transform t = Instantiate(InfluenceMan.ins.constructionPrefab,
 	     wp, Quaternion.identity, InfluenceMan.ins.transform).transform;
@@ -56,7 +56,7 @@ public class PlayerInput : MonoBehaviour
 	public void PlayerSendAid() {
 		if (Diplomacy.states[0].manHourDebt > Diplomacy.states[0].assesment.buyingPower * 2)
 		{
-			ConsolePanel.Log("Insufficient funds to send aid");
+			ConsolePanel.Log("Insufficient funds to send aid", 5);
 		}
 		else {
 
@@ -71,7 +71,7 @@ public class PlayerInput : MonoBehaviour
 	}
 	public void DisbandTroops()
 	{
-		ConsolePanel.Log("placing men on leave");
+		ConsolePanel.Log("placing men on leave", 5);
 		Diplomacy.states[0].DisbandTroops(5);
 	}
 }

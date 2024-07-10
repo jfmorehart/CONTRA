@@ -12,9 +12,12 @@ struct Inf{
 
 int numStates;
 int numInfs;
+int defenseBias;
 StructuredBuffer<Inf> infs; 
 RWStructuredBuffer<float> stin;
 RWStructuredBuffer<int> teamOf;
+RWStructuredBuffer<int> liveTeams;
+
 StructuredBuffer<int> atWar; 
 
 [numthreads(32,32,1)]
@@ -23,14 +26,19 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int index = (id.y * dime.x) + id.x;
     if(teamOf[index] < 0) return;
 
+    int live = liveTeams[teamOf[index]];
+
     //Finds us the first number in the array refferring to this texel;
     int stin_index = id.y * (dime.x * numStates);
     stin_index += id.x * numStates;
 
+    //zero out buffer
     for(int j = 0; j < numStates; j++)
     {
         stin[stin_index + j] = 0;
     }
+    //bias towards holding territory
+    stin[stin_index + teamOf[index]] = live * 0.01 * defenseBias + (1 - live) * -1000;
 
     //iterate over every influence
     for(int i = 0; i < numInfs; i++){

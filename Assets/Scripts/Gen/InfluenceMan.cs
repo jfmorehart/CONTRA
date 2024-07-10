@@ -60,7 +60,7 @@ public class InfluenceMan : MonoBehaviour
             Army rm = t.GetComponent<Army>();
 		}
 
-		for(int i = 0; i < 10; i++) {
+		for(int i = 0; i < 2; i++) {
 			Vector2 wp = RandomPointOnMap();
 
 			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
@@ -76,6 +76,21 @@ public class InfluenceMan : MonoBehaviour
 		Army ar = Instantiate(armyPrefab, worldPos, Quaternion.identity, transform).GetComponent<Army>();
 		return ar;
 	}
+
+	public Unit NewConstruction(int team, Vector2Int mapPos) {
+		if (mapPos == Vector2Int.zero) return null; //no spot found
+
+		Debug.Log("new silo!");
+		//Build silo at position
+		Transform t = Instantiate(InfluenceMan.ins.constructionPrefab,
+			MapUtils.CoordsToPoint(mapPos), Quaternion.identity, InfluenceMan.ins.transform).transform;
+
+		Construction co = t.GetComponent<Construction>();
+		co.toBuild = InfluenceMan.ins.siloPrefab.GetComponent<Unit>();
+		co.team = team;
+		return co as Unit;
+	}
+
 	public void Spawn_CityLogic(int index, Inf city)
 	{
 		if (city.team == -1) return;

@@ -46,6 +46,10 @@ public class Army : Unit
 	public virtual void Update()
 	{
 		secondsSinceSaidReady += Time.deltaTime;
+		if(secondsSinceSaidReady > 10 && !enroute) {
+			//remind them
+			Idle();
+		}
 		wpos = transform.position; //For use in multithreaded city shenanigans
 
 		if (enroute) {
