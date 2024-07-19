@@ -9,6 +9,7 @@ public class InfoPanel : MonoBehaviour
 	public static InfoPanel instance;
 
 	public Image background;
+	public TMP_Text header;
 	public List<TMP_Text> texts;
 	public RectTransform textOrigin;
 	public GameObject textPrefab;
@@ -31,17 +32,53 @@ public class InfoPanel : MonoBehaviour
 
     }
 	public void ROEUpdate() {
+		if (UI.ins == null) return;
+
 		int numWars = texts.Count;
+		RefreshAtWarScreen();
+		if (numWars < texts.Count)
+		{
+			FlashColor(Color.red);
+		}
+		else if (numWars > texts.Count)
+		{
+			FlashColor(Color.green);
+		}
+	}
+
+	public void RefreshAtWarScreen() {
+		int target = UI.ins.targetNation;
+		
 		ClearTexts();
-		for(int s = 1; s < Map.ins.numStates; s++) {
-			if (ROE.AreWeAtWar(0, s)){
+		for (int s = 0; s < Map.ins.numStates; s++)
+		{
+			if (s == target) continue;
+			if (ROE.AreWeAtWar(target, s))
+			{
 				NewText(s);
 			}
 		}
-		if(numWars < texts.Count) {
-			FlashColor(Color.red);
-		}else if (numWars > texts.Count) {
-			FlashColor(Color.green);
+
+		if(texts.Count > 0){
+			if (target == 0)
+			{
+				header.text = ConsolePanel.ColoredName(target) + " are at war with:";
+			}
+			else
+			{
+				header.text = ConsolePanel.ColoredName(target) + " is at war with:";
+			}
+		}
+		else
+		{
+			if (target == 0)
+			{
+				header.text = ConsolePanel.ColoredName(target) + " are not at war";
+			}
+			else
+			{
+				header.text = ConsolePanel.ColoredName(target) + " is not at war";
+			}
 		}
     }
 	void FlashColor(Color c) {
@@ -57,10 +94,9 @@ public class InfoPanel : MonoBehaviour
 		
 		TMP_Text tex = g.GetComponent<TMP_Text>();
 		texts.Add(tex);
-		Vector2 offset = spacer * texts.Count * Vector2.down;
+		Vector2 offset = spacer * (1 + texts.Count) * Vector2.down;
 		g.transform.position = (Vector2)textOrigin.transform.position + offset;
-		tex.text = Diplomacy.state_names[nation]; //todo replace with nation names
-		tex.color = Map.ins.state_colors[nation];
+		tex.text = ConsolePanel.ColoredName(nation);
 	}
 
 	void ClearTexts() { 

@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
@@ -11,13 +13,26 @@ public class PlayerInput : MonoBehaviour
 	public static PlayerInput ins;
 	public LayerMask regularMask;
 	public LayerMask buildMask;
+	public LayerMask airMask;
 
 	public bool buildMode;
+	public bool airMode;
+
+	public static Action<bool> minimize;
 
 	private void Awake()
 	{
 		ins = this;
-		Camera.main.cullingMask = buildMode ? buildMask : regularMask;
+		if (buildMode) {
+			Camera.main.cullingMask = buildMask;
+		}
+		else if (airMode) {
+			Camera.main.cullingMask = airMask;
+		}
+		else {
+			Camera.main.cullingMask = regularMask;
+		}
+
 	}
 
 	// Update is called once per frame
@@ -28,28 +43,49 @@ public class PlayerInput : MonoBehaviour
 	    }
 	}
 
+	public void ToggleAirMode(bool enable) {
+		if (airMode == enable) return;
+		airMode = enable;
+		Camera.main.cullingMask = enable ? airMask : regularMask;
+		minimize?.Invoke(enable);
+		Map.ins.ConvertToTexture();
+	}
+
 	public void ToggleBuildMode(bool enable) {
 		buildMode = enable;
 		Camera.main.cullingMask = buildMode ? buildMask : regularMask;
 		Map.ins.ConvertToTexture();
 	}
 
-	public void BuildSilo() {
+
+	public void BuildBase(int kind)
+	{
 
 		Vector2 wp = transform.GetChild(0).transform.position;
-		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) != 0) {
+		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) != 0)
+		{
 
 			ConsolePanel.Log("unsuitable construction location", 5);
 			return;
 		}
 
-		ConsolePanel.Log("New ICBM Silo being constructed at: " + wp.ToString());
+		ConsolePanel.Log("New Base being constructed at: " + wp.ToString());
 
-		Transform t = Instantiate(InfluenceMan.ins.constructionPrefab,
-	     wp, Quaternion.identity, InfluenceMan.ins.transform).transform;
+		Transform t = Instantiate(ArmyManager.ins.constructionPrefab,
+		 wp, Quaternion.identity, ArmyManager.ins.transform).transform;
 
 		Construction co = t.GetComponent<Construction>();
-		co.toBuild = InfluenceMan.ins.siloPrefab.GetComponent<Unit>();
+		if(kind == 0) {
+			co.toBuild = ArmyManager.ins.siloPrefab.GetComponent<Unit>();
+		}
+		if (kind == 1)
+		{
+			co.toBuild = ArmyManager.ins.airbasePrefab.GetComponent<Unit>();
+		}
+		if (kind == 2)
+		{
+			//co.toBuild = InfluenceMan.ins.siloPrefab.GetComponent<Unit>();
+		}
 		co.team = 0;
 	}
 

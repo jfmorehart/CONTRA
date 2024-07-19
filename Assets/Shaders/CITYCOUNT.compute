@@ -8,10 +8,10 @@ int numStates;
 RWStructuredBuffer<uint> popcount;
 StructuredBuffer<float> popBuffer;
 
-[numthreads(8,8,1)]
+[numthreads(32,32,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    int index = (cpos.x + id.x - 4) + dime.x * (cpos.y + id.y - 4);
+    int index = (cpos.x + id.x - 16) + dime.x * (cpos.y + id.y - 16);
     InterlockedAdd(popcount[0], popBuffer[index]);
 }
 

@@ -5,9 +5,11 @@ using UnityEngine;
 public static class Economics
 {
 	public static float buyingPowerPerPopulation = 1f;
+
 	public static float cost_siloUpkeep = 20f;
 	public static float cost_armyUpkeep = 2;
 	public static float cost_armySpawn = 5;
+
 	public static float maxPowerPerSite = 30;
 
 	public static int[][] state_recent_growth;
@@ -97,9 +99,12 @@ public static class Economics
 		//despite this split, unused military budget will return to net;
 		float militaryBuyingPower = state.econ_military_max * buyingPower;
 
-		//calculate unit and silo upkeep
-		float siloUpkeep = cost_siloUpkeep * ArmyUtils.GetSilos(team).Length;
-		float upkeep = siloUpkeep + cost_armyUpkeep * ArmyUtils.GetArmies(team).Length;
+		//calculate unit upkeep costs
+		float upkeep = 0;
+		Unit[] allunit = ArmyUtils.AllUnitInventory(team);
+		for(int i = 0; i < allunit.Length; i++) {
+			upkeep += allunit[i].upkeepCost;
+		}
 
 		//negative is military surplus, used for construction and unit aquisition
 		float overrun = upkeep - militaryBuyingPower;

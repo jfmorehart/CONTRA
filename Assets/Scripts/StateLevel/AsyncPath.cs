@@ -42,20 +42,20 @@ public class AsyncPath : MonoBehaviour
 		return borders[x, y];
     }
 
-	public async Task CalcBorders() { 
-		for(int i = 0; i < Map.ins.numStates; i++) {
-			for (int j = i + 1; j < Map.ins.numStates; j++)
-			{
-				if ((i >= j)) continue;
-				Vector2Int st = MapUtils.PointToCoords(Diplomacy.states[i].transform.position);
-				Vector2Int en = MapUtils.PointToCoords(Diplomacy.states[j].transform.position);
-				int[] pas = new int[] { i, j }; //strict interpretation
-				Vector2Int[] path = await Task.Run(() => Path(st, en, pas.ToArray(), 1, 4000));
-				borders[i, j] = (path != null);
-				//Debug.Log(i + "does" + (borders[i, j] ? "" : "n't") + " border " + j);
-			}
-		}
-    }
+	//public async Task CalcBorders() { 
+	//	for(int i = 0; i < Map.ins.numStates; i++) {
+	//		for (int j = i + 1; j < Map.ins.numStates; j++)
+	//		{
+	//			if ((i >= j)) continue;
+	//			Vector2Int st = MapUtils.PointToCoords(Diplomacy.states[i].transform.position);
+	//			Vector2Int en = MapUtils.PointToCoords(Diplomacy.states[j].transform.position);
+	//			int[] pas = new int[] { i, j }; //strict interpretation
+	//			Vector2Int[] path = await Task.Run(() => Path(st, en, pas.ToArray(), 1, 4000));
+	//			borders[i, j] = (path != null);
+	//			//Debug.Log(i + "does" + (borders[i, j] ? "" : "n't") + " border " + j);
+	//		}
+	//	}
+ //   }
 
 	public Vector2Int[] Path(Vector2Int start, Vector2Int end, int[] passableTeams, int downres, int maxTries = 800)
 	{

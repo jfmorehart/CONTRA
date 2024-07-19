@@ -1,0 +1,221 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+using UnityEngine;
+
+public class Fighter : Plane
+{
+	[HideInInspector]
+	public Unit bogey;
+
+	public float trackingRange;
+	public float firingRange;
+	float maxAngleOfFire = 20;
+
+	protected float lastTargetAcquire;
+	protected float targetAcquireCooldown = 0.1f;
+
+	float lastValidityCheck;
+	readonly float validityCheckCooldown = 0.5f;
+
+	readonly float patrolDistance = 200;
+
+	float lastShot = -10;
+	public float reloadTime = 5;
+
+	float lastRadarCheck;
+
+	int patrolcham = 0;
+	int patroldir;
+
+	bool hasBombs = true;
+
+	State_AI state;
+
+	public override void Start()
+	{
+		base.Start();
+		patrolcham = Random.Range(0, homeBase.patrolPoints.Length);
+		patroldir = (Random.value > 0.5f) ? -1 : 1;
+		firingRange += Random.Range(-30, 30);
+		turnRate += Random.Range(-10, 10);
+		speed += Random.Range(-10, 10);
+
+		state = Diplomacy.states[team] as State_AI;
+	}
+	public override void Update()
+	{
+		CheckRadar();
+
+		if (bogey != null)
+		{
+			rateFight = true;
+			target = new Mission(bogey.transform.position, AcceptableDistance.Bogey);
+			Vector2 delta = bogey.transform.position - transform.position;
+			
+			if (delta.magnitude < firingRange && Vector2.Angle(transform.up, delta) < maxAngleOfFire)
+			{
+				if (Time.time - lastShot > reloadTime)
+				{
+					Vector2 vel = speed * Time.deltaTime * transform.up;
+					ATAM missile = Pool.ins.GetATAM();
+					missile.Launch(transform.position, vel, bogey, team);
+					(bogey as Plane).SmokeInTheAir(missile);
+					lastShot = Time.time;
+					bogey = null;
+				}
+			}
+		}
+		else if (target.distance != AcceptableDistance.None)
+		{
+			if (target.distance == AcceptableDistance.Bombtarget) {
+				ValidTargetCheck();
+			}
+
+			rateFight = false;
+			if(target.distance == AcceptableDistance.Bombtarget && target.value != -1 && hasBombs && !bingo) {
+				if (Time.time - lastTargetAcquire > targetAcquireCooldown)
+				{
+					SearchForHigherValue();
+					lastTargetAcquire = Time.time;
+				}
+			}
+		}
+
+		base.Update();
+
+	}
+	protected override void ArrivedOverTarget() {
+		if(target.distance == AcceptableDistance.Bombtarget && hasBombs) {
+			StartCoroutine(BombingRun(4));
+		}
+		else {
+			base.ArrivedOverTarget();
+		}
+    }
+	IEnumerator BombingRun(int count) {
+		bingo = true;
+		hasBombs = false;
+		for (int i = 0; i < count; i++)
+		{
+			BombManager.ins.Drop(team, transform.position, 1f);
+			yield return new WaitForSeconds(0.1f + Random.Range(-0.05f, 0.1f));
+		}
+    }
+	protected override void Idle()
+	{
+		target = Plane.NULLMission;
+		if(Time.time - lastTargetAcquire > targetAcquireCooldown){
+			AcquireNewTarget();
+		}
+		else {
+			if(homeBase != null) {
+				//PatrolPoint(homeBase.transform.position);
+				target = new Mission(homeBase.patrolPoints[patrolcham], AcceptableDistance.Waypoint); 
+				patrolcham += patroldir;
+				if(patrolcham >= homeBase.patrolPoints.Length) {
+					patrolcham = 0;
+				}
+				if (patrolcham < 0) patrolcham = homeBase.patrolPoints.Length - 1;
+			}
+		}
+	}
+	void SearchForHigherValue() {
+		int targetChunk = UnitChunks.ChunkLookup(target.wpos);
+		int end = UnitChunks.HighestValueBoxSearch(targetChunk, MapUtils.WorldPosToTeam(target.wpos));
+		int value = UnitChunks.targetables[end].Count;
+		Vector2 tpos = UnitChunks.ChunkIndexToMapPos(end);
+		target = new Mission(tpos, AcceptableDistance.Bombtarget, null, value);
+    }
+
+	protected virtual void AcquireNewTarget()
+	{
+		lastTargetAcquire = Time.time;
+
+		if(target.value == -1 && state.airdoctrine[(int)State_AI.AirDoctrines.AirSuperiority])
+
+		if (state.airdoctrine[(int)State_AI.AirDoctrines.AirSuperiority]) {
+			lastTargetAcquire = Time.time;
+			bogey = ArmyUtils.EnemyAircraftInRange(team, transform.position, trackingRange);
+		}
+		if (bogey != null) return;
+		if (hasBombs) {
+			target = state.RequestBombingTargets(this);
+		}
+		return;
+	}
+	void CheckRadar() {
+		if (Time.time - lastRadarCheck < 1) return;
+		lastRadarCheck = Time.time;
+		if (bogey != null) return;
+
+		bogey = ArmyUtils.EnemyAircraftInRange(team, transform.position, trackingRange);
+	}
+	void PatrolPoint(Vector2 patrolPoint) {
+		Vector2 radial = patrolPoint - (Vector2)transform.position;
+		if(radial.magnitude > patrolDistance + 10) {
+			float dev = Vector2.SignedAngle((Vector2)transform.up, radial);
+			if (dev > 0)
+			{
+				transform.Rotate(Vector3.forward, turnRate * Time.deltaTime);
+			}
+			else
+			{
+				transform.Rotate(-Vector3.forward, turnRate * Time.deltaTime);
+			}
+		}else if (radial.magnitude < patrolDistance - 10) {
+			float dev = Vector2.SignedAngle((Vector2)transform.up, -radial);
+			if (dev > 0)
+			{
+				transform.Rotate(Vector3.forward, turnRate * Time.deltaTime);
+			}
+			else
+			{
+				transform.Rotate(-Vector3.forward, turnRate * Time.deltaTime);
+			}
+		}
+		else {
+			Spin(patrolPoint);
+		}
+	}
+
+	void Spin(Vector2 point) {
+
+		//patrol airbase
+		Vector2 radial = point - (Vector2)transform.position;
+		float dev = Vector2.Dot((Vector2)transform.up, radial);
+
+		//tells the aircraft to just orbit at the current radius
+		if (dev > 0)
+		{
+			transform.Rotate(Vector3.forward, turnRate * Time.deltaTime);
+		}
+		else
+		{
+			transform.Rotate(-Vector3.forward, turnRate * Time.deltaTime);
+		}
+	}
+
+	void ValidTargetCheck() { 
+		if(Time.time - lastValidityCheck < validityCheckCooldown) {
+			return;
+		}
+		lastValidityCheck = Time.time;
+
+		if (target.distance != AcceptableDistance.Bombtarget) return;
+
+		int tarteam = MapUtils.WorldPosToTeam(target.wpos);
+		if(tarteam == -1) {
+			Debug.Log("nullout");
+			target = NULLMission;
+			return;
+		}
+		if (!ROE.AreWeAtWar(team, tarteam) || team == tarteam) {
+			//invalid target
+			Debug.Log("nullout");
+			target = NULLMission;
+		}
+	}
+}
+
+

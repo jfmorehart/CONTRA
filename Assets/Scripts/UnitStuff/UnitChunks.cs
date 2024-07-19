@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -67,7 +68,7 @@ public static class UnitChunks
                 int index = (chunk + j) + (i * dime.x); // index from v2
 
                 if (!IndexIsValid(index)) continue; //invalid sqrs
-                Vector2Int iv2 = IndexToV2(index);
+                //Vector2Int iv2 = IndexToV2(index);
                 //if (Vector2.Distance(cv2, iv2) > 1.5f) continue; //avoid wrapping
                 if ((chunk % dime.x) - ((chunk + j) % dime.x) > 1) continue;
                 sur.AddRange(chunks[index]);
@@ -77,6 +78,40 @@ public static class UnitChunks
         targetables_lastUpdate[chunk] = Time.time;
         return sur;
     }   
+
+    //compares current target vector to avaliable nearby targets
+    public static Vector2 AdjustTarget(Vector2 tar) {
+        int ch = ChunkLookup(tar);
+        return ChunkIndexToMapPos(HighestValueBoxSearch(ch, MapUtils.WorldPosToTeam(tar)));
+    }
+
+    //looks at adjacent chunks to see if theres a better target
+    public static int HighestValueBoxSearch(int chunk, int targetTeam) {
+        if (targetTeam == -1) return chunk;
+
+        int hv = -100;
+        int best = chunk;
+
+		for (int i = -1; i < 2; i++)
+		{
+			for (int j = -1; j < 2; j++)
+			{
+				int index = (chunk + j) + (i * dime.x); // index from v2
+				if (!IndexIsValid(index)) continue; //invalid sqrs		
+                //avoid wrapping
+				if ((chunk % dime.x) - ((chunk + j) % dime.x) > 1) continue;
+                if (targetTeam != Map.ins.GetPixTeam(MapUtils.PointToCoords(ChunkIndexToMapPos(index)))) {
+                    continue;
+		        }
+                if (chunkValues[targetTeam][index] < 1) continue;
+                if (targetables[index].Count > hv) {
+                    best = index;
+                    hv = targetables[index].Count;
+				}
+			}
+		}
+        return best;
+	}
     static bool IndexIsValid(int index) {
         if ((index < 0) || (index > (dime.x * dime.y) - 1)) return false;
         return true;

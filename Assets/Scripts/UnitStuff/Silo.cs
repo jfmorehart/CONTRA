@@ -2,18 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Silo : Unit
+public class Silo : Building
 {
-	public int numMissiles = 20;
+	public int maxMissiles = 10;
+	public int numMissiles;
 
-	float gCheck_rate = 2f;
-	float gCheck_last;
-	public void Update()
+
+	public override void Start()
 	{
-		if(Time.time - gCheck_last > gCheck_rate) {
-			gCheck_last = Time.time;
-			GroundCheck();
-		}
+		numMissiles = maxMissiles;
+		base.Start();
+		UpdateIconDisplay(numMissiles);
+	}
+	protected override void Reload()
+	{
+		base.Reload();
+		numMissiles++;
+		UpdateIconDisplay(numMissiles);
+	}
+	protected override bool CanReload()
+	{
+		return numMissiles < maxMissiles;
 	}
 
 	public override void Direct(Order order)
@@ -27,5 +36,7 @@ public class Silo : Unit
 		Vector2 ran = Random.insideUnitCircle; //* Random.Range(0f, 100);
 		Pool.ins.GetMissile().Launch(transform.position, pos + ran, 10f, team);
 		numMissiles--;
+
+		UpdateIconDisplay(numMissiles);
 	}
 }

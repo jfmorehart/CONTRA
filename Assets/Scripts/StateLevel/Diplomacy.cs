@@ -17,11 +17,17 @@ public static class Diplomacy
 		TotalWar
     }
 
+	public enum NewsItem { 
+		War,
+		Aid,
+		Nuke
+    }
+
 	public static State[] states;
 	public static Relationship[,] relationships;
 	//public delegate void DiploCall();
 	public static Action StatesReady;
-	//public static DiploCall StatesReady;
+	public static Action<NewsItem, int, int> News;
 
 	public static bool[,] peaceOffers;
 
@@ -55,6 +61,10 @@ public static class Diplomacy
 		}
 	}
 
+	public static void AnnounceNews(NewsItem news, int t1, int t2) {
+		News?.Invoke(news, t1, t2);
+    }
+
 	public static void OfferPeace(int t1, int t2) {
 		if (peaceOffers[t1, t2]) return; //already true;
 
@@ -69,7 +79,13 @@ public static class Diplomacy
 			Log(ColoredName(t1) + " and " + (ColoredName(t2) + " have made peace"), 30);
 		}
 		else {
-			Log(ColoredName(t1) + " has offered " + (ColoredName(t2) + " peace"), 30);
+			if(t1 == 0) {
+				Log(ColoredName(t1) + " have offered " + (ColoredName(t2) + " peace"), 30);
+			}
+			else {
+				Log(ColoredName(t1) + " has offered " + (ColoredName(t2) + " peace"), 30);
+			}
+		
 		}
 	}
 	public static void RemovePeaceOffer(int t1, int t2)
@@ -191,11 +207,6 @@ public static class Diplomacy
 		}
 		return -1;
     }
-
-	public static void Nuked(int perp, int victim, uint dead)
-	{
-
-	}
 
 	public static string RandomName() {
 		string name = "";

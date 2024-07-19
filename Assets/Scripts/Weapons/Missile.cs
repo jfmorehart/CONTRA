@@ -22,7 +22,7 @@ public class Missile : MonoBehaviour
 		Toggle(false);
 	}
 	public void Launch(Vector2 start, Vector2 end, float myield, int mteam) {
-		//LaunchDetection.Launched(start, end);
+		LaunchDetection.Launched(start, end);
 		transform.position = start;
 		st = start;
 		en = end;

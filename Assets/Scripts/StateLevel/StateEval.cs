@@ -30,8 +30,8 @@ public struct StateEval
 			nukeRatio = (5f + enemyNukes) / (float)(myNukes + 5f);
 		}
 
-		armyRatio = (1 + conventionalCount[enemy]) / (float)(conventionalCount[team] + 1f);
-		float lerpTerm = nukeRatio * 0.45f + armyRatio * 0.25f + popRatio * 0.3f;
+		armyRatio = (10 + conventionalCount[enemy]) / (float)(conventionalCount[team] + 10f);
+		float lerpTerm = nukeRatio * 0.45f + armyRatio * 0.20f + popRatio * 0.35f;
 		pVictory = Mathf.Clamp(Mathf.Pow(0.08f, Mathf.Pow(lerpTerm * 0.5f, 2)), 0.01f, 0.99f);
 		relationship = Diplomacy.relationships[team, enemy];
 		isHotWar = (int)relationship > 4; // covers limited and total war

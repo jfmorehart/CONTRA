@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class InfluenceMan : MonoBehaviour
+public class ArmyManager : MonoBehaviour
 {
-    public static InfluenceMan ins;
+    public static ArmyManager ins;
 
     public GameObject armyPrefab;
 	public GameObject cityPrefab;
 	public GameObject statePrefab;
 	public GameObject playerPrefab;
 	public GameObject siloPrefab;
+	public GameObject airbasePrefab;
 	public GameObject constructionPrefab;
 
 	public List<Army> armies;
+	public List<Airbase> airbases;
+	public List<Plane> aircraft;
 	public List<Silo> silos;
 	public List<Unit> other;
 	public List<City> cities;
@@ -23,7 +26,8 @@ public class InfluenceMan : MonoBehaviour
 	{
         ins = this;
         armies = new List<Army>();
-        silos = new List<Silo>();
+		airbases = new List<Airbase>();
+		silos = new List<Silo>();
 	}
 	public void Setup() {
 		ins = this;
@@ -77,16 +81,16 @@ public class InfluenceMan : MonoBehaviour
 		return ar;
 	}
 
-	public Unit NewConstruction(int team, Vector2Int mapPos) {
+	public Unit NewConstruction(int team, Vector2Int mapPos, Unit tobuild) {
 		if (mapPos == Vector2Int.zero) return null; //no spot found
 
 		Debug.Log("new silo!");
 		//Build silo at position
-		Transform t = Instantiate(InfluenceMan.ins.constructionPrefab,
-			MapUtils.CoordsToPoint(mapPos), Quaternion.identity, InfluenceMan.ins.transform).transform;
+		Transform t = Instantiate(ArmyManager.ins.constructionPrefab,
+			MapUtils.CoordsToPoint(mapPos), Quaternion.identity, ArmyManager.ins.transform).transform;
 
 		Construction co = t.GetComponent<Construction>();
-		co.toBuild = InfluenceMan.ins.siloPrefab.GetComponent<Unit>();
+		co.toBuild = tobuild;
 		co.team = team;
 		return co as Unit;
 	}
@@ -112,29 +116,48 @@ public class InfluenceMan : MonoBehaviour
     public Inf[] UpdateArmies() {
 
 		CleanArmies();
-		Unit[] tarmies = armies.ToArray();
-		Silo[] tsilos = silos.ToArray();
-        Inf[] linfs = new Inf[tarmies.Length + tsilos.Length];
-        for(int i = 0; i < tarmies.Length; i++) {
-            linfs[i] = new Inf(
-                MapUtils.PointToCoords(tarmies[i].transform.position),
-                Map.ins.armyInfluenceStrength,
-                tarmies[i].team,
-				1
-                );
-	    }
-		for (int i = tarmies.Length; i < tarmies.Length + tsilos.Length; i++)
+
+		List<Unit> all = new List<Unit>();
+		all.AddRange(armies);
+		all.AddRange(silos);
+		all.AddRange(airbases);
+
+		Unit[] allunits = all.ToArray();
+		Inf[] linfs = new Inf[allunits.Length];
+		for (int i = 0; i < allunits.Length; i++)
 		{
 			linfs[i] = new Inf(
-				MapUtils.PointToCoords(tsilos[i - tarmies.Length].transform.position),
+				MapUtils.PointToCoords(allunits[i].transform.position),
 				Map.ins.armyInfluenceStrength,
-				tsilos[i - tarmies.Length].team,
+				allunits[i].team,
 				1
 				);
 		}
-
 		return linfs;
-    }
+
+			//Silo[] tsilos = silos.ToArray();
+			//      Inf[] linfs = new Inf[tarmies.Length + tsilos.Length];
+			//      for(int i = 0; i < tarmies.Length; i++) {
+			//          linfs[i] = new Inf(
+			//              MapUtils.PointToCoords(tarmies[i].transform.position),
+			//              Map.ins.armyInfluenceStrength,
+			//              tarmies[i].team,
+			//		1
+			//              );
+			//   }
+			//for (int i = tarmies.Length; i < tarmies.Length + tsilos.Length; i++)
+			//{
+			//	linfs[i] = new Inf(
+			//		MapUtils.PointToCoords(tsilos[i - tarmies.Length].transform.position),
+			//		Map.ins.armyInfluenceStrength,
+			//		tsilos[i - tarmies.Length].team,
+			//		1
+			//		);
+			//}
+
+			//return linfs;
+	}
+
 	public Inf[] UpdateCities()
 	{
 		Inf[] infcities = new Inf[cities.Count];
@@ -215,6 +238,17 @@ public class InfluenceMan : MonoBehaviour
 	public void RegisterUnit(Unit un) {
 		if(un is Army) {
 			armies.Add(un as Army);
+			return;
+		}
+		if (un is Plane)
+		{
+			aircraft.Add(un as Plane);
+			return;
+		}
+		if (un is Airbase)
+		{
+			airbases.Add(un as Airbase);
+			return;
 		}
 		if (un is Silo)
 		{
@@ -235,10 +269,20 @@ public class InfluenceMan : MonoBehaviour
 		if (un is Army)
 		{
 			armies.Remove(un as Army);
+			return;
+		}
+		if (un is Plane)
+		{
+			aircraft.Remove(un as Plane);
+			return;
 		}
 		if (un is Silo)
 		{
 			silos.Remove(un as Silo);
+		}
+		if (un is Airbase)
+		{
+			airbases.Remove(un as Airbase);
 		}
 		else
 		{

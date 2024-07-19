@@ -59,6 +59,7 @@ public static class ROE
 	public static void DeclareWar(int t1, int t2) {
 		if (AreWeAtWar(t1, t2)) return;
 		Diplomacy.RemovePeaceOffer(t1, t2);
+		Diplomacy.AnnounceNews(Diplomacy.NewsItem.War, t1, t2);
 
 		SetState(t1, t2, 1);
 		if (t1 == t2) return;
@@ -76,7 +77,13 @@ public static class ROE
 			Log(ColoredName(t1) + " has declared war on " + you, 30);
 		}
 		else { 
-			Log(ColoredName(t1) + " has declared war on " + ColoredName(t2), 30);
+			if(t1 == 0) {
+				Log(ColoredName(t1) + " have declared war on " + ColoredName(t2), 30);
+			}
+			else {
+				Log(ColoredName(t1) + " has declared war on " + ColoredName(t2), 30);
+			}
+
 		}
 	}
 	public static void MakePeace(int t1, int t2)
@@ -113,7 +120,7 @@ public static class ROE
 		}
     }
 
-	public static int[] Passables(int team) {
+	public static int[] Passables(int team, bool includeOcean = false) {
 		List<int> pas = new();
 		// Return countries that we are at war with or have open borders with
 		if (Diplomacy.HasAllies(team)) {
@@ -124,6 +131,9 @@ public static class ROE
 			if (AreWeAtWar(team, i)) {
 				pas.Add(i);
 			}
+		}
+		if (includeOcean) {
+			pas.Add(-1);	
 		}
 		return pas.ToArray();
     }

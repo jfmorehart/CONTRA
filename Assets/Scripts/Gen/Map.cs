@@ -51,6 +51,7 @@ public class Map : MonoBehaviour
 	public ComputeShader Render;
 	RenderTexture mapRT;
 	public Material mapMat;
+
 	float lastDraw;
 	public float reDrawDelay;
 
@@ -129,7 +130,7 @@ public class Map : MonoBehaviour
 		mapRT.Create();
 
 		//spawn in some starting armies and silos randomly
-		InfluenceMan.ins.RandomArmies(200);
+		ArmyManager.ins.RandomArmies(80);
 
 		//Rebuild borders now with army info
 		BuildInfluences();
@@ -148,6 +149,8 @@ public class Map : MonoBehaviour
 		CountPop();
 
 		InvokeRepeating(nameof(UpdatePops), 1, 0.25f);
+
+
 
 	}
 
@@ -171,11 +174,10 @@ public class Map : MonoBehaviour
     }
 
 
-	public void Detonate(Vector2 wpos, float radius, int dteam) {
+	public void Detonate(Vector2 wpos, float radius, int dteam, bool hitsAir = false) {
 		Pool.ins.Explode().Nuke(wpos, radius);
 		uint dead = NukePop(wpos, radius);
-		MapUtils.NukeObjs(wpos, radius);
-		Diplomacy.Nuked(dteam, GetPixTeam(PointToCoords(wpos)), dead);
+		MapUtils.NukeObjs(wpos, radius, hitsAir);
 	}
 
 	public uint NukePop(Vector2 wpos, float radius) {
@@ -230,11 +232,11 @@ public class Map : MonoBehaviour
 			state_centers[i] = PlaceState(i);
 		}
 
-		InfluenceMan.ins.Setup();
+		ArmyManager.ins.Setup();
 		//Put cities everywhere
 		Inf[] cities = new Inf[numCities];
 		for(int i = 0; i < numCities - numStates * 2; i++) {
-			InfluenceMan.ins.Spawn_CityLogic(i, PlaceCity(i));
+			ArmyManager.ins.Spawn_CityLogic(i, PlaceCity(i));
 		}
 
 		//Put at least one in each state
@@ -246,13 +248,13 @@ public class Map : MonoBehaviour
 				testCity = PlaceCity(i);
 				tries++;
 			}
-			InfluenceMan.ins.Spawn_CityLogic(i, testCity);
+			ArmyManager.ins.Spawn_CityLogic(i, testCity);
 
 		}
 
 		//Populate cityBuffer
 		citybuffer = new ComputeBuffer(numCities, 20);
-		citybuffer.SetData(InfluenceMan.ins.UpdateCities());
+		citybuffer.SetData(ArmyManager.ins.UpdateCities());
 
 		//POPBUFFER
 		// POP is a compute shader that generates popbuffer, a per-texel float value 
@@ -289,14 +291,14 @@ public class Map : MonoBehaviour
 		liveteams.SetData(MapUtils.LiveTeamsBuffer());
 		Influences.SetBuffer(0, "liveTeams", liveteams);
 
-		if(InfluenceMan.ins == null) {
-			InfluenceMan.ins = FindObjectOfType<InfluenceMan>();
+		if(ArmyManager.ins == null) {
+			ArmyManager.ins = FindObjectOfType<ArmyManager>();
 		}
 		//Probably unnecessary to update cities so frequently, but what the hell
-		Inf[] cities = InfluenceMan.ins.UpdateCities();
+		Inf[] cities = ArmyManager.ins.UpdateCities();
 		numCities = cities.Length;
 
-		Inf[] armies = InfluenceMan.ins.UpdateArmies();
+		Inf[] armies = ArmyManager.ins.UpdateArmies();
 		Influences.SetInt("numInfs", numCities + armies.Length);
 		ComputeBuffer infs = new ComputeBuffer(numCities + armies.Length, 20);
 
@@ -393,6 +395,7 @@ public class Map : MonoBehaviour
 		Render.SetBuffer(0, "teamOf", teamOf);
 		Render.SetFloat("seed", mapSeed);
 		Render.SetInt("buildMode", PlayerInput.ins.buildMode ? 1 : 0);
+		Render.SetInt("airmode", PlayerInput.ins.airMode ? 1 : 0);
 		Render.SetFloat("time", Time.time);
 		SColor[] scolors = new SColor[numStates];
 		for(int i = 0; i < numStates; i++) {
@@ -432,7 +435,7 @@ public class Map : MonoBehaviour
 		GROWTH.SetBuffer(0, "popcount", popbuffer);
 
 		//write city distances
-		Inf[] cities = InfluenceMan.ins.UpdateCities();
+		Inf[] cities = ArmyManager.ins.UpdateCities();
 		GROWTH.SetInt("numInfs", cities.Length);
 		ComputeBuffer infs = new ComputeBuffer(numCities, 20);
 		infs.SetData(cities);
@@ -532,7 +535,7 @@ public class Map : MonoBehaviour
 		if (myrank < 3) return false;
 		Debug.Log("Thats bad, so we're switching you with team " + ranks[1] + ".");
 
-		InfluenceMan.ins.SwapTeamsCities(0, ranks[1]);
+		ArmyManager.ins.SwapTeamsCities(0, ranks[1]);
 		(state_centers[ranks[1]], state_centers[0]) = (state_centers[0], state_centers[ranks[1]]);
 		return true;
 	}

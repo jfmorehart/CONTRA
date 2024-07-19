@@ -36,12 +36,15 @@ public class State : MonoBehaviour
 	protected virtual void Awake()
 	{
 		LaunchDetection.launchDetectedAction += LaunchDetect;
+		LaunchDetection.strikeDetectedAction += StrikeDetect;
+		Diplomacy.News += ReceiveNews;
 		DisplayHandler.resetGame += Reset;
 	}
 
 	protected virtual void Reset() {
 		DisplayHandler.resetGame -= Reset;
 		LaunchDetection.launchDetectedAction -= LaunchDetect;
+		Diplomacy.News -= ReceiveNews;
 	}
 
 	public virtual void Setup(int i, Vector2Int pos) {
@@ -69,10 +72,9 @@ public class State : MonoBehaviour
 
 		//delete all troops if you have no cities left
 		if (Map.ins.state_populations[team] < 5 || (GetCities(team).Count < 1)) {
-			DisbandTroops(100);
-			alive = false;
+			KillState();
 		}
-		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team]) {
+		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team] + 3) {
 			int diff = ArmyUtils.conventionalCount[team] - (int)Map.ins.state_populations[team];
 			BalanceBudget(Economics.cost_armyUpkeep * diff);
 		}
@@ -86,7 +88,7 @@ public class State : MonoBehaviour
 		{
 			if(budgetCut > 0) {
 				armies[i].Kill();
-				budgetCut -= Economics.cost_armyUpkeep;
+				budgetCut -= armies[i].upkeepCost;
 			}
 			else {
 				//Debug.Log(team + " disbanded " + i + " units");
@@ -102,9 +104,9 @@ public class State : MonoBehaviour
 			if (budgetCut > 0)
 			{
 				Debug.Log("derelict");
-				GameObject go = Instantiate(InfluenceMan.ins.constructionPrefab,
+				GameObject go = Instantiate(ArmyManager.ins.constructionPrefab,
 					silos[i].transform.position, silos[i].transform.rotation,
-					InfluenceMan.ins.transform) ;
+					ArmyManager.ins.transform) ;
 				Construction co = go.GetComponent<Construction>();
 				co.team = team;
 				co.toBuild = silos[i];
@@ -156,7 +158,7 @@ public class State : MonoBehaviour
 				}
 				return; //do not let us get too far into debt
 			}
-			if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team])
+			if (conventionalCount[team] > Map.ins.state_populations[team])
 			{
 				if (team == 0)
 				{
@@ -196,7 +198,7 @@ public class State : MonoBehaviour
 				spawnPos.y = 5;
 			}
 
-			InfluenceMan.ins.PlaceArmy(spawnPos);
+			ArmyManager.ins.PlaceArmy(spawnPos);
 		}
 	}
 
@@ -208,13 +210,38 @@ public class State : MonoBehaviour
 		}
     }
 
+	protected void KillState() {
+		Unit[] silos = ArmyUtils.GetSilos(team);
+		for (int i = 0; i < silos.Length; i++)
+		{
+			silos[i].Kill();
+		}
+		for(int i = 0; i < construction_sites.Count; i++) {
+			construction_sites[i].Kill();
+		}
+		DisbandTroops(300);
+		if(team == 0) {
+			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " have collapsed");
+		}
+		else {
+			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " has collapsed");
+		}
+
+		alive = false;
+	}
+
+
 	public virtual void WarStarted(int by)
 	{
 
 	}
 
-	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim, bool provoked) {
+	public virtual void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim) {
+		//this action is per-missile, so its used for tactical stuff
+    }
 
+	public virtual void StrikeDetect(int perp, int victim, bool provoked) { 
+		//this action is per-strike, so its more about strategy
     }
 		
 	public virtual void ReadyForOrders(Unit un) {
@@ -224,12 +251,18 @@ public class State : MonoBehaviour
 	public virtual void SendAid(int to)
 	{
 		ConsolePanel.Log(ConsolePanel.ColoredName(team) + " sent aid to " + ConsolePanel.ColoredName(to)); ;
-		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 5;
+		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 3;
 		Diplomacy.states[to].manHourDebt -= Economics.cost_armySpawn * 5;
 		Diplomacy.states[to].RecieveAid(team);
+
+		Diplomacy.AnnounceNews(Diplomacy.NewsItem.Aid, team, to);
 	}
 
 	public virtual void RecieveAid(int from) { 
 		
+    }
+
+	public virtual void ReceiveNews(Diplomacy.NewsItem news, int t1, int t2) { 
+		//react to international news
     }
 }

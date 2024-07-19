@@ -30,28 +30,47 @@ public static class MapUtils
 		return new Inf(posI, popU, mteam, 0);
     }
 
-	public static void NukeObjs(Vector2 wpos, float radius) {
+	public static void NukeObjs(Vector2 wpos, float radius, bool hitsAir = false) {
 		float dist = Mathf.Pow(radius, 0.4f) * 25;
-		for(int i =0; i < InfluenceMan.ins.armies.Count; i++) {
-			float nd = Vector2.Distance(InfluenceMan.ins.armies[i].transform.position, wpos);
+		for(int i =0; i < ArmyManager.ins.armies.Count; i++) {
+			float nd = Vector2.Distance(ArmyManager.ins.armies[i].transform.position, wpos);
 			if(nd < dist) {
-				InfluenceMan.ins.armies[i].Kill();
+				ArmyManager.ins.armies[i].Kill();
 			}
 		}
-		for (int i = 0; i < InfluenceMan.ins.silos.Count; i++)
-		{
-			float nd = Vector2.Distance(InfluenceMan.ins.silos[i].transform.position, wpos);
-			if (nd < dist)
+		if (hitsAir) {
+			for (int i = 0; i < ArmyManager.ins.aircraft.Count; i++)
 			{
-				InfluenceMan.ins.silos[i].Kill();
+				float nd = Vector2.Distance(ArmyManager.ins.aircraft[i].transform.position, wpos);
+				if (nd < dist)
+				{
+					ArmyManager.ins.aircraft[i].Kill();
+				}
 			}
 		}
-		for (int i = 0; i < InfluenceMan.ins.other.Count; i++)
+
+		for (int i = 0; i < ArmyManager.ins.silos.Count; i++)
 		{
-			float nd = Vector2.Distance(InfluenceMan.ins.other[i].transform.position, wpos);
+			float nd = Vector2.Distance(ArmyManager.ins.silos[i].transform.position, wpos);
 			if (nd < dist)
 			{
-				InfluenceMan.ins.other[i].Kill();
+				ArmyManager.ins.silos[i].Kill();
+			}
+		}
+		for (int i = 0; i < ArmyManager.ins.airbases.Count; i++)
+		{
+			float nd = Vector2.Distance(ArmyManager.ins.airbases[i].transform.position, wpos);
+			if (nd < dist)
+			{
+				ArmyManager.ins.airbases[i].Kill();
+			}
+		}
+		for (int i = 0; i < ArmyManager.ins.other.Count; i++)
+		{
+			float nd = Vector2.Distance(ArmyManager.ins.other[i].transform.position, wpos);
+			if (nd < dist)
+			{
+				ArmyManager.ins.other[i].Kill();
 			}
 		}
 	}
@@ -61,7 +80,7 @@ public static class MapUtils
 			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
 			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
 
-		InfluenceMan.ins.NewState(index, posI);
+		ArmyManager.ins.NewState(index, posI);
 		return posI;
 	}
 
@@ -89,6 +108,32 @@ public static class MapUtils
 		}
 		return liveteams;
     }
+	public static (bool hit, Vector2Int hitpos) TexelRayCast(Vector2Int start, Vector2 direction, int maxDistance = 500, bool ignoreOcean = true) {
+		int team = Map.ins.GetPixTeam(start);
+		for(int i = 0; i < maxDistance; i++) {
+			Vector2 realpt = start + direction * i;
+			Vector2Int newPoint = new Vector2Int(Mathf.RoundToInt(realpt.x), Mathf.RoundToInt(realpt.y));
+			if (!InBounds(newPoint)) {
+				realpt -= direction;
+				return (true, new Vector2Int(Mathf.RoundToInt(realpt.x), Mathf.RoundToInt(realpt.y)));
+			}
+			int pointTeam = Map.ins.GetPixTeam(newPoint);
+			if (pointTeam != team && (pointTeam != -1 || !ignoreOcean)) {
+				return (true, newPoint);
+			}
+		}
+		return (false, Vector2Int.zero);
+    }
+	public static bool InBounds(Vector2Int point) {
+		if (point.x < 0 || point.x > Map.ins.texelDimensions.x - 1) {
+			return false;
+		}
+		if (point.y < 0 || point.y > Map.ins.texelDimensions.y - 1)
+		{
+			return false;
+		}
+		return true;
+	}
 
 	public static Vector3Int STIN_FromIndex(int index) {
 		// presently unused, but don't want to delete in case i ever need it

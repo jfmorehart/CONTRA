@@ -45,7 +45,7 @@ public class Selection : MonoBehaviour
 		if (Vector3.Distance(w1, w2) < worldDragMin) return;
 
 		//BoxSearch
-		AddToSelected(InfluenceMan.ins.BoxSearch(w1, w2));
+		AddToSelected(ArmyManager.ins.BoxSearch(w1, w2));
 
     }
 

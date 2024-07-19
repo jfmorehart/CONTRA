@@ -13,7 +13,7 @@ public class CityCapturing : MonoBehaviour
 	public async void DistributedIncrementCapture() {
 		for (int i = 0; i < Map.ins.numCities; i++)
 		{
-			City c = InfluenceMan.ins.cities[i];
+			City c = ArmyManager.ins.cities[i];
 			if (c == null) continue;
 			await Task.Run(() => c.IncrementalCapture());
 		}

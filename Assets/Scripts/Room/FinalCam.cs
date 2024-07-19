@@ -9,7 +9,6 @@ public class FinalCam : MonoBehaviour
 	public ComputeShader ExtractBloomLayer;
 	public ComputeShader BlurAndAdd;
 
-	public Shader blurShader;
 	public int blurIterations;
 	public Material blurMat;
 	public Material isolateBloomMat;
@@ -24,6 +23,7 @@ public class FinalCam : MonoBehaviour
 	}
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
+		//Graphics.Blit(source, destination, isolateBloomMat);
 		Graphics.Blit(source, tempRt, isolateBloomMat);
 		Graphics.Blit(source, tempRt2);
 		if (blurIterations > 50) blurIterations = 50;

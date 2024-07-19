@@ -13,11 +13,16 @@ public class Unit : MonoBehaviour
 	public int hP;
 	public int positionChunk; //used for efficiently knowing where units are
 
+	public int constructionCost;
+	public int upkeepCost;
+
 	protected int maxHP;
 	protected Renderer ren;
 
 	[HideInInspector]
 	public int id;
+
+	protected bool useChunkSystem = true;
 
 	public virtual void Awake() {
 		maxHP = hP;
@@ -25,13 +30,18 @@ public class Unit : MonoBehaviour
 		team = Map.ins.GetPixTeam(pt);
 		id = Random.Range(0, 10000);
 		gameObject.name = team.ToString() + id.ToString();
-		positionChunk = UnitChunks.ChunkLookup(transform.position);
-		UnitChunks.AddToChunk(positionChunk, this);
+
+		if (useChunkSystem) {
+			positionChunk = UnitChunks.ChunkLookup(transform.position);
+			UnitChunks.AddToChunk(positionChunk, this);
+		}
+
 	}
 
 	public virtual void Start()
 	{
-		InfluenceMan.ins.RegisterUnit(this);
+		ArmyManager.ins.RegisterUnit(this);
+		if (this is Airbase) Debug.Log("yep its registering");
 		ren = GetComponent<Renderer>();
 		ren.material = new Material(ren.material);
 		Pool.ins.GetRingEffect().Spawn(transform.position);
@@ -72,8 +82,12 @@ public class Unit : MonoBehaviour
     }
 
 	public virtual void Kill() {
-		InfluenceMan.ins.DeregisterUnit(this);
-		UnitChunks.RemoveFromChunk(positionChunk, this);
+		ArmyManager.ins.DeregisterUnit(this);
+
+		if (useChunkSystem) {
+			UnitChunks.RemoveFromChunk(positionChunk, this);
+		}
+
 		Destroy(gameObject);
 	}
 

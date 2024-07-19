@@ -45,6 +45,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
         int usable = 0;//(1 - infs[i].isArmy); 
         usable = usable + atWar[teamOf[index] * numStates + infs[i].team];
+	    usable += 1 - live; //dead states are considered to be at war with everyone
         usable = clamp(usable, 0, 1);
 
         int2 pos = int2(infs[i].x, infs[i].y);

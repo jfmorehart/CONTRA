@@ -56,9 +56,9 @@ public class State_Player : State_AI
 		}
 	}
 
-	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim, bool provoked)
+	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
 	{
-		base.LaunchDetect(launcher, target, perp, victim, provoked);
+		base.LaunchDetect(launcher, target, perp, victim);
 		if(perp == team) {
 			Debug.Log("LAUNCH DETECT  " + launcher + "   " + target);
 			string str = "<color=\"red\">" + " Launching Missile" + "</color> at ";

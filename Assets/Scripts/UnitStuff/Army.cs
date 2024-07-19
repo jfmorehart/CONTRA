@@ -35,6 +35,12 @@ public class Army : Unit
 		base.Awake();
 
 		ROE.roeChange += StaggerPathTargetCheck;
+		PlayerInput.minimize += ToggleMinimize;
+
+		//so that they dont spawn big
+		if (PlayerInput.ins.airMode) {
+			ToggleMinimize(true);
+		}
 	}
 	public override void Start()
 	{
@@ -68,7 +74,7 @@ public class Army : Unit
 						//todo update original map image;
 						int teamOfCurrentDest = Map.ins.GetOriginalMap(path[currentPathNodeIndex]);
 						bool slowdown = (teamOfCurrentDest != team) && Map.ins.state_populations[teamOfCurrentDest] > 0;
-						speedMod = (slowdown? 0.8f : 1.5f);
+						speedMod = (slowdown? 1.4f : 1.5f);//hack removed significant slowdown
 
 						int et = Map.ins.GetPixTeam(path[^1]);
 						if(Map.ins.GetPixTeam(path[currentPathNodeIndex]) != team) {
@@ -197,10 +203,16 @@ public class Army : Unit
 	{
 		base.Kill();
 		ROE.roeChange -= StaggerPathTargetCheck;
+		PlayerInput.minimize -= ToggleMinimize;
 	}
 
 	void Reset() {
 		ROE.roeChange -= StaggerPathTargetCheck;
+		PlayerInput.minimize -= ToggleMinimize;
 		DisplayHandler.resetGame -= Reset;
 	}
+
+	void ToggleMinimize(bool on) {
+		transform.localScale *= on ? 0.5f : 2;
+    }
 }

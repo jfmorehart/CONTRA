@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 15.7, y: 7.1, z: 0}
-  m_LocalScale: {x: 12.919636, y: 17.734104, z: 1.7734103}
+  m_LocalScale: {x: 12, y: 17, z: 1.7734103}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -48,8 +48,11 @@ MonoBehaviour:
   team: 0
   hP: 3
   positionChunk: 0
+  constructionCost: 0
+  upkeepCost: 2
+  id: 0
   strength: 0
-  speed: 15
+  speed: 10
   enroute: 0
   secondsSinceSaidReady: 0
   range: 50

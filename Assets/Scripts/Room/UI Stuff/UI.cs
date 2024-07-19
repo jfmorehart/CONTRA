@@ -26,6 +26,7 @@ public class UI : MonoBehaviour
 	public UIMenu menu_build_confirm;
 	public UIMenu menu_nation;
 	public UIMenu menu_strike;
+	public UIMenu menu_airdoctrine;
 
 	public UIMenu currentMenu;
 
@@ -72,6 +73,7 @@ public class UI : MonoBehaviour
 		menu_build_confirm.gameObject.SetActive(false);
 		menu_nation.gameObject.SetActive(false);
 		menu_strike.gameObject.SetActive(false);
+		menu_airdoctrine.gameObject.SetActive(false);
 
 		Cursor.lockState = CursorLockMode.Locked;
 		currentMenu.children[0].Highlight();
@@ -143,7 +145,9 @@ public class UI : MonoBehaviour
 		PlayerInput.ins.ToggleBuildMode(true);
 	}
 	public void SelectBuildConfirm() {
+		UIBuildConfirm.buildType = Mathf.RoundToInt(currentMenu.children[selected].value);
 		SwitchMenus(currentMenu, menu_build_confirm);
+		PlayerInput.ins.ToggleBuildMode(true);
 	}
 	public void SelectNation() {
 		targetNation = (int)currentMenu.children[selected].value;
@@ -152,6 +156,12 @@ public class UI : MonoBehaviour
 	public void StrikeNation()
 	{
 		SwitchMenus(currentMenu, menu_strike);
+		PlayerInput.ins.ToggleAirMode(true);
+	}
+	public void AirDoctrine()
+	{
+		PlayerInput.ins.ToggleAirMode(true);
+		SwitchMenus(currentMenu, menu_airdoctrine);
 	}
 	public void Cancel() {
 		if (currentMenu.parent != null)
@@ -160,10 +170,10 @@ public class UI : MonoBehaviour
 		}
 	}
 	void SwitchMenus(UIMenu start, UIMenu end) {
-
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
-		if(end == menu_diplo) targetNation = 0;
+		PlayerInput.ins.ToggleAirMode(end == menu_airdoctrine);
+		if (end == menu_diplo) targetNation = 0;
 
 		start.children[selected].UnHighlight();
 		start.gameObject.SetActive(false);
@@ -185,6 +195,8 @@ public class UI : MonoBehaviour
 			currentMenu.stateColor.color = Map.ins.state_colors[targetNation];
 			currentMenu.stateColor.text = Diplomacy.state_names[targetNation];
 		}
+
+		InfoPanel.instance.RefreshAtWarScreen();
 	}
 
 	public void WarToggle() {
@@ -212,7 +224,7 @@ public class UI : MonoBehaviour
 		menu_strike.children[2].value == 1);
 
 		State_AI player = Diplomacy.states[0] as State_AI;
-		player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList());
+		player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList(), targetNation);
 	}
 	void ChangeSelected(int dir) {
 		int osel = selected;
@@ -234,7 +246,6 @@ public class UI : MonoBehaviour
 				toadd.Add(menu_diplo.children[i]);
 			}
 			else {
-				Debug.Log("deleting state " + i + 1);
 				Destroy(menu_diplo.children[i].gameObject);
 				reselect = true;
 			}
@@ -259,7 +270,7 @@ public class UI : MonoBehaviour
 		LaunchDetection.launchDetectedAction -= LaunchDetect;
 	}
 
-	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim, bool provoked)
+	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim)
 	{
 		if (victim == playerTeam)
 		{

@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 3503173356756519159}
   - component: {fileID: 3726070124613907645}
-  - component: {fileID: 671108478937253449}
+  - component: {fileID: 3545526121312099082}
   m_Layer: 6
-  m_Name: Silo
+  m_Name: Airbase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74,7 +74,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: d9ebc1769bb9f4ad68602f4282c7b7e8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 999e0d13758b8438a9d305883f52d45a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &671108478937253449
+--- !u!114 &3545526121312099082
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,10 +94,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 7504379603494038120}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d217814d547944c20862e23dda9f23c6, type: 3}
+  m_Script: {fileID: 11500000, guid: afc4d199b576141d59828b4b3c54a586, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
   hP: 1
   positionChunk: 0
-  numMissiles: 20
+  constructionCost: 200
+  upkeepCost: 20
+  id: 0
+  iconPrefab: {fileID: 39995123657460185, guid: caa3ad8c04aae4024a3d6d88d27894b6, type: 3}
+  icons: []
+  offset: {x: 0, y: -22}
+  reloadTime: 30
+  maxPlanes: 5
+  numPlanes: 5
+  planePrefab: {fileID: 5915865346166684192, guid: 9ce0321c8d611402fa803bb5f03c0363, type: 3}
+  patrolPoints:
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}
+  - {x: 0, y: 0}

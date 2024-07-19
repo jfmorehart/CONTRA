@@ -63,9 +63,13 @@ public class UIOption : MonoBehaviour
 		if (kind == Kind.Switch) BoxTick();
 	}
 
-	void BoxTick() {
+	public void BoxTick() {
 		if (value != 1) return;
 		//For use with tick boxes, ensure the tick is visible and not overwritten
+
+		// this is only used to deviate from the plaintext. if the plaintext contains an x,
+		// that will never be overwritten, as the inverse of this replace is never run.
+
 		text.text = text.text.Replace(" ", "X");
 	}
 

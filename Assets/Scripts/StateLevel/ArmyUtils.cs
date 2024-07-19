@@ -13,19 +13,41 @@ public static class ArmyUtils
 	// calculations like city capture updates.
 
 	public static List<Unit>[] armies;
+	public static List<Unit>[] aircraft;
 	public static List<Silo>[] silos;
+	public static List<Airbase>[] airbases;
 	//public static int[] lastWrite;
 
 	public static void Init() {
 		conventionalCount = new int[Map.ins.numStates];
 		nuclearCount = new int[Map.ins.numStates];
 		armies = new List<Unit>[Map.ins.numStates];
+		aircraft = new List<Unit>[Map.ins.numStates];
 		silos = new List<Silo>[Map.ins.numStates];
-		for(int i = 0; i < Map.ins.numStates; i++) {
+		airbases = new List<Airbase>[Map.ins.numStates];
+		for (int i = 0; i < Map.ins.numStates; i++) {
 			armies[i] = new List<Unit>();
+			aircraft[i] = new List<Unit>();
+			silos[i] = new List<Silo>();
+			airbases[i] = new List<Airbase>();
 			GetArmies(i);
 		}
 	}
+	/*		if (armies[team].Count > 0) {
+			uns.AddRange(armies[team]);
+		}
+		if (airbases[team].Count > 0)
+		{
+			uns.AddRange(airbases[team]);
+		}
+		if (silos[team].Count > 0)
+		{
+			uns.AddRange(silos[team]);
+		}
+		if (aircraft[team].Count > 0)
+		{
+			uns.AddRange(aircraft[team]);
+		}*/
 
 	public enum Tar { 
 		Nuclear, //icbms, runways, submarine pens
@@ -89,6 +111,11 @@ public static class ArmyUtils
 			tars.Add(new Target(sl.transform.position, 10, Tar.Nuclear));
 		}
 		nuclearCount[team] = tars.Count;
+		Airbase[] air = GetAirbases(team);
+		foreach (Airbase sl in air)
+		{
+			tars.Add(new Target(sl.transform.position, 6, Tar.Nuclear));
+		}
 		return tars.ToArray();
 	}
 
@@ -143,8 +170,8 @@ public static class ArmyUtils
 	{
 		//Get info from tracker
 		List<Silo> uns = new List<Silo>();
-		InfluenceMan.ins.CleanArmies();
-		Silo[] units = InfluenceMan.ins.silos.ToArray();
+		ArmyManager.ins.CleanArmies();
+		Silo[] units = ArmyManager.ins.silos.ToArray();
 
 		//Pick the ones we want
 		for (int i = 0; i < units.Length; i++)
@@ -154,13 +181,66 @@ public static class ArmyUtils
 		silos[team] = uns;
 		return uns.ToArray();
 	}
+	public static Airbase[] GetAirbases(int team)
+	{
+		//Get info from tracker
+		List<Airbase> uns = new List<Airbase>();
+		ArmyManager.ins.CleanArmies();
+		Airbase[] units = ArmyManager.ins.airbases.ToArray();
+
+		//Pick the ones we want
+		for (int i = 0; i < units.Length; i++)
+		{
+			if (units[i].team == team) { uns.Add(units[i]); }
+		}
+		airbases[team] = uns;
+		return uns.ToArray();
+	}
+
+	public static Unit[] AllUnitInventory(int team) {
+		List<Unit> uns = new List<Unit>();
+
+
+		uns.AddRange(GetArmies(team));
+		uns.AddRange(GetAirbases(team));
+		uns.AddRange(GetSilos(team));
+		uns.AddRange(GetAircraft(team));
+
+		return uns.ToArray();
+	}
+
+	public static Unit[] GetAircraft(int team) {
+		List<Unit> uns = new List<Unit>();
+		Unit[] units = ArmyManager.ins.aircraft.ToArray();
+
+		//Pick the ones we want
+		for (int i = 0; i < units.Length; i++)
+		{
+			if (units[i].team == team) { uns.Add(units[i]); }
+		}
+
+		aircraft[team] = uns;
+		return uns.ToArray();
+	}
+	public static Unit EnemyAircraftInRange(int team, Vector2 pos, float range) {
+		int[] enemyTeams = ROE.GetEnemies(team).ToArray();
+		Unit[] units = ShuffleUnits(ArmyManager.ins.aircraft.ToArray());
+		
+		foreach (Unit u in units) {
+			if (!enemyTeams.Contains(u.team)) continue;
+			Vector2 delta = (Vector2)u.transform.position - pos;
+			if (delta.magnitude > range) continue;
+			return u;
+		}
+		return null;
+    }
 
 	public static Unit[] GetArmies(int team)
 	{
 		//Get info from tracker
 		List<Unit> uns = new List<Unit>();
-		InfluenceMan.ins.CleanArmies();
-		Unit[] units = InfluenceMan.ins.armies.ToArray();
+		ArmyManager.ins.CleanArmies();
+		Unit[] units = ArmyManager.ins.armies.ToArray();
 
 		//Pick the ones we want
 		for(int i = 0; i < units.Length; i++){
@@ -174,8 +254,8 @@ public static class ArmyUtils
 	{
 		//Get info from tracker
 		List<Unit> uns = new List<Unit>();
-		InfluenceMan.ins.CleanArmies();
-		Unit[] units = InfluenceMan.ins.armies.ToArray();
+		ArmyManager.ins.CleanArmies();
+		Unit[] units = ArmyManager.ins.armies.ToArray();
 		//Pick the ones we want
 		for (int i = 0; i < units.Length; i++)
 		{
@@ -204,7 +284,7 @@ public static class ArmyUtils
 		return trim.ToArray();
 	}
 	public static City NearestCity(Vector2 pos, int teamOf, List<City> ignore) {
-		List<City> cities = InfluenceMan.ins.cities;
+		List<City> cities = ArmyManager.ins.cities;
 		float cdist = float.MaxValue;
 		City near = null;
 		if(ignore == null) {
@@ -236,7 +316,7 @@ public static class ArmyUtils
     }
 	public static City BiggestCity(int teamOf, List<City> ignore)
 	{
-		City[] cities = InfluenceMan.ins.cities.ToArray();
+		City[] cities = ArmyManager.ins.cities.ToArray();
 		float bpop = float.MinValue;
 		City big = null;
 		for (int i = 0; i < cities.Length; i++)
@@ -252,9 +332,9 @@ public static class ArmyUtils
 
 	public static List<City> GetCities(int team) {
 		List<City> cs = new List<City>();
-		for(int i =0; i < InfluenceMan.ins.cities.Count; i++) {
-			if (InfluenceMan.ins.cities[i].team == team) {
-				cs.Add(InfluenceMan.ins.cities[i]);
+		for(int i =0; i < ArmyManager.ins.cities.Count; i++) {
+			if (ArmyManager.ins.cities[i].team == team) {
+				cs.Add(ArmyManager.ins.cities[i]);
 			}
 		}
 		return cs;
@@ -283,7 +363,14 @@ public static class ArmyUtils
 		return n > 0; //return true if we fired
     }
 
-	//public static List<Army> FetchStoredArmyData(int team) { 
-		
- //   }
+	public static Unit[] ShuffleUnits(Unit[] toshuffle) {
+		for(int i = 0; i < toshuffle.Length; i++) {
+			int r = Random.Range(0, toshuffle.Length);
+			Unit ui = toshuffle[i];
+			toshuffle[i] = toshuffle[r];
+			toshuffle[r] = ui;
+		}
+		return toshuffle;
+    }
+
 }

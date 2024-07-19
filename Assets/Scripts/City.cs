@@ -17,8 +17,6 @@ public class City : MonoBehaviour
 	public float sample_radius;
 	int numSamples = 5;
 
-	float lastInc;
-	float incdelay = 0.25f;
 	
 	float lastPop;
 	float popdelay = 5;
@@ -30,19 +28,18 @@ public class City : MonoBehaviour
 	{
 		team = te;
 		pop = popu;
-		truepop = pop;
-		lastInc = Random.Range(2f, 50f);
+		//truepop = pop;
+
 		lastPop = Random.Range(0f, 5f);
 		mpos = MapUtils.PointToCoords(transform.position);
 		wpos = transform.position;
+
+		truepop = Map.ins.CountPop_City(MapUtils.PointToCoords(transform.position));
 	}
 
 	private void Update()
 	{
-		//if(Time.unscaledTime - lastInc > incdelay) {
-		//	lastInc = Time.unscaledTime;
-		//	Invoke(nameof(Cap), 0);
-		//}
+
 
 		if (Time.unscaledTime - lastPop > popdelay)
 		{
@@ -55,7 +52,7 @@ public class City : MonoBehaviour
 		float f = truepop;
 		truepop = Map.ins.CountPop_City(MapUtils.PointToCoords(transform.position));
 		if(truepop < 1) {
-			InfluenceMan.ins.RemoveCity(this);
+			ArmyManager.ins.RemoveCity(this);
 			Destroy(gameObject);
 		}
     }

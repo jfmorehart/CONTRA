@@ -21,6 +21,11 @@ public class Pool : MonoBehaviour
 	public Missile[] mpool;
 	int mcham;
 
+	public int atamsize;
+	public GameObject atamPrefab;
+	public ATAM[] atampool;
+	int atamcham;
+
 	public int rsize;
 	public GameObject rPrefab;
 	public AppearEffect[] rpool;
@@ -49,6 +54,12 @@ public class Pool : MonoBehaviour
 		{
 			rpool[i] = Instantiate(rPrefab, transform).transform.GetComponent<AppearEffect>();
 		}
+
+		atampool = new ATAM[atamsize];
+		for (int i = 0; i < rsize; i++)
+		{
+			atampool[i] = Instantiate(atamPrefab, transform).transform.GetComponent<ATAM>();
+		}
 	}
 
 	public Bullet GetBullet() {
@@ -67,6 +78,12 @@ public class Pool : MonoBehaviour
 		if (mcham >= msize - 2) mcham = -1;
 		mcham++;
 		return mpool[mcham];
+	}
+	public ATAM GetATAM()
+	{
+		if (atamcham >= atamsize - 2) atamcham = -1;
+		atamcham++;
+		return atampool[atamcham];
 	}
 	public AppearEffect GetRingEffect()
 	{

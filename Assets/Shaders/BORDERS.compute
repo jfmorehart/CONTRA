@@ -10,7 +10,7 @@ int numStates;
 
 int BorderTeam(int index, int3 id){
 
-    if((id.x - 5) > 0 && id.x + 5 < dime.x && (index + 1) < dime.x * (dime.y - 1)){
+    if((id.x - 1) > 0 && id.x + 1 < dime.x && (id.y < dime.y - 1) && id.y > 1){
         int di;
         int border = 1; //width
 
