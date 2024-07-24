@@ -98,18 +98,18 @@ public class State : MonoBehaviour
 		if (budgetCut < 0) return;
 
 		//Silo dereliction
+		//todo expand to all
 		Unit[] silos = ArmyUtils.GetSilos(team);
 		for (int i = 0; i < silos.Length; i++)
 		{
 			if (budgetCut > 0)
 			{
-				Debug.Log("derelict");
 				GameObject go = Instantiate(ArmyManager.ins.constructionPrefab,
 					silos[i].transform.position, silos[i].transform.rotation,
 					ArmyManager.ins.transform) ;
 				Construction co = go.GetComponent<Construction>();
 				co.team = team;
-				co.toBuild = silos[i];
+				co.btype = ArmyManager.BuildingType.Silo;
 				co.manHoursRemaining = Mathf.Min(budgetCut, 1);
 				silos[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
@@ -216,18 +216,40 @@ public class State : MonoBehaviour
 		{
 			silos[i].Kill();
 		}
-		for(int i = 0; i < construction_sites.Count; i++) {
+		Unit[] airbases = ArmyUtils.GetAirbases(team);
+		for (int i = 0; i < airbases.Length; i++)
+		{
+			airbases[i].Kill();
+		}
+		for (int i = 0; i < construction_sites.Count; i++) {
 			construction_sites[i].Kill();
 		}
 		DisbandTroops(300);
-		if(team == 0) {
-			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " have collapsed");
-		}
-		else {
-			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " has collapsed");
-		}
 
 		alive = false;
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			//ROE.DeclareWar(team, i);
+		}
+		//wait for buildinfluences
+		StartCoroutine(AfterInfluences());
+
+		if (Time.timeSinceLevelLoad < 1f) return;
+
+		if (team == 0)
+		{
+			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " have collapsed");
+		}
+		else
+		{
+			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " has collapsed");
+		}
+	}
+	IEnumerator AfterInfluences() {
+		yield return new WaitForSeconds(0.2f);
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			ROE.MakePeace(team, i);
+		}
 	}
 
 

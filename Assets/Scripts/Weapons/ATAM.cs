@@ -33,11 +33,13 @@ public class ATAM : MonoBehaviour
         swaySeed = Random.Range(-5, 5f);
 	}
 
-	public void Launch(Vector2 ipos, Vector2 ivel, Unit target, int mteam) {
+	public void Launch(Vector2 ipos, Vector2 ivel, Unit target, int mteam, float boostlen = 5) {
         transform.position = ipos;
         transform.up = ivel;
         speed = ivel.magnitude;
         bogey = target;
+		(bogey as Plane).SmokeInTheAir(this);
+		boostfuel = boostlen;
         team = mteam;
         lifeTime = 5;
         startSpeed = ivel.magnitude;

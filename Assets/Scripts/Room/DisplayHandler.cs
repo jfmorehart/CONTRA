@@ -48,6 +48,7 @@ public class DisplayHandler : MonoBehaviour
 			screens[1].Switch(7);
 		}
 		else {
+			StrikePlan.ins.ErasePlan();
 			screens[1].Switch(6);
 		}
     }

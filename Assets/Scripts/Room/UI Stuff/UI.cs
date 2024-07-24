@@ -22,6 +22,7 @@ public class UI : MonoBehaviour
 	public UIMenu menu_home;
 	public UIMenu menu_diplo;
 	public UIMenu menu_defense;
+	public UIMenu menu_bases;
 	public UIMenu menu_build;
 	public UIMenu menu_build_confirm;
 	public UIMenu menu_nation;
@@ -35,9 +36,12 @@ public class UI : MonoBehaviour
 
 	public GameObject diploStateOptionPrefab;
 
-	public void Start()
+	private void Awake()
 	{
 		ins = this;
+	}
+	public void Start()
+	{
 		LaunchDetection.launchDetectedAction += LaunchDetect;
 		DisplayHandler.resetGame += Reset;
 		menu_diplo.gameObject.SetActive(true);
@@ -74,6 +78,7 @@ public class UI : MonoBehaviour
 		menu_nation.gameObject.SetActive(false);
 		menu_strike.gameObject.SetActive(false);
 		menu_airdoctrine.gameObject.SetActive(false);
+		menu_bases.gameObject.SetActive(false);
 
 		Cursor.lockState = CursorLockMode.Locked;
 		currentMenu.children[0].Highlight();
@@ -160,8 +165,12 @@ public class UI : MonoBehaviour
 	}
 	public void AirDoctrine()
 	{
-		PlayerInput.ins.ToggleAirMode(true);
 		SwitchMenus(currentMenu, menu_airdoctrine);
+		PlayerInput.ins.ToggleAirMode(true);
+	}
+	public void BasesMenu() {
+		SwitchMenus(currentMenu, menu_bases);
+		PlayerInput.ins.ToggleBuildMode(true);
 	}
 	public void Cancel() {
 		if (currentMenu.parent != null)
@@ -170,12 +179,16 @@ public class UI : MonoBehaviour
 		}
 	}
 	void SwitchMenus(UIMenu start, UIMenu end) {
+
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
 		PlayerInput.ins.ToggleAirMode(end == menu_airdoctrine);
 		if (end == menu_diplo) targetNation = 0;
 
-		start.children[selected].UnHighlight();
+		if(start.children.Length > 0) {
+			start.children[selected].UnHighlight();
+		}
+
 		start.gameObject.SetActive(false);
 		currentMenu = end;
 		currentMenu.gameObject.SetActive(true);

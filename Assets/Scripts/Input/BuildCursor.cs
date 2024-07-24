@@ -16,7 +16,7 @@ public class BuildCursor : MonoBehaviour
 	{
         pos = transform.position;
 	}
-	void Update()
+	void FixedUpdate()
     {
 		springForce = springFactor / springLength;
 		Vector3 delta = transform.position - Camera.main.transform.position;
@@ -24,8 +24,8 @@ public class BuildCursor : MonoBehaviour
 		{
 			pos = Camera.main.transform.position + (springLength * 1) * delta.normalized;// Vector3.ClampMagnitude(delta, delta.magnitude - springLength);
 		}
-		velo += -springForce * Time.deltaTime * (Vector2)delta;
-		velo *= 1 - Time.deltaTime * drag;
+		velo += -springForce * Time.fixedDeltaTime * (Vector2)delta;
+		velo *= 1 - Time.fixedDeltaTime * drag;
 		pos += new Vector3(velo.x, velo.y, 0);
         //delta = transform.position - Camera.main.transform.position;
 

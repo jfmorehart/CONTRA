@@ -9,6 +9,7 @@ public class Map : MonoBehaviour
 {
 	[HideInInspector]
 	public static Map ins;
+	public static Vector3 localScale;
 
 	[Header("General Settings")]
 	public Vector2Int texelDimensions;
@@ -70,9 +71,13 @@ public class Map : MonoBehaviour
 	public List<Vector2Int>[][] borderPoints; 
 	public ComputeBuffer brdPts;
 
+	public int buildExclusionDistance;
+
 	private void Awake()
 	{
 		ins = this;
+		localScale = transform.localScale; //used for non-main threads
+
 		mapSeed = UnityEngine.Random.Range(-500f, 500f);
 		UnitChunks.Init();
 		ArmyUtils.Init();
@@ -413,10 +418,30 @@ public class Map : MonoBehaviour
 		Render.SetBuffer(0, "popBuffer", popbuffer);
 		Render.SetTexture(0, "Result", mapRT);
 
+		Vector2Int[] bpos = BuildingPositions();
+
+		Render.SetInt("exclusionDistance", buildExclusionDistance);
+
+		ComputeBuffer exclude = null;
+		if (bpos.Length > 0 && PlayerInput.ins.buildMode) {
+			exclude = new ComputeBuffer(bpos.Length, 8);
+			exclude.SetData(BuildingPositions());
+			Render.SetInt("exclusionLength", bpos.Length);
+		}
+		else {
+			exclude = new ComputeBuffer(1, 1);
+			Render.SetInt("exclusionLength", 0);
+		}
+
+		Render.SetBuffer(0, "exclude", exclude);
+
+
 		Render.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		popbuffer.Release();
 		colorBuffer.Release();
 		//teamOf.Release(); keep it allocated
+
+		exclude.Release();
 		mapMat.SetTexture("_MainTex", mapRT);
 	}
 

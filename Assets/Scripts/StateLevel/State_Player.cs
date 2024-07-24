@@ -39,7 +39,7 @@ public class State_Player : State_AI
 		float total = 0;
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
-			troopAllocations[i] += troopAllocPlayerInput[i];
+			troopAllocations[i] += troopAllocPlayerInput[i] * 3;
 			if (Map.ins.state_populations[i] < 1)
 			{
 				troopAllocations[i] = 0;

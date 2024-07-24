@@ -1,0 +1,49 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Construction : Unit
+{
+    //public Unit toBuild;
+    public ArmyManager.BuildingType btype;
+    public float manHoursRemaining;
+
+	//Sites are registered on Awake as construction_sites in their team's State class
+	// they are then Worked until completed, where they're replaced by the stored toBuild unit
+
+	float gct;
+	float gcd = 0.5f;
+
+	public virtual void Update() { 
+		if(Time.time - gct > gcd) {
+			gct = Time.time;
+			GroundCheck();
+		}
+    }
+
+	public void PrepareBuild(ArmyManager.BuildingType bt) {
+		btype = bt;
+		Unit toBuild = ArmyManager.ins.buildPrefabs[(int)btype].GetComponent<Unit>();
+		transform.localScale = toBuild.transform.localScale;
+		GetComponent<SpriteRenderer>().sprite = toBuild.GetComponent<SpriteRenderer>().sprite;
+		manHoursRemaining = toBuild.constructionCost;
+	}
+
+	public void Work(float workAmt)
+    {
+        manHoursRemaining -= workAmt;
+	    if(manHoursRemaining < 0) {
+            Complete();
+	    }
+
+        GroundCheck();
+    }
+
+    void Complete() {
+        Instantiate(ArmyManager.ins.buildPrefabs[(int)btype], transform.position, transform.rotation, ArmyManager.ins.transform);
+        if(team == 0) {
+            ConsolePanel.Log("ICBM Silo finished construction, awaiting orders");
+	    }
+        Kill();
+    }
+}

@@ -60,7 +60,6 @@ public class Fighter : Plane
 					Vector2 vel = speed * Time.deltaTime * transform.up;
 					ATAM missile = Pool.ins.GetATAM();
 					missile.Launch(transform.position, vel, bogey, team);
-					(bogey as Plane).SmokeInTheAir(missile);
 					lastShot = Time.time;
 					bogey = null;
 				}
@@ -132,13 +131,13 @@ public class Fighter : Plane
 	{
 		lastTargetAcquire = Time.time;
 
-		if(target.value == -1 && state.airdoctrine[(int)State_AI.AirDoctrines.AirSuperiority])
-
-		if (state.airdoctrine[(int)State_AI.AirDoctrines.AirSuperiority]) {
+		if (true) {
 			lastTargetAcquire = Time.time;
 			bogey = ArmyUtils.EnemyAircraftInRange(team, transform.position, trackingRange);
 		}
+
 		if (bogey != null) return;
+
 		if (hasBombs) {
 			target = state.RequestBombingTargets(this);
 		}
@@ -203,18 +202,22 @@ public class Fighter : Plane
 		lastValidityCheck = Time.time;
 
 		if (target.distance != AcceptableDistance.Bombtarget) return;
-
+		if (!state.BombTargetOK(target.wpos)) {
+			ScrapTarget();
+			return;
+		}
 		int tarteam = MapUtils.WorldPosToTeam(target.wpos);
 		if(tarteam == -1) {
-			Debug.Log("nullout");
-			target = NULLMission;
+			ScrapTarget();
 			return;
 		}
 		if (!ROE.AreWeAtWar(team, tarteam) || team == tarteam) {
-			//invalid target
-			Debug.Log("nullout");
-			target = NULLMission;
+			ScrapTarget();
+			return;
 		}
+	}
+	void ScrapTarget() {
+		target = NULLMission;
 	}
 }
 

@@ -20,6 +20,7 @@ public class State_Enemy : State_AI
     // that we will win the wars we are currently engaged in
 	// is equal to 1 when we are at peace;
 	float confidence;
+	float armyConfidence;
 
 	protected override void Awake()
 	{
@@ -33,6 +34,7 @@ public class State_Enemy : State_AI
 
 	protected override void StateUpdate()
 	{
+		if (!alive) return;
 		base.StateUpdate();
 
 		//loop through the current wars and determine our standing
@@ -41,13 +43,13 @@ public class State_Enemy : State_AI
 		//can support foreign adventures
 		if(confidence > 0.6 && assesment.percentGrowth > 0.3f) {
 
-			ForeignAdventures(confidence);
+			ForeignAdventures();
 		}
 
 		//keep army counts reasonable
 		ConstructionAndBudgeting();
 
-		if(confidence < 0.5f) {
+		if(confidence < 0.6f) {
 			AttemptDeescalation();
 		}
 
@@ -56,6 +58,7 @@ public class State_Enemy : State_AI
 
 	float WarsEvaluation() {
 		float confidence = 1;
+		armyConfidence = 1;
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
@@ -75,6 +78,11 @@ public class State_Enemy : State_AI
 				if (sharesBorder[i])
 				{
 					confidence *= eval.pVictory;
+
+					//magic number soup converts enemy/friendly army count into chance of success
+					float COVARM = Mathf.Clamp(Mathf.Pow(0.08f, Mathf.Pow(eval.armyRatio * 0.5f, 2)), 0.01f, 0.99f);
+					armyConfidence *= COVARM;
+
 				}
 				else
 				{
@@ -101,7 +109,7 @@ public class State_Enemy : State_AI
 		}
 		return confidence;
 	}
-	void ForeignAdventures(float confidence) {
+	void ForeignAdventures() {
 		//lets think about declaring war
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
@@ -118,6 +126,7 @@ public class State_Enemy : State_AI
 					confidence *= rivals[i].pVictory;
 					ROE.DeclareWar(team, i);
 					ScrambleAircraft();
+					return;
 				}
 				else if (opinion[i] < 0.49)
 				{
@@ -141,14 +150,17 @@ public class State_Enemy : State_AI
 		if (ROE.AreWeAtWar(team))
 		{
 			//AT WAR
-			if (confidence < 0.8f || confidence < 0.95 && assesment.costOverrun < 1)
+			if (armyConfidence < 0.8f || armyConfidence < 0.95 && assesment.costOverrun < 1)
 			{
-				int spawnWave = Mathf.FloorToInt((-assesment.costOverrun / (Economics.cost_armyUpkeep * confidence)));
+				int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * armyConfidence));
 				spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team]));
 				if (spawnWave > 0)
 				{
 					SpawnTroops(spawnWave);
 				}
+			}else if (confidence < 0.5) {
+				//spawn as many as we can
+				SpawnTroops(Mathf.Min(10, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team])));
 			}
 			else if (assesment.costOverrun > 1 && confidence > 0.9)
 			{
@@ -158,17 +170,24 @@ public class State_Enemy : State_AI
 				//this will shrink spending by disbanding troops and mothballing silos
 				BalanceBudget(assesment.costOverrun * confidence);
 			}
+
+			if (assesment.percentGrowth > 0 && ArmyUtils.GetAirbases(ROE.GetEnemies(team)[0]).Length > GetAAAs(team).Length + GetAirbases(team).Length) {
+				//force parity?
+				//need to either build AAA or airbases
+				if (construction_sites.Count < 1) {
+					ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
+				}				
+			}
 		}
 		else
 		{
 			//AT PEACE
-			if (ArmyUtils.airbases[team].Count + (2 * construction_sites.Count) < (assesment.buyingPower / 60) - 1 && assesment.percentGrowth > 0.3f)
-			{
-				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.ins.airbasePrefab.GetComponent<Unit>());
-				return;
+			if (GetBuildings(team).Length < assesment.buyingPower / 30 && assesment.percentGrowth > 0.3f) {
+				//we can afford more
+				ConsiderNewConstruction();
 			}
 
-			if (ArmyUtils.conventionalCount[team] < Map.ins.state_populations[team] * 0.1f && assesment.percentGrowth > 0.2f)
+			if (ArmyUtils.conventionalCount[team] < Map.ins.state_populations[team] * 0.1f && assesment.percentGrowth > 0.3f)
 			{
 				//if our standing army is too small, grow it by a tenth of the surplus cash
 				int spawnWave = Mathf.FloorToInt((-assesment.costOverrun * 0.1f) / Economics.cost_armyUpkeep);
@@ -177,16 +196,42 @@ public class State_Enemy : State_AI
 					SpawnTroops(spawnWave);
 				}
 			}
-			if (assesment.percentGrowth < 0.125)
+			if (assesment.percentGrowth < 0.25 && construction_sites.Count < 1)
 			{
+				BalanceBudget(5);
+			}
+			else if(assesment.percentGrowth < 0){
 				BalanceBudget(assesment.costOverrun + 5);
 			}
 		}
 	}
+	void ConsiderNewConstruction() {
+
+		if (batteries[team].Count + airbases[team].Count + construction_sites.Count < (assesment.buyingPower / 70) - 1)
+		{
+			//todo make this mean something
+			if(Random.value > 0.5f) {
+				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Airbase);
+			}
+			else {
+				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
+			}
+			
+			return;
+		}
+
+		if (silos[team].Count + construction_sites.Count < (assesment.buyingPower / 90) - 1)
+		{
+			ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Silo);
+			return;
+		}
+
+	}
     void StateOpinions(){
 		//todo manage opinions;
 
-		//scrapped; things shouldn't stabilize
+		//things shouldn't really stabilize
+		//but ideally reactions will be mostly understandable
 
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
@@ -204,8 +249,21 @@ public class State_Enemy : State_AI
 	{
 		foreach (int i in ROE.GetEnemies(team))
 		{
-			if (rivals[i].pVictory < opinion[i] && !Diplomacy.peaceOffers[team, i])
+			if (Diplomacy.peaceOffers[team, i]) continue;
+
+			if (rivals[i].pVictory < opinion[i])
 			{
+				//unmotivated
+				Diplomacy.OfferPeace(team, i);
+				return;
+			}
+			if(rivals[i].pVictory < 0.5f && ROE.GetEnemies(i).Count < 2) {
+				//edge of defeat
+				Diplomacy.OfferPeace(team, i);
+				return;
+			}
+			if (rivals[i].armyRatio > 1 && assesment.percentGrowth < -0.5) {
+				//face a bloody battle
 				Diplomacy.OfferPeace(team, i);
 				return;
 			}
@@ -214,6 +272,8 @@ public class State_Enemy : State_AI
 
 	protected override void ConductWar_Update(int enemy, War war)
 	{
+		if (!alive) return;
+
 		// this function is called every StateUpdate tick, once for every war
 		// that the base state is invoved in. 
 
@@ -226,6 +286,9 @@ public class State_Enemy : State_AI
 		{
 			case War.Peer:
 				// Conventional Invasion
+
+				//air civ ground strat
+				airdoctrine[enemy] = new bool[]{true, true, true, true};
 				// Limited countervalue attack if no counterforce threat
 				if (rivals[enemy].nukeRatio < 0.1) {
 					targets.AddRange(CivilianTargets(enemy));
@@ -238,18 +301,34 @@ public class State_Enemy : State_AI
 				// Conventional Invasion
 				// Prevent escalation with countervalue deterrence (offer way out)
 				// Counterforce to preserve capturable civilian centers
+
+
+				//air civ ground strat
+				airdoctrine[enemy] = new bool[] { true, false, true, true };
+
+
 				//targets.AddRange(NuclearTargets(enemy));
 				//ICBMStrike(20, targets);
+
+
 				break;
 			case War.Defensive:
 				// Repel invasion 
 				// Diplomatic Pressure from allies
 				// Maintain limited countervalue threat
+
+				//air civ ground strat
+				airdoctrine[enemy] = new bool[] { true, false, true, true };
+
+
 				targets.AddRange(ConventionalTargets(enemy));
 				targets = TargetSort(targets.ToArray()).ToList();
 				ICBMStrike(6, targets, enemy);
 				break;
 			case War.Total:
+
+				//air civ ground strat
+				airdoctrine[enemy] = new bool[] { true, true, true, true };
 
 				// Short Term: Eliminate Nuclear Assets
 				// Long Term: Eliminate Cities

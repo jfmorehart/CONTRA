@@ -25,6 +25,7 @@ public class State_AI : State
 
 	//list of targets not to fire at since theres already a nuke enroute
 	List<int> targetHashList;
+	List<int> bombedHashList;
 
 	//some kind of scariness evaluation used for determining how many
 	//troops to send to the border with given enemy
@@ -45,7 +46,7 @@ public class State_AI : State
 		AirSuperiority,
 		Civilian
 	}
-	public bool[] airdoctrine = { false, true, true, false };
+	public bool[][] airdoctrine;
 
 	protected override void Awake()
 	{
@@ -53,6 +54,12 @@ public class State_AI : State
 		recentlyOrdered = new List<Unit>();
 		attacked = new List<City>();
 		targetHashList = new List<int>();
+		bombedHashList = new List<int>();
+
+		airdoctrine = new bool[Map.ins.numStates][];
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			airdoctrine[i] = new bool[]{ true, true, true, true };
+		}
 	}
 
 	public virtual void Start()
@@ -77,6 +84,7 @@ public class State_AI : State
     }
 	protected override void StateUpdate()
 	{
+		if (!alive) return;
 		//this call updates info for nuclear threat assesment
 		ArmyUtils.NuclearTargets(team);
 
@@ -119,7 +127,7 @@ public class State_AI : State
 
 	protected virtual void ConductWar_Update(int enemy, War war)
 	{
-		if (Map.ins.state_populations[enemy] < 1) ROE.MakePeace(team, enemy);
+		//if (Map.ins.state_populations[enemy] < 1) ROE.MakePeace(team, enemy);
 	}
 	public virtual void GenerateTroopAllocations()
 	{
@@ -303,33 +311,44 @@ public class State_AI : State
 	}
 	public void ReportTargetBombed(Vector2 pos) {
 		Target t = new Target(pos, 0, Tar.Conventional);
-		//targetHashList.Remove(t.hash);
+		bombedHashList.Add(t.hash);
+		StartCoroutine(RemoveBombedMarking(t.hash));
+    }
+	IEnumerator RemoveBombedMarking(int hash) {
+		yield return new WaitForSeconds(5);
+		bombedHashList.Remove(hash);
+    }
+	public bool BombTargetOK(Vector2 pos) {
+		Target t = new Target(pos, 0, Tar.Conventional);
+		return !bombedHashList.Contains(t.hash);
     }
 	List<Target> RefreshAirTargets() {
 
 		int[] enemies = ROE.GetEnemies(team).ToArray();
 		List<Target> ts = new List<Target>();
-		if (airdoctrine[(int)AirDoctrines.Groundforces])
+
+		foreach (int i in enemies)
 		{
-			foreach (int i in enemies)
+			if (airdoctrine[i][(int)AirDoctrines.Groundforces])
 			{
 				ts.AddRange(ConventionalTargets(i));
 			}
 		}
-		if (airdoctrine[(int)AirDoctrines.Civilian])
+		foreach (int i in enemies)
 		{
-			foreach (int i in enemies)
+			if (airdoctrine[i][(int)AirDoctrines.Civilian])
 			{
 				ts.AddRange(CivilianTargets(i));
 			}
 		}
-		if (airdoctrine[(int)AirDoctrines.StrategicBombing])
+		foreach (int i in enemies)
 		{
-			foreach (int i in enemies)
+			if (airdoctrine[i][(int)AirDoctrines.StrategicBombing])
 			{
 				ts.AddRange(NuclearTargets(i));
 			}
 		}
+
 		return TargetSort(ts.ToArray()).ToList();
 	}
 

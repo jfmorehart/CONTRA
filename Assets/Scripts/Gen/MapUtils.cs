@@ -166,12 +166,22 @@ public static class MapUtils
 		return index;
 		// st = 1, x  = 2, y = 0
     }
+	public static Vector2Int[] BuildingPositions() {
+		List<Vector2Int> points = new List<Vector2Int>();
+		foreach(Building b in ArmyManager.ins.allbuildings) {
+			points.Add(b.mapPos);
+		}
+		foreach(Unit u in ArmyManager.ins.other) {
+			points.Add(PointToCoords(u.transform.position));
+		}
+		return points.ToArray();
+    }
 
 	public static Vector2Int PointToCoords(Vector2 point) {
 		if (!Map.ins) return Vector2Int.zero;
 
-		Vector2 co = new Vector2(point.x / Map.ins.transform.localScale.x,
-	     point.y / Map.ins.transform.localScale.y);
+		Vector2 co = new Vector2(point.x / Map.localScale.x,
+	     point.y / Map.localScale.y);
 		co.x *= Map.ins.texelDimensions.x;
 		co.y *= Map.ins.texelDimensions.y;
 		Vector2Int cor = new Vector2Int(Mathf.RoundToInt(co.x), Mathf.RoundToInt(co.y));
@@ -195,6 +205,7 @@ public static class MapUtils
     }
 
 	public static uint TexelPopToWorldPop(float rout) {
+		//arbitrary?
 		rout = Mathf.Pow(rout, 0.7f) * 0.3f;
 		return (uint)Mathf.RoundToInt(rout);
 	}

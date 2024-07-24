@@ -13,14 +13,25 @@ public class ArmyManager : MonoBehaviour
 	public GameObject playerPrefab;
 	public GameObject siloPrefab;
 	public GameObject airbasePrefab;
+	public GameObject aaaPrefab;
 	public GameObject constructionPrefab;
+
+	public List<Building> allbuildings;
 
 	public List<Army> armies;
 	public List<Airbase> airbases;
 	public List<Plane> aircraft;
 	public List<Silo> silos;
+	public List<AAA> batteries;
 	public List<Unit> other;
 	public List<City> cities;
+
+	public enum BuildingType { 
+		Silo, 
+		Airbase,
+		AAA
+    }
+	public GameObject[] buildPrefabs;
 
 	private void Awake()
 	{
@@ -28,6 +39,8 @@ public class ArmyManager : MonoBehaviour
         armies = new List<Army>();
 		airbases = new List<Airbase>();
 		silos = new List<Silo>();
+		allbuildings = new List<Building>();
+		buildPrefabs = new GameObject[] { siloPrefab, airbasePrefab, aaaPrefab};
 	}
 	public void Setup() {
 		ins = this;
@@ -71,7 +84,22 @@ public class ArmyManager : MonoBehaviour
 
 			Transform t = Instantiate(siloPrefab, wp, Quaternion.identity, transform).transform;
 		}
+		for (int i = 0; i < 2; i++)
+		{
+			Vector2 wp = RandomPointOnMap();
 
+			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+
+			Transform t = Instantiate(airbasePrefab, wp, Quaternion.identity, transform).transform;
+		}
+		for (int i = 0; i < 3; i++)
+		{
+			Vector2 wp = RandomPointOnMap();
+
+			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+
+			Transform t = Instantiate(aaaPrefab, wp, Quaternion.identity, transform).transform;
+		}
 	}
 	public Army PlaceArmy(Vector2 worldPos)
 	{
@@ -81,19 +109,29 @@ public class ArmyManager : MonoBehaviour
 		return ar;
 	}
 
-	public Unit NewConstruction(int team, Vector2Int mapPos, Unit tobuild) {
+	public Unit NewConstruction(int team, Vector2Int mapPos, ArmyManager.BuildingType btype) {
 		if (mapPos == Vector2Int.zero) return null; //no spot found
+		if (!ValidMapPlacement(team , mapPos)) return null;
 
-		Debug.Log("new silo!");
-		//Build silo at position
 		Transform t = Instantiate(ArmyManager.ins.constructionPrefab,
 			MapUtils.CoordsToPoint(mapPos), Quaternion.identity, ArmyManager.ins.transform).transform;
 
 		Construction co = t.GetComponent<Construction>();
-		co.toBuild = tobuild;
 		co.team = team;
+		co.PrepareBuild(btype);
 		return co as Unit;
 	}
+	public static bool ValidMapPlacement(int team, Vector2Int mapPos) {
+		int teamOf = Map.ins.GetPixTeam(mapPos);
+		if (team != teamOf) return false;
+
+		foreach(Vector2Int v in MapUtils.BuildingPositions()) {
+			if (Vector2Int.Distance(mapPos, v) < Map.ins.buildExclusionDistance) {
+				return false;
+			}
+		}
+		return true;
+    }
 
 	public void Spawn_CityLogic(int index, Inf city)
 	{
@@ -236,6 +274,13 @@ public class ArmyManager : MonoBehaviour
     }
 
 	public void RegisterUnit(Unit un) {
+
+		//inclusive lists
+		if(un is Building) {
+			allbuildings.Add(un as Building);
+		}
+
+		//exclusive lists
 		if(un is Army) {
 			armies.Add(un as Army);
 			return;
@@ -250,6 +295,11 @@ public class ArmyManager : MonoBehaviour
 			airbases.Add(un as Airbase);
 			return;
 		}
+		if (un is AAA)
+		{
+			batteries.Add(un as AAA);
+			return;
+		}
 		if (un is Silo)
 		{
 			silos.Add(un as Silo);
@@ -259,13 +309,24 @@ public class ArmyManager : MonoBehaviour
 
 			if (un is Construction)
 			{
-				Diplomacy.states[un.team].construction_sites.Add(un as Construction);
+				if (((Construction)un).manHoursRemaining > 1)
+				{
+					Diplomacy.states[un.team].construction_sites.Add(un as Construction);
+				}
+				
 			}
 		}
 	}
 
 	public void DeregisterUnit(Unit un)
 	{
+		//inclusive lists
+		if (un is Building)
+		{
+			allbuildings.Remove(un as Building);
+		}
+
+		//exclusive lists
 		if (un is Army)
 		{
 			armies.Remove(un as Army);
@@ -283,6 +344,11 @@ public class ArmyManager : MonoBehaviour
 		if (un is Airbase)
 		{
 			airbases.Remove(un as Airbase);
+		}
+		if (un is AAA)
+		{
+			batteries.Remove(un as AAA);
+			return;
 		}
 		else
 		{

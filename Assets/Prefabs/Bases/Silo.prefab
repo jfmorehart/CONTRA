@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3503173356756519159}
   - component: {fileID: 3726070124613907645}
-  - component: {fileID: 671108478937253449}
+  - component: {fileID: 6870839973262863864}
   m_Layer: 6
   m_Name: Silo
   m_TagString: Untagged
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &671108478937253449
+--- !u!114 &6870839973262863864
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,18 +94,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 7504379603494038120}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d217814d547944c20862e23dda9f23c6, type: 3}
+  m_Script: {fileID: 11500000, guid: cda7f953430234263be1f2b4855db862, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
   hP: 1
   positionChunk: 0
-  constructionCost: 400
+  constructionCost: 300
   upkeepCost: 20
   id: 0
-  maxMissiles: 10
-  numMissiles: 10
-  reloadTime: 30
+  btype: 0
+  manHoursRemaining: 0
   iconPrefab: {fileID: 39995123657460185, guid: caa3ad8c04aae4024a3d6d88d27894b6, type: 3}
   icons: []
-  offset: {x: 0, y: -22}
+  offset: {x: 0, y: -25}
+  reloadTime: 30
+  mapPos: {x: 0, y: 0}
+  maxMissiles: 10
+  numMissiles: 0

@@ -13,6 +13,8 @@ public class StrikePlan : MonoBehaviour
 	public Camera strikeCam;
 	public RectTransform backGround;
 	public GameObject iconPrefab; //blank image
+	public GameObject worldTargetPrefab;
+	public GameObject worldLinePrefab;
 
 	[SerializeField] Sprite siloSprite;
 	[SerializeField] Sprite citySprite;
@@ -79,6 +81,7 @@ public class StrikePlan : MonoBehaviour
 		}
 
 		warning.text = "";
+		//spawn icon of friendly silo
 		Transform[] silo_icons = new Transform[silos.Length];
 		for(int s = 0; s < silos.Length; s++) {
 			GameObject go = Spawn(MapPositionToLocalPosition(silos[s].transform.position), siloSprite);
@@ -114,17 +117,19 @@ public class StrikePlan : MonoBehaviour
 			Sprite toSpawn = Tar2Sprite(target.type);
 			Vector2 local = MapPositionToLocalPosition(target.wpos);
 			GameObject tOb = Spawn(local, toSpawn);
+			GameObject ObReal = SpawnWorldTarget(target.wpos);
 			tOb.GetComponent<Image>().color = validTargetColor;
 
 			Vector2 st = MapPositionToLocalPosition(silos[slcham].transform.position);
 			DrawLine(st, local);
+			DrawWorldLine(silos[slcham].transform.position, target.wpos);
 			validTargetsDrawn++;
 			slcham++;
 			if (slcham >= silos.Length) slcham = 0;
 		}
 	}
 
-	void ErasePlan() { 
+	public void ErasePlan() { 
 		for(int i = 0; i < currentPlanIcons.Count; i++) {
 			Destroy(currentPlanIcons[i].gameObject);
 		}
@@ -142,6 +147,20 @@ public class StrikePlan : MonoBehaviour
 
 		go.GetComponent<Image>().color = lineColor;
     }
+	void DrawWorldLine(Vector2 start, Vector2 end) {
+		GameObject go = Instantiate(worldLinePrefab);
+		currentPlanIcons.Add(go.transform);
+		go.transform.position = (start + end) * 0.5f;
+
+		Vector2 delta = end - start;
+		float theta = Mathf.Atan2(delta.y, delta.x);
+		go.transform.eulerAngles = new Vector3(0, 0, theta * Mathf.Rad2Deg);
+		go.transform.localScale = new Vector3(delta.magnitude, 2f, 1);
+
+		Material renmat = go.GetComponent<Renderer>().material;
+		renmat = new Material(renmat);
+		renmat.color = lineColor;
+	}
 
 
 	GameObject Spawn(Vector2 localPosition, Sprite sprite) {
@@ -150,6 +169,13 @@ public class StrikePlan : MonoBehaviour
 
 		currentPlanIcons.Add(go.transform);
 		go.GetComponent<Image>().overrideSprite = sprite;
+		return go;
+	}
+
+	GameObject SpawnWorldTarget(Vector2 worldPos) {
+		GameObject go = Instantiate(worldTargetPrefab);
+		go.transform.position = new Vector3(worldPos.x, worldPos.y, -1);
+		currentPlanIcons.Add(go.transform);
 		return go;
 	}
 

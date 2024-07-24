@@ -40,6 +40,6 @@ public class UIBuildConfirm : UIMenu
     }
 
     public void Confirm() {
-        PlayerInput.ins.BuildBase(buildType);
+        PlayerInput.ins.BuildBase((ArmyManager.BuildingType)buildType);
     }
 }

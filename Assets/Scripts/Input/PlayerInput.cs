@@ -58,11 +58,12 @@ public class PlayerInput : MonoBehaviour
 	}
 
 
-	public void BuildBase(int kind)
+	public void BuildBase(ArmyManager.BuildingType btype)
 	{
 
 		Vector2 wp = transform.GetChild(0).transform.position;
-		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) != 0)
+		Vector2Int mp = MapUtils.PointToCoords(wp);
+		if (!ArmyManager.ValidMapPlacement(0, mp))
 		{
 
 			ConsolePanel.Log("unsuitable construction location", 5);
@@ -71,22 +72,7 @@ public class PlayerInput : MonoBehaviour
 
 		ConsolePanel.Log("New Base being constructed at: " + wp.ToString());
 
-		Transform t = Instantiate(ArmyManager.ins.constructionPrefab,
-		 wp, Quaternion.identity, ArmyManager.ins.transform).transform;
-
-		Construction co = t.GetComponent<Construction>();
-		if(kind == 0) {
-			co.toBuild = ArmyManager.ins.siloPrefab.GetComponent<Unit>();
-		}
-		if (kind == 1)
-		{
-			co.toBuild = ArmyManager.ins.airbasePrefab.GetComponent<Unit>();
-		}
-		if (kind == 2)
-		{
-			//co.toBuild = InfluenceMan.ins.siloPrefab.GetComponent<Unit>();
-		}
-		co.team = 0;
+		ArmyManager.ins.NewConstruction(0, mp, btype);
 	}
 
 	public void PlayerSendAid() {

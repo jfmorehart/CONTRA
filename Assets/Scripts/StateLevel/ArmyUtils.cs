@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 
 public static class ArmyUtils
@@ -16,6 +17,7 @@ public static class ArmyUtils
 	public static List<Unit>[] aircraft;
 	public static List<Silo>[] silos;
 	public static List<Airbase>[] airbases;
+	public static List<AAA>[] batteries;
 	//public static int[] lastWrite;
 
 	public static void Init() {
@@ -25,12 +27,17 @@ public static class ArmyUtils
 		aircraft = new List<Unit>[Map.ins.numStates];
 		silos = new List<Silo>[Map.ins.numStates];
 		airbases = new List<Airbase>[Map.ins.numStates];
+		batteries = new List<AAA>[Map.ins.numStates];
+
 		for (int i = 0; i < Map.ins.numStates; i++) {
 			armies[i] = new List<Unit>();
 			aircraft[i] = new List<Unit>();
 			silos[i] = new List<Silo>();
 			airbases[i] = new List<Airbase>();
 			GetArmies(i);
+			GetSilos(i);
+			GetAirbases(i);
+			GetAAAs(i);
 		}
 	}
 	/*		if (armies[team].Count > 0) {
@@ -108,13 +115,13 @@ public static class ArmyUtils
 		Silo[] sls = GetSilos(team);
 		foreach (Silo sl in sls)
 		{
-			tars.Add(new Target(sl.transform.position, 10, Tar.Nuclear));
+			tars.Add(new Target(sl.transform.position, 50, Tar.Nuclear));
 		}
 		nuclearCount[team] = tars.Count;
 		Airbase[] air = GetAirbases(team);
 		foreach (Airbase sl in air)
 		{
-			tars.Add(new Target(sl.transform.position, 6, Tar.Nuclear));
+			tars.Add(new Target(sl.transform.position, 45, Tar.Nuclear));
 		}
 		return tars.ToArray();
 	}
@@ -161,7 +168,7 @@ public static class ArmyUtils
 		foreach (City sl in GetCities(team))
 		{
 			if (Map.ins.GetPixTeam(sl.mpos) != team) continue;
-			tars.Add(new Target(sl.transform.position, sl.truepop, Tar.Civilian));
+			tars.Add(new Target(sl.transform.position, sl.truepop * 0.5f, Tar.Civilian));
 		}
 		return tars.ToArray();
 	}
@@ -197,6 +204,20 @@ public static class ArmyUtils
 		return uns.ToArray();
 	}
 
+	public static AAA[] GetAAAs(int team) {
+		//Get info from tracker
+		List<AAA> uns = new List<AAA>();
+		AAA[] units = ArmyManager.ins.batteries.ToArray();
+
+		//Pick the ones we want
+		for (int i = 0; i < units.Length; i++)
+		{
+			if (units[i].team == team) { uns.Add(units[i]); }
+		}
+		batteries[team] = uns;
+		return uns.ToArray();
+	}
+
 	public static Unit[] AllUnitInventory(int team) {
 		List<Unit> uns = new List<Unit>();
 
@@ -206,6 +227,20 @@ public static class ArmyUtils
 		uns.AddRange(GetSilos(team));
 		uns.AddRange(GetAircraft(team));
 
+		return uns.ToArray();
+	}
+
+	public static Building[] GetBuildings(int team) {
+
+		List<Building> uns = new List<Building>();
+		Building[] units = ArmyManager.ins.allbuildings.ToArray();
+
+		//Pick the ones we want
+		for (int i = 0; i < units.Length; i++)
+		{
+			if (units[i].team == team) { uns.Add(units[i]); }
+		}
+		
 		return uns.ToArray();
 	}
 
@@ -222,12 +257,16 @@ public static class ArmyUtils
 		aircraft[team] = uns;
 		return uns.ToArray();
 	}
-	public static Unit EnemyAircraftInRange(int team, Vector2 pos, float range) {
+	public static Unit EnemyAircraftInRange(int team, Vector2 pos, float range, List<Unit> ignore = null) {
 		int[] enemyTeams = ROE.GetEnemies(team).ToArray();
 		Unit[] units = ShuffleUnits(ArmyManager.ins.aircraft.ToArray());
-		
+		bool ignoring = ignore != null;
 		foreach (Unit u in units) {
 			if (!enemyTeams.Contains(u.team)) continue;
+			if (ignoring) {
+				if (ignore.Contains(u)) continue;
+			}
+
 			Vector2 delta = (Vector2)u.transform.position - pos;
 			if (delta.magnitude > range) continue;
 			return u;

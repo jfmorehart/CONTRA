@@ -5,14 +5,42 @@ using UnityEngine;
 public class UIAirDoctrine : UIMenu
 {
 	State_AI state;
+	float lastUpdate;
+
 	private void Start()
 	{
 		state = Diplomacy.states[0] as State_AI;
-		for (int i = 0; i < state.airdoctrine.Length; i++)
-		{
-			if ((children[i].value == 1) != state.airdoctrine[i])
+		UpdateFromArray();
+	}
+
+	private void Update()
+	{
+		if(Time.time - lastUpdate > 0.1f) {
+			UpdateFromArray();
+		}
+		else {
+			int en = UI.ins.targetNation;
+			for (int i = 0; i < state.airdoctrine[en].Length; i++)
 			{
-				children[i].value = state.airdoctrine[i] ? 1 : 0;
+				//this makes the data match the UI, for player input
+				if ((children[i].value == 1) != state.airdoctrine[en][i])
+				{
+					state.airdoctrine[en][i] = children[i].value == 1;
+				}
+			}
+		}
+
+		lastUpdate = Time.time;
+	}
+
+	void UpdateFromArray() {
+		//this makes the UI match the data, when swapping screens
+		int en = UI.ins.targetNation;
+		for (int i = 0; i < state.airdoctrine[en].Length; i++)
+		{
+			if ((children[i].value == 1) != state.airdoctrine[en][i])
+			{
+				children[i].value = state.airdoctrine[en][i] ? 1 : 0;
 
 				if (children[i].highlighted)
 				{
@@ -23,17 +51,6 @@ public class UIAirDoctrine : UIMenu
 				{
 					children[i].UnHighlight();
 				}
-			}
-		}
-	}
-
-	private void Update()
-	{
-		for (int i = 0; i < state.airdoctrine.Length; i++)
-		{
-			if ((children[i].value == 1) != state.airdoctrine[i])
-			{
-				state.airdoctrine[i] = children[i].value == 1;
 			}
 		}
 	}

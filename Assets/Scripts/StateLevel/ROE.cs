@@ -63,11 +63,14 @@ public static class ROE
 
 		SetState(t1, t2, 1);
 		if (t1 == t2) return;
-		if(Diplomacy.IsMyAlly(t1, t2)) {
+		if (!Diplomacy.states[t1].alive) return;
+
+		if (Diplomacy.IsMyAlly(t1, t2)) {
 			Debug.LogError("trying to invade current ally :(");
 		}
 		Diplomacy.states[t2].WarStarted(t1);
 		Diplomacy.states[t1].WarStarted(t2);
+
 
 		if (t1 == 0)
 		{

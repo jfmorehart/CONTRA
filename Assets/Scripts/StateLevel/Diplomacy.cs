@@ -79,6 +79,7 @@ public static class Diplomacy
 			Log(ColoredName(t1) + " and " + (ColoredName(t2) + " have made peace"), 30);
 		}
 		else {
+			if (!Diplomacy.states[t1].alive) return;
 			if(t1 == 0) {
 				Log(ColoredName(t1) + " have offered " + (ColoredName(t2) + " peace"), 30);
 			}

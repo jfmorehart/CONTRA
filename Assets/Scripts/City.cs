@@ -39,8 +39,6 @@ public class City : MonoBehaviour
 
 	private void Update()
 	{
-
-
 		if (Time.unscaledTime - lastPop > popdelay)
 		{
 			lastPop = Time.unscaledTime;
@@ -54,6 +52,10 @@ public class City : MonoBehaviour
 		if(truepop < 1) {
 			ArmyManager.ins.RemoveCity(this);
 			Destroy(gameObject);
+		}
+
+		if (!Diplomacy.states[team].alive) {
+			team = TeamSurround();
 		}
     }
 
@@ -88,7 +90,12 @@ public class City : MonoBehaviour
 			pop -= teaminfs[^1];
 			if (pop < 0)
 			{
-				team = keys[^1];
+				if (SurroundCheck(keys[^1])) {
+					team = keys[^1];
+				}
+				else {
+					team = TeamSurround();
+				}
 			}
 		}
 		else {
@@ -99,35 +106,66 @@ public class City : MonoBehaviour
 		}
 	}
 
-	public void SurroundCheck() {
-
-		//Only check in wartime
-		if (!ROE.AreWeAtWar(team)) return;
+	public bool SurroundCheck(int capteam) {
 		
         int[] sample_teams = new int[Map.ins.numStates];
-		Vector2[] sample_pos = ArmyUtils.Encircle(transform.position, sample_radius, numSamples);
+		Vector2[] sample_pos = ArmyUtils.Encircle(wpos, sample_radius, numSamples);
 
         for(int i = 0; i < numSamples; i++) {
-			sample_teams[MapUtils.WorldPosToTeam(sample_pos[i])] += 1;
+			int t = MapUtils.WorldPosToTeam(sample_pos[i]);
+			if (t < 0) continue;
+			if (capteam == t) {
+				return true;
+			}
+			//sample_teams[MapUtils.WorldPosToTeam(sample_pos[i])] += 1;
 		}
+		return false;
+		//int mteam = 0;
+		//int mamt = -1;
 
+		//for(int i = 0; i < Map.ins.numStates; i++) {
+		//	if (sample_teams[i] > mamt) {
+		//		mamt = sample_teams[i];
+		//		mteam = i;
+		//	}
+		//}
+		
+		////Only convert to team we are at war with
+		//if(ROE.AreWeAtWar(team, mteam)){
+		//	if(team != mteam) {
+		//		Debug.Log("captured");
+		//	}
+
+		//	team = mteam;
+		//}
+    }
+
+
+	public int TeamSurround()
+	{
+
+		int[] sample_teams = new int[Map.ins.numStates];
+		Vector2[] sample_pos = ArmyUtils.Encircle(wpos, sample_radius, numSamples);
+
+		for (int i = 0; i < numSamples; i++)
+		{
+			int t = MapUtils.WorldPosToTeam(sample_pos[i]);
+			if (t < 0) continue;
+			sample_teams[t] += 1;
+		}
 		int mteam = 0;
 		int mamt = -1;
 
-		for(int i = 0; i < Map.ins.numStates; i++) {
-			if (sample_teams[i] > mamt) {
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (sample_teams[i] > mamt)
+			{
 				mamt = sample_teams[i];
 				mteam = i;
 			}
 		}
-		
-		//Only convert to team we are at war with
-		if(ROE.AreWeAtWar(team, mteam)){
-			if(team != mteam) {
-				Debug.Log("captured");
-			}
 
-			team = mteam;
-		}
-    }
+		return mteam;
+
+	}
 }

@@ -31,7 +31,7 @@ public class MoveCam : MonoBehaviour
 	{
 		ins = this;
 	}
-	public void Update()
+	public void FixedUpdate()
 	{
 		if (!canMove) return;
 		Vector3 pos = transform.position;
@@ -53,18 +53,18 @@ public class MoveCam : MonoBehaviour
 		{
 			verti = 1;
 		}
-		velo.x += horiz * accel.x * Time.deltaTime;
-		velo.y += verti * accel.y * Time.deltaTime;
+		velo.x += horiz * accel.x * Time.fixedDeltaTime;
+		velo.y += verti * accel.y * Time.fixedDeltaTime;
 		float zax = 0;
 		if (Input.GetKey(zoomIN)){
 			zax = 1;
 		} else if (Input.GetKey(zoomOut)) {
 			zax = -1;
 		}
-		sizeSpeed += zax * accel.z * Time.deltaTime;
+		sizeSpeed += zax * accel.z * Time.fixedDeltaTime;
 
-		pos += 0.01f * Camera.main.orthographicSize * Time.deltaTime * (Vector3)velo;
-		Camera.main.orthographicSize += sizeSpeed * Time.deltaTime;
+		pos += 0.01f * Camera.main.orthographicSize * Time.fixedDeltaTime * (Vector3)velo;
+		Camera.main.orthographicSize += sizeSpeed * Time.fixedDeltaTime;
 
 		if(Camera.main.orthographicSize < 15) {
 			Camera.main.orthographicSize = 15;
@@ -96,8 +96,8 @@ public class MoveCam : MonoBehaviour
 
 		transform.position = pos;
 
-		sizeSpeed *= 1 - Time.deltaTime * drag;
-		velo *= 1 - Time.deltaTime * drag;
+		sizeSpeed *= 1 - Time.fixedDeltaTime * drag;
+		velo *= 1 - Time.fixedDeltaTime * drag;
 	}
 
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)

@@ -41,7 +41,6 @@ public class Unit : MonoBehaviour
 	public virtual void Start()
 	{
 		ArmyManager.ins.RegisterUnit(this);
-		if (this is Airbase) Debug.Log("yep its registering");
 		ren = GetComponent<Renderer>();
 		ren.material = new Material(ren.material);
 		Pool.ins.GetRingEffect().Spawn(transform.position);
@@ -87,7 +86,6 @@ public class Unit : MonoBehaviour
 		if (useChunkSystem) {
 			UnitChunks.RemoveFromChunk(positionChunk, this);
 		}
-
 		Destroy(gameObject);
 	}
 

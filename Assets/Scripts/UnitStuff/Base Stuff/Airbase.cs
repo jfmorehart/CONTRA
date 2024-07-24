@@ -78,7 +78,6 @@ public class Airbase : Building
 	}
 	public void LandAircraft(Plane plane) {
 
-		UpdateIconDisplay(numPlanes);
 		if (launched.Contains(plane)) {
 			launched.Remove(plane);
 		}
@@ -87,8 +86,10 @@ public class Airbase : Building
 
 	IEnumerator Recover() {
 		yield return new WaitForSeconds(5);
-		numPlanes++;
-		yield break;
+		if(launched.Count + numPlanes < maxPlanes) {
+			numPlanes++;
+			UpdateIconDisplay(numPlanes);
+		}
     }
 	protected override void Reload()
 	{
