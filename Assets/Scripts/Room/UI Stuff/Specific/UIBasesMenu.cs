@@ -55,7 +55,7 @@ public class UIBasesMenu : UIMenu
 			SwitchBase(1);
 		}
 
-		if (binfo.Count > bsel)
+		if (binfo.Count > bsel && bsel > -1)
 		{
 			if (binfo[bsel] == null) return;
 			Vector2 pos = binfo[bsel].transform.position;

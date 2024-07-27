@@ -14,7 +14,7 @@ public class Missile : MonoBehaviour
 	float hmult = 1.5f;
 
 	public int team;
-
+	SFX_OneShot src;
 	private void Awake()
 	{
 		tren = GetComponent<TrailRenderer>();
@@ -30,6 +30,7 @@ public class Missile : MonoBehaviour
 		flying = true;
 		yield = myield;
 		team = mteam;
+		src = SFX.ins.MissileLaunch(transform);
 	}
 	private void Update()
 	{
@@ -50,6 +51,9 @@ public class Missile : MonoBehaviour
 	void Toggle(bool swi) {
 		ren.enabled = swi;
 		tren.enabled = swi;
+		if(src != null) {
+			Destroy(src.gameObject);
+		}
 		if (swi) {
 			tren.Clear();
 		}

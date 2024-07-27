@@ -215,7 +215,7 @@ MonoBehaviour:
   highPitch: 5
   spinUpAmt: 0
   noiseAccel: 0.05
-  maxVolume: 0.2
+  maxVolume: 0.05
   ndrag: 0.1
   on: 0
 --- !u!82 &4933548191531362702

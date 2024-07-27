@@ -33,16 +33,19 @@ public class InfoPanel : MonoBehaviour
     }
 	public void ROEUpdate() {
 		if (UI.ins == null) return;
+		if (Time.timeSinceLevelLoad < 1) return;
 
 		int numWars = texts.Count;
 		RefreshAtWarScreen();
 		if (numWars < texts.Count)
 		{
 			FlashColor(Color.red);
+			SFX.ins.DeclareWarAlarm();
 		}
 		else if (numWars > texts.Count)
 		{
 			FlashColor(Color.green);
+			SFX.ins.MakePeaceAlarm();
 		}
 	}
 

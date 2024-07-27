@@ -27,9 +27,6 @@ public class Airbase : Building
 		float angle = 0;
 		for(int i = 0; i < points; i++) {
 			Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-			if(team == 0) {
-				Debug.Log(dir);
-			}
 
 			(bool hit, Vector2Int hitpos) = MapUtils.TexelRayCast(pos, dir, 200, false);
 			if (hit)

@@ -70,7 +70,7 @@ public class Plane : Unit
 		GetComponent<SpriteRenderer>().color = Map.ins.state_colors[team] + new Color(0.3f, 0.3f, 0.3f);
 
 		fuel *= Random.Range(0.7f, 1.3f);
-
+		SFX.ins.PlaneLaunch(transform);
 		//turnDude = Instantiate(testPrefab);
 		//turnDude2 = Instantiate(testPrefab);
 	}

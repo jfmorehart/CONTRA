@@ -159,7 +159,7 @@ public class ArmyManager : MonoBehaviour
 		all.AddRange(armies);
 		all.AddRange(silos);
 		all.AddRange(airbases);
-
+		all.AddRange(batteries);
 		Unit[] allunits = all.ToArray();
 		Inf[] linfs = new Inf[allunits.Length];
 		for (int i = 0; i < allunits.Length; i++)

@@ -32,6 +32,8 @@ public class Fighter : Plane
 
 	State_AI state;
 
+	SFX_OneShot speaker;
+
 	public override void Start()
 	{
 		base.Start();
@@ -91,7 +93,11 @@ public class Fighter : Plane
 		else {
 			base.ArrivedOverTarget();
 		}
-    }
+		if (speaker == null)
+		{
+			speaker = SFX.ins.PilotChatter(true, this);
+		}
+	}
 	IEnumerator BombingRun(int count) {
 		bingo = true;
 		hasBombs = false;
@@ -134,12 +140,20 @@ public class Fighter : Plane
 		if (true) {
 			lastTargetAcquire = Time.time;
 			bogey = ArmyUtils.EnemyAircraftInRange(team, transform.position, trackingRange);
+			if (Random.value < 0.1 && speaker == null)
+			{
+				speaker = SFX.ins.PilotChatter(true, this);
+			}
 		}
 
 		if (bogey != null) return;
 
 		if (hasBombs) {
 			target = state.RequestBombingTargets(this);
+			if (speaker == null)
+			{
+				speaker = SFX.ins.PilotChatter(true, this);
+			}
 		}
 		return;
 	}
@@ -218,6 +232,12 @@ public class Fighter : Plane
 	}
 	void ScrapTarget() {
 		target = NULLMission;
+	}
+
+	public override void SmokeInTheAir(ATAM atam)
+	{
+		base.SmokeInTheAir(atam);
+		speaker = SFX.ins.PilotChatter(false, this);
 	}
 }
 

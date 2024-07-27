@@ -28,6 +28,9 @@ public class StrikePlan : MonoBehaviour
 
 	public List<Transform> currentPlanIcons;
 
+	float lastUpdate;
+	public float refreshDelay;
+
 	State_AI player;
 	private void Awake()
 	{
@@ -51,7 +54,9 @@ public class StrikePlan : MonoBehaviour
 		}
 		else {
 			strikeCam.enabled = false;
+			return;
 		}
+
 	}
 
 	public void DrawPlan(int warheads, List<Target> targets) {

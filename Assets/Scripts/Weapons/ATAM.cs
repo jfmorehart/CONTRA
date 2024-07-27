@@ -25,6 +25,8 @@ public class ATAM : MonoBehaviour
 
     float startSpeed;
 
+	AudioSource src;
+
 	private void Awake()
 	{
         ren = GetComponent<Renderer>();
@@ -44,6 +46,7 @@ public class ATAM : MonoBehaviour
         lifeTime = 5;
         startSpeed = ivel.magnitude;
         Toggle(true);
+		src = SFX.ins.ATAMLaunch(transform).GetComponent<AudioSource>();
     }
 
 	private void Update()
@@ -112,7 +115,9 @@ public class ATAM : MonoBehaviour
 	void Toggle(bool on) {
         flying = on;
         ren.enabled = on;
-
+		if(src != null) {
+			Destroy(src.gameObject);
+		}
         if (on) {
 			tren.enabled = on;
 			tren.Clear();

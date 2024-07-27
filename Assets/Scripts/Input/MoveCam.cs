@@ -12,6 +12,9 @@ public class MoveCam : MonoBehaviour
 	public Vector2 velo;
 	public float sizeSpeed;
 	public Vector3 accel;
+	public Vector2 shake;
+	public float shakestr, shakeFreq, shakeAmp, shakeDecay;
+	public float exp, mult, mult2;
 
 	public float drag;
 
@@ -34,7 +37,7 @@ public class MoveCam : MonoBehaviour
 	public void FixedUpdate()
 	{
 		if (!canMove) return;
-		Vector3 pos = transform.position;
+		Vector3 pos = transform.position - (Vector3)shake;
 
 		int horiz = 0;
 		if (Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D)) {
@@ -93,13 +96,24 @@ public class MoveCam : MonoBehaviour
 			pos.y = Map.ins.transform.position.y + yM;
 		}
 
-
-		transform.position = pos;
+		shake = shakestr * new Vector3(shakeAmp * (Mathf.PerlinNoise1D(Time.time * shakeFreq) - 0.5f), shakeAmp * (Mathf.PerlinNoise1D(Time.time + 5 * shakeFreq) - 0.5f));
+		shake *= Camera.main.orthographicSize;
+		transform.position = pos + (Vector3)shake;
+		shakestr -= Time.fixedDeltaTime * shakeDecay;
+		if (shakestr < 0.05f) shakestr = 0;
 
 		sizeSpeed *= 1 - Time.fixedDeltaTime * drag;
 		velo *= 1 - Time.fixedDeltaTime * drag;
-	}
 
+	}
+	public void Shake(Vector2 pos, float str) {
+		Vector3 delta = pos - (Vector2)transform.position;
+		delta.z += Camera.main.orthographicSize * 2;
+		float amt = mult * Mathf.Pow(mult2/delta.magnitude, exp);
+		Debug.Log(amt);
+		shakestr += amt * str;
+		if (shakestr > 2) shakestr = 2;
+    }
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
 		crtmat.SetFloat("_t", Time.unscaledTime * timeScale);

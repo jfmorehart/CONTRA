@@ -36,6 +36,7 @@ public class LaunchSiren : MonoBehaviour
 				SpinUp();
 			}
 			spinUpAmt *= 1 - Time.deltaTime * ndrag;
+			spinUpAmt = 0;
 		}
 		else {
 			if (UI.ins.incomingMissiles < 1)
@@ -52,7 +53,7 @@ public class LaunchSiren : MonoBehaviour
 		}
 		if (sirenPlaying) {
 			src.pitch = Mathf.Lerp(lowPitch, highPitch, spinUpAmt);
-			src.volume = Mathf.Lerp(0, maxVolume, spinUpAmt * spinUpAmt);
+			src.volume = Mathf.Lerp(0, maxVolume, spinUpAmt * spinUpAmt) * SFX.ins.globalVolume;
 			if (spinUpAmt < 0) {
 				src.Stop();
 				src.volume = 0;

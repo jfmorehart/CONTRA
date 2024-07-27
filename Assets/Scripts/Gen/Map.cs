@@ -183,6 +183,8 @@ public class Map : MonoBehaviour
 		Pool.ins.Explode().Nuke(wpos, radius);
 		uint dead = NukePop(wpos, radius);
 		MapUtils.NukeObjs(wpos, radius, hitsAir);
+		SFX.ins.NukePosition(wpos, radius);
+		MoveCam.ins.Shake(wpos, radius);
 	}
 
 	public uint NukePop(Vector2 wpos, float radius) {

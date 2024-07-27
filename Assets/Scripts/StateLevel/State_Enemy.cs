@@ -138,7 +138,6 @@ public class State_Enemy : State_AI
 						{
 							SendAid(e);
 							opinion[e] += 0.05f;
-							Debug.Log(team + "donating to " + e);
 						}
 					}
 				}
@@ -368,7 +367,6 @@ public class State_Enemy : State_AI
 	public override void RecieveAid(int from)
 	{
 		base.RecieveAid(from);
-		Debug.Log("recieved aid from " + from);
 		opinion[from] += 0.05f;
 	}
 

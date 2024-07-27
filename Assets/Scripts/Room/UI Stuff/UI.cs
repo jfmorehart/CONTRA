@@ -238,6 +238,9 @@ public class UI : MonoBehaviour
 
 		State_AI player = Diplomacy.states[0] as State_AI;
 		player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList(), targetNation);
+
+		(menu_strike as UIStrikeMenu).UpdateStrikePlanScreen();
+
 	}
 	void ChangeSelected(int dir) {
 		int osel = selected;

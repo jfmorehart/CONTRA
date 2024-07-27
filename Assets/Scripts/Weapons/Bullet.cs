@@ -37,6 +37,8 @@ public class Bullet : MonoBehaviour
 		lren.SetPositions(posAr);
 		lren.startColor = Map.ins.state_colors[team];
 		lren.endColor = Map.ins.state_colors[team];
+
+		SFX.ins.Shoot(transform.position);
 		return hTime;
     }
 

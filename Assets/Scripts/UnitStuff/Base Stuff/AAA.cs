@@ -65,10 +65,13 @@ public class AAA : Building
 		lastShotTime = Time.time;
 		Vector2 ivel = Vector2.zero;
 		ivel = (bogey.transform.position - transform.position).normalized * 40f;
-		Pool.ins.GetATAM().Launch(transform.position, ivel, bogey, team, 4.2f);
+		ATAM mis = Pool.ins.GetATAM();
+		mis.Launch(transform.position, ivel, bogey, team, 4.2f);
 		numMissiles--;
+
 		StartCoroutine(ScrubBogey(bogey));
 		UpdateIconDisplay(numMissiles);
+		SFX.ins.MissileLaunch(mis.transform, 0.3f);
 	}
 
 	IEnumerator ScrubBogey(Unit bogey) {
