@@ -10,7 +10,7 @@ public class Silo : Building
 
 	public override void Start()
 	{
-		numMissiles = maxMissiles;
+
 		base.Start();
 		UpdateIconDisplay(numMissiles);
 	}

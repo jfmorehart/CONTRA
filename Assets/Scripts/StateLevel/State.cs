@@ -221,14 +221,20 @@ public class State : MonoBehaviour
 		{
 			airbases[i].Kill();
 		}
+		Unit[] bats = ArmyUtils.GetAAAs(team);
+		for (int i = 0; i < bats.Length; i++)
+		{
+			bats[i].Kill();
+		}
 		for (int i = 0; i < construction_sites.Count; i++) {
 			construction_sites[i].Kill();
 		}
 		DisbandTroops(300);
 
 		alive = false;
-		for(int i = 0; i < Map.ins.numStates; i++) {
-			//ROE.DeclareWar(team, i);
+
+		if(team == 0) {
+			TimePanel.ins.EndGame();
 		}
 		//wait for buildinfluences
 		StartCoroutine(AfterInfluences());

@@ -111,4 +111,4 @@ MonoBehaviour:
   reloadTime: 30
   mapPos: {x: 0, y: 0}
   maxMissiles: 10
-  numMissiles: 0
+  numMissiles: 3

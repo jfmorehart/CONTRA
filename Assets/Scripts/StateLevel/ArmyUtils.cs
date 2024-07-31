@@ -1,4 +1,4 @@
-using System.Collections;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -18,7 +18,7 @@ public static class ArmyUtils
 	public static List<Silo>[] silos;
 	public static List<Airbase>[] airbases;
 	public static List<AAA>[] batteries;
-	//public static int[] lastWrite;
+ 
 
 	public static void Init() {
 		conventionalCount = new int[Map.ins.numStates];
@@ -87,7 +87,7 @@ public static class ArmyUtils
 		List<Target> tars = new List<Target>();
 		if (nuclear)
 		{
-			tars.AddRange(NuclearTargets(team));
+			tars.AddRange(StrategicTargets(team));
 		}
 		if (conventional)
 		{
@@ -109,7 +109,26 @@ public static class ArmyUtils
 		System.Array.Sort(keys, tr);
 		return tr;
 	}
-
+	public static Target[] StrategicTargets(int team) {
+		List<Target> tars = new List<Target>();
+		tars.AddRange(AirSupremacyTargets(team));
+		tars.AddRange(NuclearTargets(team));
+		return tars.ToArray();
+	}
+	public static Target[] AirSupremacyTargets(int team) {
+		List<Target> tars = new List<Target>();
+		Airbase[] air = GetAirbases(team);
+		foreach (Airbase sl in air)
+		{
+			tars.Add(new Target(sl.transform.position, 45, Tar.Nuclear));
+		}
+		AAA[] bat = GetAAAs(team);
+		foreach (AAA sl in bat)
+		{
+			tars.Add(new Target(sl.transform.position, 15, Tar.Conventional));
+		}
+		return tars.ToArray();
+	}
 	public static Target[] NuclearTargets(int team) {
 		List<Target> tars = new List<Target>();
 		Silo[] sls = GetSilos(team);
@@ -118,11 +137,6 @@ public static class ArmyUtils
 			tars.Add(new Target(sl.transform.position, 50, Tar.Nuclear));
 		}
 		nuclearCount[team] = tars.Count;
-		Airbase[] air = GetAirbases(team);
-		foreach (Airbase sl in air)
-		{
-			tars.Add(new Target(sl.transform.position, 45, Tar.Nuclear));
-		}
 		return tars.ToArray();
 	}
 

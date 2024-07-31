@@ -85,6 +85,8 @@ public class UI : MonoBehaviour
 	}
 	private void Update()
 	{
+		if (EndPanel.over) return;
+
 		ReconsiderStatehood();
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{

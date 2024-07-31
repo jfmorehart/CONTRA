@@ -110,7 +110,6 @@ public class MoveCam : MonoBehaviour
 		Vector3 delta = pos - (Vector2)transform.position;
 		delta.z += Camera.main.orthographicSize * 2;
 		float amt = mult * Mathf.Pow(mult2/delta.magnitude, exp);
-		Debug.Log(amt);
 		shakestr += amt * str;
 		if (shakestr > 2) shakestr = 2;
     }

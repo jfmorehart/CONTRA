@@ -40,12 +40,10 @@ public class InfoPanel : MonoBehaviour
 		if (numWars < texts.Count)
 		{
 			FlashColor(Color.red);
-			SFX.ins.DeclareWarAlarm();
 		}
 		else if (numWars > texts.Count)
 		{
 			FlashColor(Color.green);
-			SFX.ins.MakePeaceAlarm();
 		}
 	}
 

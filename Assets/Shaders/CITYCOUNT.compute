@@ -5,7 +5,9 @@ int2 cpos;
 
 int2 dime;
 int numStates;
+int teamToCount;
 RWStructuredBuffer<uint> popcount;
+RWStructuredBuffer<uint> teamOf;
 StructuredBuffer<float> popBuffer;
 
 [numthreads(32,32,1)]
@@ -14,9 +16,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int2 offset = int2(id.x - 16, id.y - 16);
     int2 pos = int2((cpos.x + id.x - 16), (cpos.y + id.y - 16)); 
     int index = pos.x + dime.x * pos.y;
+    int isTeam = (1 - step(0.1, teamToCount - teamOf[index]));
+    int pop = popBuffer[index] * isTeam;
 
     float weight = abs(32 - length(offset)) / (float)32;
-    InterlockedAdd(popcount[0], floor(popBuffer[index] * weight * weight));
+    InterlockedAdd(popcount[0], floor(pop * weight * weight));
 }
 
 

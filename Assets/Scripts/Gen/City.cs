@@ -39,6 +39,11 @@ public class City : MonoBehaviour
 
 	private void Update()
 	{
+		if (!Diplomacy.states[team].alive)
+		{
+			team = TeamSurround();
+		}
+
 		if (Time.unscaledTime - lastPop > popdelay)
 		{
 			lastPop = Time.unscaledTime;
@@ -52,10 +57,6 @@ public class City : MonoBehaviour
 		if(truepop < 1) {
 			ArmyManager.ins.RemoveCity(this);
 			Destroy(gameObject);
-		}
-
-		if (!Diplomacy.states[team].alive) {
-			team = TeamSurround();
 		}
     }
 
@@ -90,12 +91,13 @@ public class City : MonoBehaviour
 			pop -= teaminfs[^1];
 			if (pop < 0)
 			{
-				if (SurroundCheck(keys[^1])) {
-					team = keys[^1];
-				}
-				else {
-					team = TeamSurround();
-				}
+				team = TeamSurround();
+				//if (SurroundCheck(keys[^1])) {
+				//	team = keys[^1];
+				//}
+				//else {
+				//	team = TeamSurround();
+				//}
 			}
 		}
 		else {
@@ -143,7 +145,7 @@ public class City : MonoBehaviour
 
 	public int TeamSurround()
 	{
-
+		//returns the team with the most surrounding points
 		int[] sample_teams = new int[Map.ins.numStates];
 		Vector2[] sample_pos = ArmyUtils.Encircle(wpos, sample_radius, numSamples);
 

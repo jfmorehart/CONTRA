@@ -7,21 +7,24 @@ using static ConsolePanel;
 
 public static class Diplomacy
 {
-	public enum Relationship { 
+	public enum Relationship
+	{
 		Ally,
-		Friendly, 
-		Neutral, 
+		Friendly,
+		Neutral,
 		Hostile,
 		ConventionalWar,
 		NuclearWar,
 		TotalWar
-    }
+	}
 
-	public enum NewsItem { 
+	public enum NewsItem
+	{
 		War,
 		Aid,
 		Nuke
-    }
+	}
+
 
 	public static State[] states;
 	public static Relationship[,] relationships;
@@ -37,11 +40,22 @@ public static class Diplomacy
 
 	public static List<int>[] alliances;
 
+	public static StateEval[] stateEvals;
+
+	public static float[] statePowerPercentages;
+	public static float[] startingPowerPercentages; //for use with final scoring
+	public static float[] score;
+
 	public static void SetupDiplo()
 	{
 		numreg = 0;
 		states = new State[Map.ins.numStates];
 		state_names = new string[Map.ins.numStates];
+		statePowerPercentages = new float[Map.ins.numStates];
+		startingPowerPercentages = new float[Map.ins.numStates];
+		stateEvals = new StateEval[Map.ins.numStates];
+		score = new float[Map.ins.numStates];
+
 		relationships = new Relationship[states.Length, states.Length];
 		peaceOffers = new bool[states.Length, states.Length];
 		for (int i = 0; i < states.Length; i++)
@@ -59,6 +73,38 @@ public static class Diplomacy
 		for(int i = 0; i < alliances.Length; i++) {
 			alliances[i] = new List<int>();
 		}
+	}
+
+	public static float[] CalculateStatePowerRankings(StateEval[] stateEvals = null) {
+		float[] strengths = new float[Map.ins.numStates];
+		int[] teams = new int[Map.ins.numStates];
+		bool overwriteEvals = stateEvals == null;
+		if (overwriteEvals) {
+			stateEvals = new StateEval[Map.ins.numStates];
+		}
+
+		float totalPower = 0;
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			teams[i] = i;
+
+			//this is for calculating historical rankings
+			if (overwriteEvals) {
+				stateEvals[i] = new StateEval(i);
+			}
+
+			strengths[i] = stateEvals[i].strength;
+			totalPower += stateEvals[i].strength;
+		}
+		Array.Sort(strengths, teams);
+		//teams.Reverse();
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			int team = teams[^(i + 1)];
+			statePowerPercentages[team] = stateEvals[team].strength / totalPower;
+			float deltaPower = statePowerPercentages[team] - startingPowerPercentages[team];
+			score[team] = 100 * deltaPower / startingPowerPercentages[team];
+		}
+		return statePowerPercentages;
 	}
 
 	public static void AnnounceNews(NewsItem news, int t1, int t2) {

@@ -25,7 +25,7 @@ public class State_Player : State_AI
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
-			StateEval eval = new StateEval(team, i);
+			//StateDynamic dynamic = new StateDynamic(team, i);
 			//Debug.Log(team + " " + i + " " + eval.pVictory);
 			if (ROE.AreWeAtWar(team, i))
 			{

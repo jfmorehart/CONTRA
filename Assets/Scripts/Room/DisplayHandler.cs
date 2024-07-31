@@ -15,28 +15,52 @@ public class DisplayHandler : MonoBehaviour
 
 	public static Action resetGame;
 
+
 	private void Awake()
 	{
 		ins = this;
+		TimePanel.timesUp += EndScreens;
 	}
 	private void Start()
 	{
 		//UI.ins.UIScreenToggle(true);
 		MoveCam.ins.canMove = true;
 	}
+	public void EndScreens() {
+		EndPanel.ins.Enable();
+		TallScreenCam.ins.End();
+		foreach (Screen s in screens)
+		{
+			if (s.wideFormat) {
+				s.Switch(9); //endscreen;
+			}
+			else {
+				s.Switch(4); //tallscreen (economy)
+			}
+	
+		}
+	}
 	void Pause() {
 		paused = true;
 		Time.timeScale = 0;
+		WideScreenCam.ins.Refresh();
 		pauseCam.enabled = true;
 		foreach (Screen s in screens)
 		{
-			s.Switch(5);
+			if (s.wideFormat) {
+				s.Switch(2);
+			}
+			else {
+				s.Switch(5);
+			}
+
 		}
 	}
 
 	void UnPause() {
 		paused = false;
 		Time.timeScale = 1;
+		WideScreenCam.ins.Refresh();
 		foreach (Screen s in screens) {
 			s.Switch(-1);
 		}
@@ -44,6 +68,7 @@ public class DisplayHandler : MonoBehaviour
 	}
 
 	public void TogglePopStrikeScreen(bool strike) {
+		Debug.Log("toggle");
 		if (strike) {
 			screens[1].Switch(7);
 		}
@@ -55,7 +80,7 @@ public class DisplayHandler : MonoBehaviour
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Escape))
+		if (Input.GetKeyDown(KeyCode.Escape) && !EndPanel.over)
 		{
 			if (paused) {
 				UnPause();
@@ -68,29 +93,12 @@ public class DisplayHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            if (paused)
+            if (paused || EndPanel.over)
             {
                 resetGame?.Invoke();
-                SceneManager.LoadScene(1);
+				TimePanel.timesUp -= EndScreens;
+				SceneManager.LoadScene(1);
             }
         }
-
-        //if (Input.GetKeyDown(KeyCode.Space)) {
-        //	int c = screens[0].currentScreen + 1;
-        //	if (c > cameraOutputs.Length - 1) c = 0;
-        //	screens[0].Switch(c);
-        //	if(c == 0) {
-        //		MoveCam.ins.canMove = true;
-        //	}
-        //	else {
-        //		MoveCam.ins.canMove = false;
-        //	}
-        //	if(c == 3) {
-        //		UI.ins.UIScreenToggle(true);
-        //	}
-        //	else {
-        //		UI.ins.UIScreenToggle(false);
-        //	}
-        //}
-    }
+	}
 }

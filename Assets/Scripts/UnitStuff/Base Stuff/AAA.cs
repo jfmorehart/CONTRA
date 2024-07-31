@@ -21,7 +21,6 @@ public class AAA : Building
 
 	public override void Start()
 	{
-		numMissiles = maxMissiles;
 		base.Start();
 		UpdateIconDisplay(numMissiles);
 		firedAt = new List<Unit>();
@@ -71,7 +70,7 @@ public class AAA : Building
 
 		StartCoroutine(ScrubBogey(bogey));
 		UpdateIconDisplay(numMissiles);
-		SFX.ins.MissileLaunch(mis.transform, 0.3f);
+		//SFX.ins.MissileLaunch(mis.transform, 0.3f);
 	}
 
 	IEnumerator ScrubBogey(Unit bogey) {

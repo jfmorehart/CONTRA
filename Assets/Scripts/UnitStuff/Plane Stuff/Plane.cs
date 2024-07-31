@@ -45,12 +45,15 @@ public class Plane : Unit
 		}
     }
 	public enum AcceptableDistance { 
-		//the int values are the acceptable distances
+		//the int values are the acceptable distances before a plane
+		// can consider those targets overflown
+
+		//THESE CANNOT SHARE VALUES, make them at least 1 apart
 		None = 0,
 		Landing = 25, 
 		Waypoint = 80, 
 		Bogey = 5,
-		Bombtarget = 15
+		Bombtarget = 30
     }
 
 	public override void Awake()

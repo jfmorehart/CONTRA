@@ -134,6 +134,8 @@ public class SFX : MonoBehaviour
 		return os;
 	}
 	public SFX_OneShot ATAMLaunch(Transform atam) {
+		VectorLockNewSound(launchSound, 1f * 0.4f, atam.transform.position, 0.4f, 0.01f * 2);
+
 		GameObject go = Instantiate(oneshotPrefab, transform);
 		SFX_OneShot os = go.GetComponent<SFX_OneShot>();
 		os.Pilot(atam, sidewinderSound, 0.8f, true);
@@ -160,7 +162,7 @@ public class SFX : MonoBehaviour
 		return Resources.Load<AudioClip>("Sounds/"+ arrayname + "/" + name);
 	}
 	public void Shoot(Vector2 pos) {
-		PooledVLock(launchSound, 0.2f, pos, 0.1f, 0f);
+		PooledVLock(launchSound, 0.2f, pos, 0.1f, 0.3f);
     }
 
 	public void PooledVLock(AudioClip clip, float volume, Vector2 pos, float decayAmt = 0.05f, float pitchVariation = 0.1f) {

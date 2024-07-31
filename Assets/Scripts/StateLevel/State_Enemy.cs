@@ -11,7 +11,7 @@ public class State_Enemy : State_AI
 	//its trying to mimic a nation state in the cold war so its a little spaghetti
 
 
-	StateEval[] rivals; //most importantly stores pVictory
+	StateDynamic[] rivals; //most importantly stores pVictory
 	//the likelihood we'd win in a one-versus-one
 
 	public float[] opinion; // between 0 and 1, 0 is bad, 1 is good
@@ -25,7 +25,7 @@ public class State_Enemy : State_AI
 	protected override void Awake()
 	{
 		base.Awake();
-		rivals = new StateEval[Map.ins.numStates];
+		rivals = new StateDynamic[Map.ins.numStates];
 		opinion = new float[Map.ins.numStates];
 		for(int i =0; i < Map.ins.numStates; i++) {
 			opinion[i] = Random.Range(0.45f, 0.55f);
@@ -55,7 +55,21 @@ public class State_Enemy : State_AI
 
 		StateOpinions();
 	}
-
+	public override void GenerateTroopAllocations()
+	{
+		base.GenerateTroopAllocations();
+		float total = 0;
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (!Diplomacy.states[i].alive) continue;
+			troopAllocations[i] *= 1 - opinion[i];
+			total += Mathf.Max(0, troopAllocations[i]);
+		}
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			troopAllocations[i] = Mathf.Max(0, troopAllocations[i] / total);
+		}
+	}
 	float WarsEvaluation() {
 		float confidence = 1;
 		armyConfidence = 1;
@@ -69,12 +83,18 @@ public class State_Enemy : State_AI
 				continue;
 			}
 
-			StateEval eval = new StateEval(team, i);
+			StateDynamic eval = new StateDynamic(team, i);
 			rivals[i] = eval;
 
 			//COMBAT STUFF
 			if (ROE.AreWeAtWar(team, i))
 			{
+				List<int> enemiesOfEnemy = ROE.GetEnemies(i);
+				foreach (int e in enemiesOfEnemy)
+				{
+					opinion[e] += 0.01f;
+				}
+
 				if (sharesBorder[i])
 				{
 					confidence *= eval.pVictory;
@@ -130,6 +150,7 @@ public class State_Enemy : State_AI
 				}
 				else if (opinion[i] < 0.49)
 				{
+					opinion[i] -= 0.01f;
 					List<int> enemiesOfEnemy = ROE.GetEnemies(i);
 					foreach (int e in enemiesOfEnemy)
 					{
@@ -331,7 +352,7 @@ public class State_Enemy : State_AI
 
 				// Short Term: Eliminate Nuclear Assets
 				// Long Term: Eliminate Cities
-				targets.AddRange(NuclearTargets(enemy));
+				targets.AddRange(StrategicTargets(enemy));
 				targets.AddRange(CivilianTargets(enemy));
 				targets.AddRange(ConventionalTargets(enemy));
 				targets = TargetSort(targets.ToArray()).ToList();

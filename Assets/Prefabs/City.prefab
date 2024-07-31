@@ -101,5 +101,6 @@ MonoBehaviour:
   truepop: 0
   capRate: 200
   maxCapDist: 150
-  sample_radius: 20
-  debug: 
+  sample_radius: 10
+  mpos: {x: 0, y: 0}
+  wpos: {x: 0, y: 0}

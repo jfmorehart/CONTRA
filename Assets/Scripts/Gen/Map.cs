@@ -153,8 +153,16 @@ public class Map : MonoBehaviour
 
 		CountPop();
 
-		InvokeRepeating(nameof(UpdatePops), 1, 0.25f);
+		
+		//fucking pass by reference
+		float[] a = Diplomacy.CalculateStatePowerRankings();
+		for(int i = 0; i < a.Length; i++) {
+			Diplomacy.startingPowerPercentages[i] = a[i];
+			Diplomacy.score[i] = 0;
+		}
 
+		InvokeRepeating(nameof(UpdatePops), 1, 0.25f);
+		InvokeRepeating(nameof(SlowUpdate), 5, 1f);
 
 
 	}
@@ -176,12 +184,16 @@ public class Map : MonoBehaviour
 		GrowPopulation();
 		CountPop();
 		CountBorders();
+
     }
+	void SlowUpdate() {
+		Diplomacy.CalculateStatePowerRankings();
+	}
 
 
 	public void Detonate(Vector2 wpos, float radius, int dteam, bool hitsAir = false) {
 		Pool.ins.Explode().Nuke(wpos, radius);
-		uint dead = NukePop(wpos, radius);
+		NukePop(wpos, radius);
 		MapUtils.NukeObjs(wpos, radius, hitsAir);
 		SFX.ins.NukePosition(wpos, radius);
 		MoveCam.ins.Shake(wpos, radius);
@@ -375,7 +387,8 @@ public class Map : MonoBehaviour
 		popbuffer = new ComputeBuffer(popSize, 4);
 		popbuffer.SetData(pixelPop);
 		CITYCOUNT.SetBuffer(0, "popBuffer", popbuffer);
-
+		CITYCOUNT.SetBuffer(0, "teamOf", teamOf);
+		CITYCOUNT.SetInt("teamToCount", GetPixTeam(mpos));
 		CITYCOUNT.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		CITYCOUNT.SetInts("cpos", mpos.x, mpos.y);
 

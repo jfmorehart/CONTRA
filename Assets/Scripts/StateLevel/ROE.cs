@@ -65,6 +65,11 @@ public static class ROE
 		if (t1 == t2) return;
 		if (!Diplomacy.states[t1].alive) return;
 
+		if (t1 == 0 || t2 == 0)
+		{
+			SFX.ins.DeclareWarAlarm();
+		}
+
 		if (Diplomacy.IsMyAlly(t1, t2)) {
 			Debug.LogError("trying to invade current ally :(");
 		}
@@ -92,6 +97,13 @@ public static class ROE
 	public static void MakePeace(int t1, int t2)
 	{
 		SetState(t1, t2, 0);
+
+		if (!Diplomacy.states[t1].alive) return;
+
+		if (t1 == 0 || t2 == 0)
+		{
+			SFX.ins.MakePeaceAlarm();
+		}
 	}
 
 	public static void SetState(int t1, int t2, int toSet) {

@@ -324,8 +324,8 @@ MonoBehaviour:
   offset: {x: 0, y: -22}
   reloadTime: 10
   mapPos: {x: 0, y: 0}
-  maxMissiles: 4
-  numMissiles: 2
+  maxMissiles: 3
+  numMissiles: 1
   rechamberSpeed: 0.5
   radarCheckDelay: 0.3
   fireRange: 200

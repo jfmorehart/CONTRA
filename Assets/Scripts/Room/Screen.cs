@@ -8,6 +8,7 @@ public class Screen : MonoBehaviour
 	public Renderer renderer;
 	public int currentScreen;
 	int defaultScreen;
+	public bool wideFormat;
 
 	private void Start()
 	{

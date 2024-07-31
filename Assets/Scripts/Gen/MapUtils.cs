@@ -32,13 +32,8 @@ public static class MapUtils
 
 	public static void NukeObjs(Vector2 wpos, float radius, bool hitsAir = false) {
 		float dist = Mathf.Pow(radius, 0.4f) * 25;
-		for(int i =0; i < ArmyManager.ins.armies.Count; i++) {
-			float nd = Vector2.Distance(ArmyManager.ins.armies[i].transform.position, wpos);
-			if(nd < dist) {
-				ArmyManager.ins.armies[i].Kill();
-			}
-		}
-		if (hitsAir) {
+		if (hitsAir)
+		{
 			for (int i = 0; i < ArmyManager.ins.aircraft.Count; i++)
 			{
 				float nd = Vector2.Distance(ArmyManager.ins.aircraft[i].transform.position, wpos);
@@ -46,6 +41,13 @@ public static class MapUtils
 				{
 					ArmyManager.ins.aircraft[i].Kill();
 				}
+			}
+			return;
+		}
+		for(int i =0; i < ArmyManager.ins.armies.Count; i++) {
+			float nd = Vector2.Distance(ArmyManager.ins.armies[i].transform.position, wpos);
+			if(nd < dist) {
+				ArmyManager.ins.armies[i].Kill();
 			}
 		}
 
@@ -63,6 +65,14 @@ public static class MapUtils
 			if (nd < dist)
 			{
 				ArmyManager.ins.airbases[i].Kill();
+			}
+		}
+		for (int i = 0; i < ArmyManager.ins.batteries.Count; i++)
+		{
+			float nd = Vector2.Distance(ArmyManager.ins.batteries[i].transform.position, wpos);
+			if (nd < dist)
+			{
+				ArmyManager.ins.batteries[i].Kill();
 			}
 		}
 		for (int i = 0; i < ArmyManager.ins.other.Count; i++)

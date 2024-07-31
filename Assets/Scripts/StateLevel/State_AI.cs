@@ -102,11 +102,12 @@ public class State_AI : State
 		}
 		for (int r = 0; r < Map.ins.numStates; r++)
 		{
-			discrepancy += Mathf.Abs((garrisons[r].Count / total)  - troopAllocations[r]);
+			discrepancy += Mathf.Abs((garrisons[r].Count / total) - troopAllocations[r]);
 		}
 
+		if (team == 0) Debug.Log(discrepancy);
 		//todo find out a way to reduce the amount that troops get needlessly reordered
-		if (discrepancy > 0.25f)
+		if (discrepancy > 0.5f)
 		{
 			//expensive 
 			ReAssignGarrisons(true);
@@ -138,8 +139,7 @@ public class State_AI : State
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
-		
-			StateEval eval = new StateEval(team, i); //not that expensive really
+			StateDynamic eval = new StateDynamic(team, i); //not that expensive really
 			tas[i] = eval.armyRatio * Diplomacy.CanIReachEnemyThroughAllies(team, i) * 0.3f;
 			tas[i] *= (Diplomacy.IsMyAlly(team, i) ? 0.1f : 1);
 			sharesBorder[i] = AsyncPath.ins.SharesBorder(team, i); //todo fix sharesborder
@@ -152,7 +152,7 @@ public class State_AI : State
 		}
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
-			troopAllocations[i] = tas[i] / (tasum + 0.001f);
+			troopAllocations[i] = (tas[i])/ (tasum + 0.001f);
 		}
 	}
 
@@ -348,6 +348,13 @@ public class State_AI : State
 				ts.AddRange(NuclearTargets(i));
 			}
 		}
+		foreach (int i in enemies)
+		{
+			if (airdoctrine[i][(int)AirDoctrines.AirSuperiority])
+			{
+				ts.AddRange(AirSupremacyTargets(i));
+			}
+		}
 
 		return TargetSort(ts.ToArray()).ToList();
 	}
@@ -382,16 +389,26 @@ public class State_AI : State
 		
 		int[] allotment = new int[Map.ins.numStates];
 
-		for (int i = 0; i < Map.ins.numStates; i++) {
-			if (troopAllocations[i] < 0.01f) continue;
-			allotment[i] = Mathf.FloorToInt(uns.Length * troopAllocations[i]);
-			if (allotment[i] < 1) continue;
-			Vector2 ep = Diplomacy.states[i].transform.position;
-			Unit[] alo = GetArmies(team, allotment[i], ep, assigned);
+		//sorting this by allocation size, so that the biggest threat gets the best troops
+		int[] ts = new int[Map.ins.numStates]; 
+		float[] tas = new float[Map.ins.numStates];
+		for(int i = 0; i < Map.ins.numStates; i++) {
+			ts[i] = i;
+			tas[i] = troopAllocations[i];
+		}
+		System.Array.Sort(ts, tas);
+
+		for (int i = Map.ins.numStates - 1; i > -1; i--) {
+			int et = ts[i];
+			if (tas[et] < 0.01f) continue;
+			allotment[et] = Mathf.FloorToInt(uns.Length * tas[et]);
+			if (allotment[et] < 1) continue;
+			Vector2 ep = Diplomacy.states[et].transform.position;
+			Unit[] alo = GetArmies(team, allotment[et], ep, assigned);
 			for (int u = 0; u < alo.Length; u++)
 			{
 				Unit un = alo[u];
-				garrisons[i].Add(un);
+				garrisons[et].Add(un);
 				assigned.Add(un);
 			}
 		}
