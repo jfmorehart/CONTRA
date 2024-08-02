@@ -20,9 +20,12 @@ public struct StateDynamic
 	public float pVictory;
 	public Diplomacy.Relationship relationship;
 	public bool isHotWar;
+	public bool isRangedWar;
 
 	public StateDynamic(int team, int enemy)
 	{
+		isRangedWar = !(Diplomacy.states[team] as State_AI).sharesBorder[enemy];
+
 		popRatio = (1 + Map.ins.state_populations[enemy]) / (float)(Map.ins.state_populations[team] + 1f);
 		int enemyNukes = nuclearCount[enemy];
 		int myNukes = nuclearCount[team];

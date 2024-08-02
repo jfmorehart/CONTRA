@@ -28,7 +28,7 @@ public class Map : MonoBehaviour
 	int[] pixTeam;
 
 	int[] originalMap;
-	float mapSeed;
+	int mapSeed;
 
 	[Header("Compute Stuff")]
 	public ComputeShader POP;
@@ -78,7 +78,8 @@ public class Map : MonoBehaviour
 		ins = this;
 		localScale = transform.localScale; //used for non-main threads
 
-		mapSeed = UnityEngine.Random.Range(-500f, 500f);
+		mapSeed = UnityEngine.Random.Range(-500, 500);
+		Debug.Log(mapSeed);
 		UnitChunks.Init();
 		ArmyUtils.Init();
 		Diplomacy.SetupDiplo();

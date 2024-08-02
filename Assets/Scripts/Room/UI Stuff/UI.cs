@@ -26,6 +26,7 @@ public class UI : MonoBehaviour
 	public UIMenu menu_build;
 	public UIMenu menu_build_confirm;
 	public UIMenu menu_nation;
+	public UIMenu menu_feelings;
 	public UIMenu menu_strike;
 	public UIMenu menu_airdoctrine;
 
@@ -79,6 +80,7 @@ public class UI : MonoBehaviour
 		menu_strike.gameObject.SetActive(false);
 		menu_airdoctrine.gameObject.SetActive(false);
 		menu_bases.gameObject.SetActive(false);
+		menu_feelings.gameObject.SetActive(false);
 
 		Cursor.lockState = CursorLockMode.Locked;
 		currentMenu.children[0].Highlight();
@@ -173,6 +175,10 @@ public class UI : MonoBehaviour
 	public void BasesMenu() {
 		SwitchMenus(currentMenu, menu_bases);
 		PlayerInput.ins.ToggleBuildMode(true);
+	}
+	public void FeelingsMenu()
+	{
+		SwitchMenus(currentMenu, menu_feelings);
 	}
 	public void Cancel() {
 		if (currentMenu.parent != null)

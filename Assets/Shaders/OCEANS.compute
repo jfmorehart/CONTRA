@@ -43,14 +43,17 @@ float seed;
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     int index = (id.y * dime.x) + id.x;
-    float2 uv;
+    float2 uv; 
     uv.x = (float2)id.x / (float2)dime.x;
     uv.y = (float2)id.y / (float2)dime.y;
+    float2 cuv = abs(uv - 0.5); 
+    
+    //;// * 
+    float oval = 1.1 * (0.9 - length(cuv)) * (fractal_noise(uv * 7 + seed) + 0.4);
+    //oval *= 1 - step(1 - length(cuv), 0.5);
+    //oval += min(0.59, 1 * pow(cuv.x, 4));
+    //oval += min(0.59, 1 * pow(cuv.y, 4)); 
 
-    float oval = fractal_noise(uv * 2 + seed);
-    oval += 0.5 * pow(abs(uv.x - 0.5) + 0.2, 2);
-    oval += 0.5 * pow(abs(uv.y - 0.5) + 0.2, 2);
-
-    int omask = step(0.8, oval);
-    teamOf[index] = -omask; //-1 for ocean, 0 for other
+    int omask = step(0.5, oval);
+    teamOf[index] = omask - 1; //-1 for ocean, 0 for other
 }

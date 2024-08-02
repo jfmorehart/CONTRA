@@ -53,7 +53,7 @@ public class Plane : Unit
 		Landing = 25, 
 		Waypoint = 80, 
 		Bogey = 5,
-		Bombtarget = 30
+		Bombtarget = 20
     }
 
 	public override void Awake()

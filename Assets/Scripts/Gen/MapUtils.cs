@@ -86,10 +86,25 @@ public static class MapUtils
 	}
 	public static Vector2Int PlaceState(int index)
 	{
+		bool valid = false;
 		Vector2Int posI = new Vector2Int(
-			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
-			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
+					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
 
+		int it = 0;
+		while (!valid) {
+			it++;
+			if (it > 500) {
+				Debug.LogError("no valid point found to place state");
+				return Vector2Int.zero;
+			}
+			posI = new Vector2Int(
+					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
+					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+			//state may not be centered in water
+			valid = Map.ins.GetPixTeam(posI) != -1;
+		}
+		
 		ArmyManager.ins.NewState(index, posI);
 		return posI;
 	}

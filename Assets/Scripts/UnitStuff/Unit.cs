@@ -10,6 +10,7 @@ public class Unit : MonoBehaviour
 	[Header("Unit")]
 
 	public int team;
+	public int actingTeam;
 	public int hP;
 	public int positionChunk; //used for efficiently knowing where units are
 
@@ -30,7 +31,7 @@ public class Unit : MonoBehaviour
 		team = Map.ins.GetPixTeam(pt);
 		id = Random.Range(0, 10000);
 		gameObject.name = team.ToString() + id.ToString();
-
+		actingTeam = team;
 		if (useChunkSystem) {
 			positionChunk = UnitChunks.ChunkLookup(transform.position);
 			UnitChunks.AddToChunk(positionChunk, this);

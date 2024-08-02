@@ -87,6 +87,10 @@ public class PlayerInput : MonoBehaviour
 	
     }
 
+	public void PlayerOfferAlliance() {
+		Diplomacy.JoinAlliance(0, UI.ins.targetNation);
+    }
+
 	public void ConscriptTroops()
 	{
 		Diplomacy.states[0].SpawnTroops(5);

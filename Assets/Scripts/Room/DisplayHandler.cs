@@ -68,7 +68,6 @@ public class DisplayHandler : MonoBehaviour
 	}
 
 	public void TogglePopStrikeScreen(bool strike) {
-		Debug.Log("toggle");
 		if (strike) {
 			screens[1].Switch(7);
 		}

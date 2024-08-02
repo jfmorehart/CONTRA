@@ -74,9 +74,9 @@ public class State : MonoBehaviour
 		if (Map.ins.state_populations[team] < 5 || (GetCities(team).Count < 1)) {
 			KillState();
 		}
-		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team] + 3) {
+		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team] + 5) {
 			int diff = ArmyUtils.conventionalCount[team] - (int)Map.ins.state_populations[team];
-			BalanceBudget(Economics.cost_armyUpkeep * diff);
+			BalanceBudget(Economics.cost_armyUpkeep * (diff - 5));
 		}
     }
 

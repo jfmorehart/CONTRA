@@ -77,29 +77,29 @@ public class ArmyManager : MonoBehaviour
             Army rm = t.GetComponent<Army>();
 		}
 
-		for(int i = 0; i < 2; i++) {
-			Vector2 wp = RandomPointOnMap();
+		//for(int i = 0; i < 2; i++) {
+		//	Vector2 wp = RandomPointOnMap();
 
-			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+		//	if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
 
-			Transform t = Instantiate(siloPrefab, wp, Quaternion.identity, transform).transform;
-		}
-		for (int i = 0; i < 2; i++)
-		{
-			Vector2 wp = RandomPointOnMap();
+		//	Transform t = Instantiate(siloPrefab, wp, Quaternion.identity, transform).transform;
+		//}
+		//for (int i = 0; i < 2; i++)
+		//{
+		//	Vector2 wp = RandomPointOnMap();
 
-			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+		//	if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
 
-			Transform t = Instantiate(airbasePrefab, wp, Quaternion.identity, transform).transform;
-		}
-		for (int i = 0; i < 3; i++)
-		{
-			Vector2 wp = RandomPointOnMap();
+		//	Transform t = Instantiate(airbasePrefab, wp, Quaternion.identity, transform).transform;
+		//}
+		//for (int i = 0; i < 3; i++)
+		//{
+		//	Vector2 wp = RandomPointOnMap();
 
-			if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
+		//	if (Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
 
-			Transform t = Instantiate(aaaPrefab, wp, Quaternion.identity, transform).transform;
-		}
+		//	Transform t = Instantiate(aaaPrefab, wp, Quaternion.identity, transform).transform;
+		//}
 	}
 	public Army PlaceArmy(Vector2 worldPos)
 	{
@@ -167,7 +167,7 @@ public class ArmyManager : MonoBehaviour
 			linfs[i] = new Inf(
 				MapUtils.PointToCoords(allunits[i].transform.position),
 				Map.ins.armyInfluenceStrength,
-				allunits[i].team,
+				allunits[i].actingTeam,
 				1
 				);
 		}

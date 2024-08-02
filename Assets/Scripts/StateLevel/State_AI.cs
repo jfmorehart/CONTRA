@@ -105,7 +105,6 @@ public class State_AI : State
 			discrepancy += Mathf.Abs((garrisons[r].Count / total) - troopAllocations[r]);
 		}
 
-		if (team == 0) Debug.Log(discrepancy);
 		//todo find out a way to reduce the amount that troops get needlessly reordered
 		if (discrepancy > 0.5f)
 		{
@@ -142,8 +141,8 @@ public class State_AI : State
 			StateDynamic eval = new StateDynamic(team, i); //not that expensive really
 			tas[i] = eval.armyRatio * Diplomacy.CanIReachEnemyThroughAllies(team, i) * 0.3f;
 			tas[i] *= (Diplomacy.IsMyAlly(team, i) ? 0.1f : 1);
-			sharesBorder[i] = AsyncPath.ins.SharesBorder(team, i); //todo fix sharesborder
-			if (ROE.AreWeAtWar(team, i) && AsyncPath.ins.SharesBorder(team, i)){
+			sharesBorder[i] = Diplomacy.CanIReachEnemyThroughAllies(team, i) > 0;
+			if (ROE.AreWeAtWar(team, i) && sharesBorder[i]){
 				// weight troop allocation by necessity
 				tas[i] += 0.2f;
 				tas[i] *= 10;
@@ -458,7 +457,8 @@ public class State_AI : State
 		Peer,
 		Colonial,
 		Defensive,
-		Total
+		Total,
+		Ranged,
 	}
 }
 

@@ -20,7 +20,7 @@ public class State_Enemy : State_AI
     // that we will win the wars we are currently engaged in
 	// is equal to 1 when we are at peace;
 	float confidence;
-	float armyConfidence;
+	float confidence_ground;
 
 	protected override void Awake()
 	{
@@ -71,8 +71,8 @@ public class State_Enemy : State_AI
 		}
 	}
 	float WarsEvaluation() {
-		float confidence = 1;
-		armyConfidence = 1;
+		float confidence_wholistic = 1;
+		confidence_ground = 1;
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
@@ -89,6 +89,7 @@ public class State_Enemy : State_AI
 			//COMBAT STUFF
 			if (ROE.AreWeAtWar(team, i))
 			{
+				opinion[i] -= 0.02f;
 				List<int> enemiesOfEnemy = ROE.GetEnemies(i);
 				foreach (int e in enemiesOfEnemy)
 				{
@@ -97,17 +98,19 @@ public class State_Enemy : State_AI
 
 				if (sharesBorder[i])
 				{
-					confidence *= eval.pVictory;
+					confidence_wholistic *= eval.pVictory;
 
 					//magic number soup converts enemy/friendly army count into chance of success
 					float COVARM = Mathf.Clamp(Mathf.Pow(0.08f, Mathf.Pow(eval.armyRatio * 0.5f, 2)), 0.01f, 0.99f);
-					armyConfidence *= COVARM;
+					confidence_ground *= COVARM;
 
 				}
 				else
 				{
-					//todo make more sophisticated
-					Diplomacy.OfferPeace(team, i);
+					//offer peace if we don't look good for a ranged war
+					if((eval.airRatio + eval.nukeRatio) * 0.5f > 1) {
+						Diplomacy.OfferPeace(team, i);
+					}
 				}
 
 				War war = War.Peer;
@@ -124,10 +127,14 @@ public class State_Enemy : State_AI
 				{
 					war = War.Total;
 				}
+				if (!sharesBorder[i])
+				{
+					war = War.Ranged;
+				}
 				ConductWar_Update(i, war);
 			}
 		}
-		return confidence;
+		return confidence_wholistic;
 	}
 	void ForeignAdventures() {
 		//lets think about declaring war
@@ -137,20 +144,20 @@ public class State_Enemy : State_AI
 			if (Diplomacy.IsMyAlly(team, i)) continue;
 			if (!Diplomacy.states[i].alive) continue;
 
-			if (sharesBorder[i])
+			if (sharesBorder[i] || opinion[i] < 0.2f)
 			{
 				//todo replace with more sophisticated method for mimicking anger
 				//Debug.Log(team + " " + i + "  " + rivals[i].pVictory);
-				if (confidence * rivals[i].pVictory > opinion[i] * 1.5f && rivals[i].pVictory > 0.5f)
+				if (sharesBorder[i] && confidence * rivals[i].pVictory > opinion[i] * 2f && rivals[i].pVictory > 0.5f)
 				{
 					confidence *= rivals[i].pVictory;
 					ROE.DeclareWar(team, i);
 					ScrambleAircraft();
 					return;
 				}
-				else if (opinion[i] < 0.49)
+				else if (opinion[i] < 0.49 || (confidence > 0.95 && opinion[i] < 0.6))
 				{
-					opinion[i] -= 0.01f;
+					opinion[i] -= 0.005f;
 					List<int> enemiesOfEnemy = ROE.GetEnemies(i);
 					foreach (int e in enemiesOfEnemy)
 					{
@@ -158,7 +165,7 @@ public class State_Enemy : State_AI
 						if (opinion[e] + 0.1 > opinion[i] && rivals[e].pVictory > rivals[i].pVictory) //e weaker than i
 						{
 							SendAid(e);
-							opinion[e] += 0.05f;
+							opinion[e] += 0.025f;
 						}
 					}
 				}
@@ -170,34 +177,7 @@ public class State_Enemy : State_AI
 		if (ROE.AreWeAtWar(team))
 		{
 			//AT WAR
-			if (armyConfidence < 0.8f || armyConfidence < 0.95 && assesment.costOverrun < 1)
-			{
-				int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * armyConfidence));
-				spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team]));
-				if (spawnWave > 0)
-				{
-					SpawnTroops(spawnWave);
-				}
-			}else if (confidence < 0.5) {
-				//spawn as many as we can
-				SpawnTroops(Mathf.Min(10, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team])));
-			}
-			else if (assesment.costOverrun > 1 && confidence > 0.9)
-			{
-				//economy is bad, and we're winning
-				//we should cut back on troops
-
-				//this will shrink spending by disbanding troops and mothballing silos
-				BalanceBudget(assesment.costOverrun * confidence);
-			}
-
-			if (assesment.percentGrowth > 0 && ArmyUtils.GetAirbases(ROE.GetEnemies(team)[0]).Length > GetAAAs(team).Length + GetAirbases(team).Length) {
-				//force parity?
-				//need to either build AAA or airbases
-				if (construction_sites.Count < 1) {
-					ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
-				}				
-			}
+			WartimeEconomics();
 		}
 		else
 		{
@@ -222,6 +202,46 @@ public class State_Enemy : State_AI
 			}
 			else if(assesment.percentGrowth < 0){
 				BalanceBudget(assesment.costOverrun + 5);
+			}
+		}
+	}
+	void WartimeEconomics() {
+		if (confidence_ground < 0.8f || confidence_ground < 0.95 && assesment.costOverrun < 1)
+		{
+			int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * confidence_ground));
+			spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team]));
+			if (spawnWave > 0)
+			{
+				SpawnTroops(spawnWave);
+			}
+		}
+		else if (confidence_ground < 0.5)
+		{
+			//spawn as many as we can
+			SpawnTroops(Mathf.Min(10, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team])));
+		}
+
+		if(confidence < 0.8 && confidence_ground > 0.8f && assesment.costOverrun < -5) {
+			//building for ranged wars
+			ConsiderNewConstruction();
+		}
+
+		if (assesment.costOverrun > 1 && confidence > 0.9)
+		{
+			//economy is bad, and we're winning
+			//we should cut back on troops
+
+			//this will shrink spending by disbanding troops and mothballing silos
+			BalanceBudget(assesment.costOverrun * confidence);
+		}
+
+		if (assesment.percentGrowth > 0 && ArmyUtils.GetAirbases(ROE.GetEnemies(team)[0]).Length > GetAAAs(team).Length + GetAirbases(team).Length)
+		{
+			//force parity?
+			//need to either build AAA or airbases
+			if (construction_sites.Count < 1)
+			{
+				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
 			}
 		}
 	}
@@ -355,6 +375,17 @@ public class State_Enemy : State_AI
 				targets.AddRange(StrategicTargets(enemy));
 				targets.AddRange(CivilianTargets(enemy));
 				targets.AddRange(ConventionalTargets(enemy));
+				targets = TargetSort(targets.ToArray()).ToList();
+				ICBMStrike(30, targets, enemy);
+				break;
+			case War.Ranged:
+				airdoctrine[enemy] = new bool[] { true, true, true, true };
+				if (rivals[enemy].isHotWar) {
+					targets.AddRange(StrategicTargets(enemy));
+				}
+				if(confidence < 0.5) {
+					targets.AddRange(CivilianTargets(enemy));
+				}
 				targets = TargetSort(targets.ToArray()).ToList();
 				ICBMStrike(30, targets, enemy);
 				break;

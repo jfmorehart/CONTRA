@@ -242,7 +242,6 @@ public static class Diplomacy
 		int al = AllianceOfTeam(me);
 		if (al == -1) return false;
 		bool cont = alliances[al].Contains(them);
-		Debug.Log(me + " " + cont + " " + them);
 		return cont;
 	}
 
@@ -254,6 +253,40 @@ public static class Diplomacy
 		}
 		return -1;
     }
+
+	public static string OpinionText(int t1, int t2) {
+		string status;
+		if (states[t1] is not State_Enemy) return "null opinion";
+		State_Enemy brain = states[t1] as State_Enemy;
+
+		if (brain.opinion[t2] < 0.4)
+		{
+			if (brain.opinion[t2] < 0.15)
+			{
+				status = "<color=\"red\"> hates </color>";
+			}
+			else
+			{
+				status = "<color=\"yellow\"> dislikes </color>";
+			}
+		}
+		else if (brain.opinion[t2] > 0.6)
+		{
+			if (brain.opinion[t2] > 0.8f)
+			{
+				status = "<color=\"blue\"> trusts </color>";
+			}
+			else
+			{
+				status = "<color=\"green\"> likes </color>";
+			}
+		}
+		else
+		{
+			status = "neutral";
+		}
+		return status;
+	}
 
 	public static string RandomName() {
 		string name = "";
