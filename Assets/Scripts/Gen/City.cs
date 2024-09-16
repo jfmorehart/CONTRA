@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 
 public class City : MonoBehaviour
 {
@@ -59,8 +60,9 @@ public class City : MonoBehaviour
 			Destroy(gameObject);
 		}
     }
-
 	public void IncrementalCapture() {
+		//Async!!!
+
 		// This function finds the nearest army lads to check to see if 
 		// this city is being captured, so it can adjust its influence 
 		// on the map territory accordingly
@@ -75,7 +77,7 @@ public class City : MonoBehaviour
 			if (!ROE.AreWeAtWar(team, i)) continue;
 
 			//this info may be old!
-			foreach (Unit un in ArmyUtils.armies[i]) {
+			foreach (Unit un in CityCapturing.ins.icprep[i]) {
 				if (un == null) continue;
 				float d = Vector2.Distance(wpos, (un as Army).wpos);
 				d = Mathf.Max(d, 10);

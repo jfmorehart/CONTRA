@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static ArmyUtils;
 
@@ -33,6 +34,8 @@ public class State : MonoBehaviour
 	// it is not guaranteed to even lie within the State!
 	public Vector2Int origin;
 
+	public const float stateUpdateDelay = 1;
+
 	protected virtual void Awake()
 	{
 		LaunchDetection.launchDetectedAction += LaunchDetect;
@@ -53,7 +56,7 @@ public class State : MonoBehaviour
 		origin = pos;
 		Diplomacy.RegisterState(this);
 		Invoke(nameof(StateUpdate), 0.08f);
-		InvokeRepeating(nameof(StateUpdate), i * 0.1f, 1f);
+		InvokeRepeating(nameof(StateUpdate), i * 0.1f, stateUpdateDelay);
     }
 
 	protected virtual void StateUpdate() {
@@ -69,13 +72,14 @@ public class State : MonoBehaviour
 		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
 
 		ConstructionWork();
+		Research.ConductResearch(team, 4f);
 
 		//delete all troops if you have no cities left
 		if (Map.ins.state_populations[team] < 5 || (GetCities(team).Count < 1)) {
 			KillState();
 		}
-		if (ArmyUtils.conventionalCount[team] > Map.ins.state_populations[team] + 5) {
-			int diff = ArmyUtils.conventionalCount[team] - (int)Map.ins.state_populations[team];
+		if (armies[team].Count > Map.ins.state_populations[team] + 5) {
+			int diff = armies[team].Count - (int)Map.ins.state_populations[team];
 			BalanceBudget(Economics.cost_armyUpkeep * (diff - 5));
 		}
     }
@@ -97,21 +101,71 @@ public class State : MonoBehaviour
 		}
 		if (budgetCut < 0) return;
 
-		//Silo dereliction
-		//todo expand to all
-		Unit[] silos = ArmyUtils.GetSilos(team);
-		for (int i = 0; i < silos.Length; i++)
+		//construction cancellation
+		for (int i = 0; i < construction_sites.Count; i++)
 		{
 			if (budgetCut > 0)
 			{
-				GameObject go = Instantiate(ArmyManager.ins.constructionPrefab,
-					silos[i].transform.position, silos[i].transform.rotation,
-					ArmyManager.ins.transform) ;
-				Construction co = go.GetComponent<Construction>();
-				co.team = team;
-				co.btype = ArmyManager.BuildingType.Silo;
-				co.manHoursRemaining = Mathf.Min(budgetCut, 1);
-				silos[i].Kill();
+
+				Construction co = construction_sites[i];
+				co.Kill();
+				budgetCut -= 5;
+			}
+			else
+			{
+				return;
+			}
+		}
+
+		Unit[] bases = ArmyUtils.GetAirbases(team);
+		for (int i = 0; i < bases.Length; i++)
+		{
+			if (budgetCut > 0)
+			{
+				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
+				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Airbase);
+				if(u is Building) {
+					(u as Building).manHoursRemaining = 25;
+				}
+				bases[i].Kill();
+				budgetCut -= Economics.cost_siloUpkeep;
+			}
+			else
+			{
+				return;
+			}
+		}
+
+		//Silo dereliction
+		//todo expand to all
+		bases = ArmyUtils.GetSilos(team);
+		for (int i = 0; i < bases.Length; i++)
+		{
+			if (budgetCut > 0)
+			{
+				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
+				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Silo, true);
+				if (u is not Building) continue;
+				(u as Building).manHoursRemaining = 25;
+				bases[i].Kill();
+				budgetCut -= Economics.cost_siloUpkeep;
+			}
+			else
+			{
+				return;
+			}
+		}
+
+		bases = ArmyUtils.GetAAAs(team);
+		for (int i = 0; i < bases.Length; i++)
+		{
+			if (budgetCut > 0)
+			{
+				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
+				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.AAA);
+				if (u is not Building) continue;
+				(u as Building).manHoursRemaining = 25;
+				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
 			}
 			else
@@ -158,7 +212,7 @@ public class State : MonoBehaviour
 				}
 				return; //do not let us get too far into debt
 			}
-			if (conventionalCount[team] > Map.ins.state_populations[team])
+			if (armies[team].Count > Map.ins.state_populations[team])
 			{
 				if (team == 0)
 				{

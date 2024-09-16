@@ -98,12 +98,11 @@ public static class ROE
 	{
 		SetState(t1, t2, 0);
 
-		if (!Diplomacy.states[t1].alive) return;
-
 		if (t1 == 0 || t2 == 0)
 		{
 			SFX.ins.MakePeaceAlarm();
 		}
+		if (!Diplomacy.states[t1].alive) return;
 	}
 
 	public static void SetState(int t1, int t2, int toSet) {

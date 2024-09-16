@@ -31,7 +31,6 @@ public class WideScreenCam : MonoBehaviour
 	}
 	void Pause(bool pause)
 	{
-		Debug.Log("moving cam");
 		rpause = pause;
 		//move the console camera over to the Pause menu to display the widescreen format
 		if (pause)

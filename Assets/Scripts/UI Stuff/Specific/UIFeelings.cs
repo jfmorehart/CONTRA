@@ -19,6 +19,7 @@ public class UIFeelings : UIMenu
 		List<UIOption> kids = new List<UIOption>();
 		for(int i = 0; i < Map.ins.numStates; i++) {
 			if (i == UI.ins.targetNation) continue;
+			if (!Diplomacy.states[i].alive) continue;
 			GameObject go = Instantiate(nationprefab, transform);
 			kids.Add(go.GetComponent<UIOption>());
 			go.transform.localPosition = new Vector3(0, -UI.ins.infoSpacer * kids.Count);

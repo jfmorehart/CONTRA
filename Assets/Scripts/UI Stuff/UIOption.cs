@@ -9,6 +9,7 @@ public class UIOption : MonoBehaviour
 	public UIMenu parentMenu;
 	//this class goes on selectable menu options
 
+	public bool locked;
 	public bool highlighted;
 	public bool highlight_recolors_sprite = true;
 	public Kind kind;
@@ -31,11 +32,22 @@ public class UIOption : MonoBehaviour
 		}
 		plaintext = text.text;
 		defaultColor = text.color;
+
+		//if (locked)
+		//{
+		//	text.color = Color.grey;
+		//}
 	}
 
 	public void Highlight()
 	{
 		highlighted = true;
+		text.text = ">" + plaintext + "<";
+
+		if (locked) {
+			text.color = Color.grey;
+			return;
+		}
 		if (highlight_recolors_sprite) {
 			text.color = Color.yellow;
 		}
@@ -43,14 +55,19 @@ public class UIOption : MonoBehaviour
 			text.fontStyle = FontStyles.Underline | FontStyles.Bold;
 		}
 
-		text.text = ">" + plaintext + "<";
-
 		if (kind == Kind.Switch) BoxTick();
 	}
 
 	public void UnHighlight()
 	{
 		highlighted = false;
+		text.text = plaintext;
+
+		if (locked)
+		{
+			text.color = Color.grey;
+			return;
+		}
 		if (highlight_recolors_sprite)
 		{
 			text.color = defaultColor;
@@ -59,7 +76,7 @@ public class UIOption : MonoBehaviour
 		{
 			text.fontStyle = FontStyles.Bold;
 		}
-		text.text = plaintext;
+
 		if (kind == Kind.Switch) BoxTick();
 	}
 

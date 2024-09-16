@@ -109,9 +109,9 @@ public class ArmyManager : MonoBehaviour
 		return ar;
 	}
 
-	public Unit NewConstruction(int team, Vector2Int mapPos, ArmyManager.BuildingType btype) {
+	public Unit NewConstruction(int team, Vector2Int mapPos, ArmyManager.BuildingType btype, bool grandfathered = false) {
 		if (mapPos == Vector2Int.zero) return null; //no spot found
-		if (!ValidMapPlacement(team , mapPos)) return null;
+		if (!ValidMapPlacement(team , mapPos) && !grandfathered) return null;
 
 		Transform t = Instantiate(ArmyManager.ins.constructionPrefab,
 			MapUtils.CoordsToPoint(mapPos), Quaternion.identity, ArmyManager.ins.transform).transform;
@@ -283,26 +283,31 @@ public class ArmyManager : MonoBehaviour
 		//exclusive lists
 		if(un is Army) {
 			armies.Add(un as Army);
+			ArmyUtils.armies[un.team].Add(un);
 			return;
 		}
 		if (un is Plane)
 		{
 			aircraft.Add(un as Plane);
+			ArmyUtils.aircraft[un.team].Add(un as Plane);
 			return;
 		}
 		if (un is Airbase)
 		{
 			airbases.Add(un as Airbase);
+			ArmyUtils.airbases[un.team].Add(un as Airbase);
 			return;
 		}
 		if (un is AAA)
 		{
 			batteries.Add(un as AAA);
+			ArmyUtils.batteries[un.team].Add(un as AAA);
 			return;
 		}
 		if (un is Silo)
 		{
 			silos.Add(un as Silo);
+			ArmyUtils.silos[un.team].Add(un as Silo);
 		}
 		else {
 			other.Add(un);
@@ -330,24 +335,29 @@ public class ArmyManager : MonoBehaviour
 		if (un is Army)
 		{
 			armies.Remove(un as Army);
+			ArmyUtils.armies[un.team].Remove(un);
 			return;
 		}
 		if (un is Plane)
 		{
 			aircraft.Remove(un as Plane);
+			ArmyUtils.aircraft[un.team].Remove(un as Plane);
 			return;
 		}
 		if (un is Silo)
 		{
 			silos.Remove(un as Silo);
+			ArmyUtils.silos[un.team].Remove(un as Silo);
 		}
 		if (un is Airbase)
 		{
 			airbases.Remove(un as Airbase);
+			ArmyUtils.airbases[un.team].Remove(un as Airbase);
 		}
 		if (un is AAA)
 		{
 			batteries.Remove(un as AAA);
+			ArmyUtils.batteries[un.team].Remove(un as AAA);
 			return;
 		}
 		else

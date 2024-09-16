@@ -6,7 +6,6 @@ using UnityEngine;
 
 public static class ArmyUtils
 {
-	public static int[] conventionalCount;
 	public static int[] nuclearCount;
 
 	//Keeps a list of info on the armies that was collected
@@ -21,7 +20,6 @@ public static class ArmyUtils
  
 
 	public static void Init() {
-		conventionalCount = new int[Map.ins.numStates];
 		nuclearCount = new int[Map.ins.numStates];
 		armies = new List<Unit>[Map.ins.numStates];
 		aircraft = new List<Unit>[Map.ins.numStates];
@@ -34,27 +32,14 @@ public static class ArmyUtils
 			aircraft[i] = new List<Unit>();
 			silos[i] = new List<Silo>();
 			airbases[i] = new List<Airbase>();
+			batteries[i] = new List<AAA>();
 			GetArmies(i);
 			GetSilos(i);
 			GetAirbases(i);
 			GetAAAs(i);
 		}
+
 	}
-	/*		if (armies[team].Count > 0) {
-			uns.AddRange(armies[team]);
-		}
-		if (airbases[team].Count > 0)
-		{
-			uns.AddRange(airbases[team]);
-		}
-		if (silos[team].Count > 0)
-		{
-			uns.AddRange(silos[team]);
-		}
-		if (aircraft[team].Count > 0)
-		{
-			uns.AddRange(aircraft[team]);
-		}*/
 
 	public enum Tar { 
 		Nuclear, //icbms, runways, submarine pens
@@ -77,7 +62,7 @@ public static class ArmyUtils
 
 	public static Target[] GetTargets(int team) {
 		List<Target> tars = new List<Target>();
-		tars.AddRange(NuclearTargets(team));
+		tars.AddRange(StrategicTargets(team));
 		tars.AddRange(ConventionalTargets(team));
 		tars.AddRange(CivilianTargets(team));
 		return TargetSort(tars.ToArray());
@@ -189,6 +174,8 @@ public static class ArmyUtils
 
 	public static Silo[] GetSilos(int team)
 	{
+		return silos[team].ToArray();
+
 		//Get info from tracker
 		List<Silo> uns = new List<Silo>();
 		ArmyManager.ins.CleanArmies();
@@ -199,36 +186,38 @@ public static class ArmyUtils
 		{
 			if (units[i].team == team) { uns.Add(units[i]); }
 		}
-		silos[team] = uns;
 		return uns.ToArray();
 	}
 	public static Airbase[] GetAirbases(int team)
 	{
+		return airbases[team].ToArray();
 		//Get info from tracker
 		List<Airbase> uns = new List<Airbase>();
 		ArmyManager.ins.CleanArmies();
 		Airbase[] units = ArmyManager.ins.airbases.ToArray();
-
 		//Pick the ones we want
 		for (int i = 0; i < units.Length; i++)
 		{
-			if (units[i].team == team) { uns.Add(units[i]); }
+			if (units[i].team == team) {
+				uns.Add(units[i]); 
+			}
 		}
-		airbases[team] = uns;
 		return uns.ToArray();
 	}
 
 	public static AAA[] GetAAAs(int team) {
+		return batteries[team].ToArray();
+
 		//Get info from tracker
 		List<AAA> uns = new List<AAA>();
 		AAA[] units = ArmyManager.ins.batteries.ToArray();
-
 		//Pick the ones we want
 		for (int i = 0; i < units.Length; i++)
 		{
-			if (units[i].team == team) { uns.Add(units[i]); }
+			if (units[i].team == team) { 
+				uns.Add(units[i]);
+			}
 		}
-		batteries[team] = uns;
 		return uns.ToArray();
 	}
 
@@ -259,6 +248,7 @@ public static class ArmyUtils
 	}
 
 	public static Unit[] GetAircraft(int team) {
+		return aircraft[team].ToArray();
 		List<Unit> uns = new List<Unit>();
 		Unit[] units = ArmyManager.ins.aircraft.ToArray();
 
@@ -290,6 +280,7 @@ public static class ArmyUtils
 
 	public static Unit[] GetArmies(int team)
 	{
+		return armies[team].ToArray();
 		//Get info from tracker
 		List<Unit> uns = new List<Unit>();
 		ArmyManager.ins.CleanArmies();
@@ -299,8 +290,6 @@ public static class ArmyUtils
 		for(int i = 0; i < units.Length; i++){
 			if (units[i].team == team) { uns.Add(units[i]); }
 		}
-		conventionalCount[team] = uns.Count;
-		armies[team] = uns;
 		return uns.ToArray();
 	}
 	public static Unit[] GetArmies(int team, int number, Vector2 near, List<Unit> ignore)
@@ -393,6 +382,32 @@ public static class ArmyUtils
 		return cs;
     }
 
+	public static float AirAttackStrength(int team)
+	{
+		float str = 0;
+		foreach (Airbase ab in airbases[team])
+		{
+			str += 5; //represents regenerative capability
+			str += ab.numPlanes;
+		}
+		str += aircraft[team].Count;
+		return str;
+	}
+	public static float AirDefenseStrength(int team) {
+
+		float str = AirAttackStrength(team); //until bombers are a thing
+
+		//todo improve assesment regarding battery placement?
+		foreach (AAA ab in batteries[team])
+		{
+			str += 5; //represents regenerative capability
+			str += ab.numMissiles;
+		}
+
+		return str;
+
+    }
+
 	public static Vector2[] Encircle(Vector2 pos, float radius, int numSamples) {
 		Vector2[] enc = new Vector2[numSamples];
 		float invS = 1 / (float)numSamples;
@@ -425,5 +440,9 @@ public static class ArmyUtils
 		}
 		return toshuffle;
     }
+
+	public static float RatioToCOV(float ratio) { 
+		return Mathf.Clamp(Mathf.Pow(0.08f, Mathf.Pow(ratio * 0.5f, 2)), 0.01f, 0.99f);
+	}
 
 }

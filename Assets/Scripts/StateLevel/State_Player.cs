@@ -19,6 +19,7 @@ public class State_Player : State_AI
 		troopAllocPlayerInput = new float[Map.ins.numStates];
 		base.Start();
 	}
+
 	protected override void StateUpdate()
 	{
 		base.StateUpdate();

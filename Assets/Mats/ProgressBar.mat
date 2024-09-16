@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: crt_soft
-  m_Shader: {fileID: 4800000, guid: 311c1b2a3b91b4304871c8e4b1d2b2dd, type: 3}
+  m_Name: ProgressBar
+  m_Shader: {fileID: 4800000, guid: 9e493586de932490abf16d373bee2288, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -59,12 +59,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _uiTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints:
-    - _lines: 50
+    m_Ints: []
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
@@ -82,12 +77,6 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _dist: 0.2
-    - _fuzzAmt: 1.4
-    - _noiseAmt: 0.5
-    - _scale: 0.78
-    - _sls: 0.5
-    - _t: 37.151897
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

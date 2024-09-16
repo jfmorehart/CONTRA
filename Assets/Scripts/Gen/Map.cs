@@ -72,6 +72,7 @@ public class Map : MonoBehaviour
 	public ComputeBuffer brdPts;
 
 	public int buildExclusionDistance;
+	public int armyReadyDistance;
 
 	private void Awake()
 	{
@@ -80,6 +81,7 @@ public class Map : MonoBehaviour
 
 		mapSeed = UnityEngine.Random.Range(-500, 500);
 		Debug.Log(mapSeed);
+		Research.Setup();
 		UnitChunks.Init();
 		ArmyUtils.Init();
 		Diplomacy.SetupDiplo();
@@ -170,6 +172,7 @@ public class Map : MonoBehaviour
 
 	public void Update()
 	{
+		Research.PerFrameResearch();
 		if(Time.time - lastDraw > reDrawDelay) {
 			lastDraw = Time.time;
 			BuildInfluences();
@@ -576,7 +579,7 @@ public class Map : MonoBehaviour
 		if (myrank < 3) return false;
 		Debug.Log("Thats bad, so we're switching you with team " + ranks[1] + ".");
 
-		ArmyManager.ins.SwapTeamsCities(0, ranks[1]);
+		ArmyManager.ins.SwapTeamsCities(0, ranks[2]);
 		(state_centers[ranks[1]], state_centers[0]) = (state_centers[0], state_centers[ranks[1]]);
 		return true;
 	}

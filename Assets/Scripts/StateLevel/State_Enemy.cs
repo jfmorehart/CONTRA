@@ -16,11 +16,17 @@ public class State_Enemy : State_AI
 
 	public float[] opinion; // between 0 and 1, 0 is bad, 1 is good
 
+	public int invasionTarget; //for preparing invasions
+
 	//this value between 0 and 1 represents the likelihood 
-    // that we will win the wars we are currently engaged in
-	// is equal to 1 when we are at peace;
+	// that we will win the wars we are currently engaged in
+	// in peacetime, should represent fear of attack
 	float confidence;
 	float confidence_ground;
+	float confidence_air;
+
+	float airThreat; //defensive airforce strength we should have
+	float groundThreat; //army strength we should have
 
 	protected override void Awake()
 	{
@@ -38,10 +44,28 @@ public class State_Enemy : State_AI
 		base.StateUpdate();
 
 		//loop through the current wars and determine our standing
-		confidence = WarsEvaluation();
+		confidence = SituationEvaluation();
+
+		//if (team == 1)
+		//{
+		//	Debug.Log(ArmiesReadyOnFront(0));
+		//}
+
+		//are we preparing an invasion?
+		if (invasionTarget != -1) {
+			opinion[invasionTarget] -= 0.005f;
+			//consider calling off the invasion
+			StateDynamic stdy = new StateDynamic(team, invasionTarget);
+			if (stdy.pVictory < opinion[invasionTarget] * 1.8f || stdy.pVictory < 0.55) //unlikely to crush them
+			{
+				//call it off
+				invasionTarget = -1;
+			}
+		}
+
 
 		//can support foreign adventures
-		if(confidence > 0.6 && assesment.percentGrowth > 0.3f) {
+		if ((confidence > 0.6 && assesment.percentGrowth > 0f) ||invasionTarget != -1) {
 
 			ForeignAdventures();
 		}
@@ -63,6 +87,9 @@ public class State_Enemy : State_AI
 		{
 			if (!Diplomacy.states[i].alive) continue;
 			troopAllocations[i] *= 1 - opinion[i];
+			if (!ROE.AreWeAtWar(team) && invasionTarget == i) {
+				troopAllocations[i] *= 10f;
+			}
 			total += Mathf.Max(0, troopAllocations[i]);
 		}
 		for (int i = 0; i < Map.ins.numStates; i++)
@@ -70,9 +97,15 @@ public class State_Enemy : State_AI
 			troopAllocations[i] = Mathf.Max(0, troopAllocations[i] / total);
 		}
 	}
-	float WarsEvaluation() {
+	float SituationEvaluation() {
 		float confidence_wholistic = 1;
 		confidence_ground = 1;
+		confidence_air = 1;
+		groundThreat = Map.ins.state_populations[team] * 0.05f; //you always need at least a couple
+		airThreat = 0;
+
+		bool atWar = ROE.AreWeAtWar(team);
+
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (team == i) continue;
@@ -83,58 +116,82 @@ public class State_Enemy : State_AI
 				continue;
 			}
 
-			StateDynamic eval = new StateDynamic(team, i);
-			rivals[i] = eval;
-
-			//COMBAT STUFF
-			if (ROE.AreWeAtWar(team, i))
-			{
-				opinion[i] -= 0.02f;
-				List<int> enemiesOfEnemy = ROE.GetEnemies(i);
-				foreach (int e in enemiesOfEnemy)
+			StateDynamic st_dynamic = new StateDynamic(team, i);
+			StateEval st_eval = new StateEval(i);
+			rivals[i] = st_dynamic;
+			if (atWar) {
+				if (ROE.AreWeAtWar(team, i))
 				{
-					opinion[e] += 0.01f;
-				}
-
-				if (sharesBorder[i])
-				{
-					confidence_wholistic *= eval.pVictory;
-
-					//magic number soup converts enemy/friendly army count into chance of success
-					float COVARM = Mathf.Clamp(Mathf.Pow(0.08f, Mathf.Pow(eval.armyRatio * 0.5f, 2)), 0.01f, 0.99f);
-					confidence_ground *= COVARM;
-
-				}
-				else
-				{
-					//offer peace if we don't look good for a ranged war
-					if((eval.airRatio + eval.nukeRatio) * 0.5f > 1) {
-						Diplomacy.OfferPeace(team, i);
+					if (sharesBorder[i]) {
+						groundThreat += st_eval.str_army;
 					}
+					airThreat += AirAttackStrength(i);
+					WarsEvaluation(i, st_dynamic);
+					confidence_wholistic *= st_dynamic.pVictory;
 				}
+			}
+			else {
+				//peacetime threat calc
+				//threat strength * probability of attack
 
-				War war = War.Peer;
-				//the war type determines nuclear targets
-				if (eval.popRatio < 0.5f)
-				{
-					war = War.Colonial;
+				if (sharesBorder[i]) {
+					groundThreat += st_eval.str_army * ProbabilityOfWar(i);
 				}
-				if (eval.armyRatio > 1.5)
-				{
-					war = War.Defensive;
-				}
-				if (eval.pVictory < 0.1 || eval.isHotWar)
-				{
-					war = War.Total;
-				}
-				if (!sharesBorder[i])
-				{
-					war = War.Ranged;
-				}
-				ConductWar_Update(i, war);
+				airThreat += AirAttackStrength(i) * ProbabilityOfWar(i);
 			}
 		}
 		return confidence_wholistic;
+	}
+	float ProbabilityOfWar(int with) {
+		return 1 - (Mathf.Pow(opinion[with], 0.2f));
+    }
+	void WarsEvaluation(int i, StateDynamic eval) {
+		//COMBAT STUFF
+
+		opinion[i] -= 0.02f;
+		List<int> enemiesOfEnemy = ROE.GetEnemies(i);
+		foreach (int e in enemiesOfEnemy)
+		{
+			opinion[e] += 0.01f;
+		}
+
+		if (sharesBorder[i])
+		{
+			confidence *= eval.pVictory;
+
+			//magic number soup converts enemy/friendly army count into chance of success
+			float COVARM = RatioToCOV(eval.armyRatio);
+			confidence_ground *= COVARM;
+		}
+		else
+		{
+			confidence_air *= RatioToCOV(AirAttackStrength(i) / AirDefenseStrength(team));
+			//offer peace if we don't look good for a ranged war
+			if (AirAttackStrength(team) < AirDefenseStrength(i) + 2)
+			{
+				Diplomacy.OfferPeace(team, i);
+			}
+		}
+
+		War war = War.Peer;
+		//the war type determines nuclear targets
+		if (eval.popRatio < 0.5f)
+		{
+			war = War.Colonial;
+		}
+		if (eval.armyRatio > 1.5)
+		{
+			war = War.Defensive;
+		}
+		if (eval.pVictory < 0.1 || eval.isHotWar)
+		{
+			war = War.Total;
+		}
+		if (!sharesBorder[i])
+		{
+			war = War.Ranged;
+		}
+		ConductWar_Update(i, war);
 	}
 	void ForeignAdventures() {
 		//lets think about declaring war
@@ -148,12 +205,33 @@ public class State_Enemy : State_AI
 			{
 				//todo replace with more sophisticated method for mimicking anger
 				//Debug.Log(team + " " + i + "  " + rivals[i].pVictory);
-				if (sharesBorder[i] && confidence * rivals[i].pVictory > opinion[i] * 2f && rivals[i].pVictory > 0.5f)
+				bool prepareInvasion = sharesBorder[i] && rivals[i].pVictory > opinion[i] * 2f && rivals[i].pVictory > 0.55f;
+				prepareInvasion |= (invasionTarget == i);
+
+				if(prepareInvasion)
 				{
-					confidence *= rivals[i].pVictory;
-					ROE.DeclareWar(team, i);
-					ScrambleAircraft();
-					return;
+					float armyThreshold = Mathf.Max(Map.ins.state_populations[i] * 0.4f, armies[i].Count * 0.6f);
+
+					//are we ready to attack?
+					//Debug.Log(team + " vs " + i + " with= " + ArmiesReadyOnFront(i) + " requires " + armyThreshold);
+					if (ArmiesReadyOnFront(i) > armyThreshold)
+					{
+						//invade!
+						invasionTarget = -1;
+						confidence *= rivals[i].pVictory;
+						ROE.DeclareWar(team, i);
+						ScrambleAircraft();
+						return;
+					}
+					else {
+						//make preparations to invade
+						if(armies[team].Count < armyThreshold) {
+							SpawnTroops(15);
+						}
+						invasionTarget = i;
+						ReAssignGarrisons(true);
+					}
+	
 				}
 				else if (opinion[i] < 0.49 || (confidence > 0.95 && opinion[i] < 0.6))
 				{
@@ -174,7 +252,7 @@ public class State_Enemy : State_AI
 	}
 	void ConstructionAndBudgeting() {
 		//THINKING STUFF
-		if (ROE.AreWeAtWar(team))
+		if (ROE.AreWeAtWar(team) || invasionTarget != -1)
 		{
 			//AT WAR
 			WartimeEconomics();
@@ -182,12 +260,12 @@ public class State_Enemy : State_AI
 		else
 		{
 			//AT PEACE
-			if (GetBuildings(team).Length < assesment.buyingPower / 30 && assesment.percentGrowth > 0.3f) {
+			if (GetBuildings(team).Length < assesment.buyingPower / 30 && assesment.percentGrowth > 0.1f) {
 				//we can afford more
 				ConsiderNewConstruction();
 			}
 
-			if (ArmyUtils.conventionalCount[team] < Map.ins.state_populations[team] * 0.1f && assesment.percentGrowth > 0.3f)
+			if (armies[team].Count < groundThreat && assesment.percentGrowth > 0.1f)
 			{
 				//if our standing army is too small, grow it by a tenth of the surplus cash
 				int spawnWave = Mathf.FloorToInt((-assesment.costOverrun * 0.1f) / Economics.cost_armyUpkeep);
@@ -196,7 +274,7 @@ public class State_Enemy : State_AI
 					SpawnTroops(spawnWave);
 				}
 			}
-			if (assesment.percentGrowth < 0.25 && construction_sites.Count < 1)
+			if (assesment.percentGrowth < 0.1 && construction_sites.Count < 1)
 			{
 				BalanceBudget(5);
 			}
@@ -206,19 +284,27 @@ public class State_Enemy : State_AI
 		}
 	}
 	void WartimeEconomics() {
-		if (confidence_ground < 0.8f || confidence_ground < 0.95 && assesment.costOverrun < 1)
-		{
+		if (armies[team].Count < groundThreat * 2f) {
 			int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * confidence_ground));
-			spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team]));
+			spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - armies[team].Count) - 1);
 			if (spawnWave > 0)
 			{
 				SpawnTroops(spawnWave);
 			}
 		}
+		//if (confidence_ground < 0.8f || (confidence_ground < 0.95 && assesment.costOverrun < 1))
+		//{
+		//	int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * confidence_ground));
+		//	spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.armies[team].Count));
+		//	if (spawnWave > 0)
+		//	{
+		//		SpawnTroops(spawnWave);
+		//	}
+		//}
 		else if (confidence_ground < 0.5)
 		{
 			//spawn as many as we can
-			SpawnTroops(Mathf.Min(10, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.conventionalCount[team])));
+			SpawnTroops(Mathf.Min(10, Mathf.RoundToInt(Map.ins.state_populations[team] - ArmyUtils.armies[team].Count)));
 		}
 
 		if(confidence < 0.8 && confidence_ground > 0.8f && assesment.costOverrun < -5) {
@@ -226,7 +312,7 @@ public class State_Enemy : State_AI
 			ConsiderNewConstruction();
 		}
 
-		if (assesment.costOverrun > 1 && confidence > 0.9)
+		if (assesment.costOverrun > 1 && confidence > 0.9 && invasionTarget == -1)
 		{
 			//economy is bad, and we're winning
 			//we should cut back on troops
@@ -235,22 +321,37 @@ public class State_Enemy : State_AI
 			BalanceBudget(assesment.costOverrun * confidence);
 		}
 
-		if (assesment.percentGrowth > 0 && ArmyUtils.GetAirbases(ROE.GetEnemies(team)[0]).Length > GetAAAs(team).Length + GetAirbases(team).Length)
+		if (assesment.percentGrowth > 0 && (Map.ins.state_populations[team] - armies[team].Count) < 5)
 		{
+			//we're fighting as hard as we can and we're getting lots of funding
+
 			//force parity?
 			//need to either build AAA or airbases
 			if (construction_sites.Count < 1)
 			{
-				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
+				if(airThreat > AirDefenseStrength(team)) {
+					ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
+				}
+				else { 
+					if(Random.value > 0.5) {
+						ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Airbase);
+					}
+					else {
+						ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Silo);
+					}
+				}
 			}
 		}
 	}
 	void ConsiderNewConstruction() {
 
-		if (batteries[team].Count + airbases[team].Count + construction_sites.Count < (assesment.buyingPower / 70) - 1)
+		//Debug.Log(team + " " + AirDefenseStrength(team) + " " + batteries[team].Count);
+		//Debug.Log(team + "  aa " + AirAttackStrength(team) + "  - - ad " + AirDefenseStrength(team));
+		if (airbases[team].Count + batteries[team].Count + construction_sites.Count < (assesment.buyingPower / 70) - 1)
 		{
 			//todo make this mean something
-			if(Random.value > 0.5f) {
+			
+			if (AirDefenseStrength(team) + 1 > airThreat) {
 				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Airbase);
 			}
 			else {
@@ -428,6 +529,7 @@ public class State_Enemy : State_AI
 		if (by == team) return;
 		opinion[by] -= 0.5f;
 		opinion[by] = Mathf.Min(opinion[by], 0.2f);
+		ReAssignGarrisons(true);
 		ScrambleAircraft();
 	}
 
@@ -463,4 +565,39 @@ public class State_Enemy : State_AI
 				break;
 		}
 	}
+
+	public int ArmiesReadyOnFront(int front) {
+
+		int armiesReady = 0;
+		for(int i = 0; i < garrisons[front].Count; i++) {
+			if (garrisons[front][i] is Army) {
+				Army am = garrisons[front][i] as Army;
+				if (am.path != null) {
+					if (am.path.Length < Map.ins.armyReadyDistance) {
+						armiesReady++;
+					}
+				}
+				else {
+					//count stopped armies, assuming they're nearby
+					armiesReady++;
+				}
+			}
+		}
+		return armiesReady;
+    }
+
+	/*	public int ArmiesReadyOnFront(int front) {
+
+		int armiesReady = 0;
+		for(int i = 0; i < garrisons[front].Count; i++) {
+			Vector2Int upos = MapUtils.PointToCoords(garrisons[front][i].transform.position);
+			for (int x = 0; x < Map.ins.borderPoints[front].Length; x++)
+			{
+				if (Vector2Int.Distance(Map.ins.borderPoints[team][front][x], upos) < Map.ins.armyReadyDistance) {
+					armiesReady++;
+				}	
+			}
+		}
+		return armiesReady;
+    }*/
 } 

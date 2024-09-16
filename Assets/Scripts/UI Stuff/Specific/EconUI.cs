@@ -47,7 +47,7 @@ public class EconUIPanel : MonoBehaviour
 		}
 		condition.text = "Economy: " + rating;
 		population.text = "Population: " + Map.ins.state_populations[UI.ins.targetNation] + "k";
-		army.text = "Army: " + ArmyUtils.conventionalCount[UI.ins.targetNation].ToString() + "k";
+		army.text = "Army: " + ArmyUtils.armies[UI.ins.targetNation].Count.ToString() + "k";
 		header.text = ColoredName(UI.ins.targetNation);
     }
 

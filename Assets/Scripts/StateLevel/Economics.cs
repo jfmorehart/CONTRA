@@ -88,7 +88,7 @@ public static class Economics
 		float gross = buyingPowerPerPopulation * Map.ins.state_populations[team];
 		//todo add in trade
 
-		//Debt is used to hamstring an economy after over-constription
+		//Debt is used to hamstring an economy after over-conscription
 		//spread out debt payment
 		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt * 0.3f, gross * 0.2f);
 		float buyingPower = gross - debtPayment;
@@ -117,7 +117,7 @@ public static class Economics
 		float demand = state.construction_sites.Count * maxPowerPerSite;
 		float usage;
 		if(demand > 0) {
-			usage = Mathf.Min(conPower / demand, 1);
+			usage = 1;//  Mathf.Min(conPower / demand, 1); //construction no longer limited by surplus
 		}
 		else {
 			usage = 0;

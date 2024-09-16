@@ -285,6 +285,10 @@ public static class Diplomacy
 		{
 			status = "neutral";
 		}
+
+		if (ROE.AreWeAtWar(t1, t2)) {
+			status = "<color=\"red\"> at war with </color>";
+		}
 		return status;
 	}
 

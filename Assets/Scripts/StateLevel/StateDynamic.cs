@@ -7,8 +7,8 @@ using static MapUtils;
 
 public struct StateDynamic
 {
-	public static float armyWeight = 0.2f;
-	public static float nukeWeight = 0.2f;
+	public static float armyWeight = 0.1f;
+	public static float nukeWeight = 0.3f;
 	public static float airWeight = 0.15f;
 	public static float popWeight = 0.45f;
 
@@ -46,7 +46,7 @@ public struct StateDynamic
 
 		airRatio = (enemyAirbases + 1) / (myAirbases + 1);
 
-		armyRatio = (10 + conventionalCount[enemy]) / (float)(conventionalCount[team] + 10f);
+		armyRatio = (10 + armies[enemy].Count) / (float)(armies[team].Count + 10f);
 		float lerpTerm = nukeRatio * nukeWeight + armyRatio * armyWeight + airRatio * airWeight + popRatio * popWeight;
 		pVictory = Mathf.Clamp(Mathf.Pow(0.08f, Mathf.Pow(lerpTerm * 0.5f, 2)), 0.01f, 0.99f);
 		relationship = Diplomacy.relationships[team, enemy];

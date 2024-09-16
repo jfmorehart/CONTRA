@@ -29,6 +29,8 @@ public class UI : MonoBehaviour
 	public UIMenu menu_feelings;
 	public UIMenu menu_strike;
 	public UIMenu menu_airdoctrine;
+	public UIMenu menu_research;
+	public UIMenu menu_rtopic;
 
 	public UIMenu currentMenu;
 
@@ -81,6 +83,8 @@ public class UI : MonoBehaviour
 		menu_airdoctrine.gameObject.SetActive(false);
 		menu_bases.gameObject.SetActive(false);
 		menu_feelings.gameObject.SetActive(false);
+		menu_research.gameObject.SetActive(false);
+		menu_rtopic.gameObject.SetActive(false);
 
 		Cursor.lockState = CursorLockMode.Locked;
 		currentMenu.children[0].Highlight();
@@ -123,6 +127,8 @@ public class UI : MonoBehaviour
 		{
 			switch(currentMenu.children[selected].kind) {
 				case UIOption.Kind.Button:
+					if (currentMenu.children[selected].locked) break;
+					Debug.Log(currentMenu.children[selected].text.text);
 					currentMenu.children[selected].onSelect?.Invoke();
 					break;
 				case UIOption.Kind.Slider:
@@ -179,6 +185,15 @@ public class UI : MonoBehaviour
 	public void FeelingsMenu()
 	{
 		SwitchMenus(currentMenu, menu_feelings);
+	}
+	public void ResearchMenu()
+	{
+		SwitchMenus(currentMenu, menu_research);
+	}
+	public void RTopicMenu()
+	{
+		menu_rtopic.GetComponent<RTopicMenu>().branch = (Research.Branch)currentMenu.children[selected].value;
+		SwitchMenus(currentMenu, menu_rtopic);
 	}
 	public void Cancel() {
 		if (currentMenu.parent != null)

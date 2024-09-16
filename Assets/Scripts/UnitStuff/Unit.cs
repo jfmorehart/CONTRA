@@ -37,11 +37,11 @@ public class Unit : MonoBehaviour
 			UnitChunks.AddToChunk(positionChunk, this);
 		}
 
+		ArmyManager.ins.RegisterUnit(this);
 	}
 
 	public virtual void Start()
 	{
-		ArmyManager.ins.RegisterUnit(this);
 		ren = GetComponent<Renderer>();
 		ren.material = new Material(ren.material);
 		Pool.ins.GetRingEffect().Spawn(transform.position);

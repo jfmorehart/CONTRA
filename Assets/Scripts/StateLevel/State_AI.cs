@@ -38,6 +38,9 @@ public class State_AI : State
 	public List<Target> airTargets;
 	float lastTargetRefresh;
 
+	//test hack
+	//public bool testREGARRSION;
+
 	//these are used for ordering planes what to do
 	public enum AirDoctrines
 	{
@@ -85,10 +88,11 @@ public class State_AI : State
 	protected override void StateUpdate()
 	{
 		if (!alive) return;
-		//this call updates info for nuclear threat assesment
-		ArmyUtils.NuclearTargets(team);
-
 		base.StateUpdate();
+
+		//this call updates info for nuclear threat assesment
+		ArmyUtils.GetTargets(team);
+			
 		GenerateTroopAllocations();
 
 		//evaluate the difference between desired troop allocations and 
@@ -106,16 +110,18 @@ public class State_AI : State
 		}
 
 		//todo find out a way to reduce the amount that troops get needlessly reordered
-		if (discrepancy > 0.5f)
-		{
-			//expensive 
-			ReAssignGarrisons(true);
-		}
-		else
-		{
-			//bit cheaper
-			ReAssignGarrisons(false);
-		}
+		ReAssignGarrisons(true);
+
+		//if (discrepancy > 0.5f)
+		//{
+		//	//expensive 
+		//	ReAssignGarrisons(true);
+		//}
+		//else
+		//{
+		//	//bit cheaper
+		//	ReAssignGarrisons(false);
+		//}
 
 		for (int r = 0; r < Map.ins.numStates; r++)
 		{
@@ -139,9 +145,9 @@ public class State_AI : State
 		{
 			if (team == i) continue;
 			StateDynamic eval = new StateDynamic(team, i); //not that expensive really
-			tas[i] = eval.armyRatio * Diplomacy.CanIReachEnemyThroughAllies(team, i) * 0.3f;
-			tas[i] *= (Diplomacy.IsMyAlly(team, i) ? 0.1f : 1);
 			sharesBorder[i] = Diplomacy.CanIReachEnemyThroughAllies(team, i) > 0;
+			tas[i] = eval.armyRatio * (sharesBorder[i] ? 1 : 0);
+
 			if (ROE.AreWeAtWar(team, i) && sharesBorder[i]){
 				// weight troop allocation by necessity
 				tas[i] += 0.2f;
@@ -389,25 +395,30 @@ public class State_AI : State
 		int[] allotment = new int[Map.ins.numStates];
 
 		//sorting this by allocation size, so that the biggest threat gets the best troops
-		int[] ts = new int[Map.ins.numStates]; 
-		float[] tas = new float[Map.ins.numStates];
+		int[] teamArray = new int[Map.ins.numStates]; 
+		float[] allocationArray = new float[Map.ins.numStates];
 		for(int i = 0; i < Map.ins.numStates; i++) {
-			ts[i] = i;
-			tas[i] = troopAllocations[i];
+			teamArray[i] = i;
+			allocationArray[i] = troopAllocations[i];
 		}
-		System.Array.Sort(ts, tas);
+		System.Array.Sort(teamArray, allocationArray);
 
 		for (int i = Map.ins.numStates - 1; i > -1; i--) {
-			int et = ts[i];
-			if (tas[et] < 0.01f) continue;
-			allotment[et] = Mathf.FloorToInt(uns.Length * tas[et]);
-			if (allotment[et] < 1) continue;
-			Vector2 ep = Diplomacy.states[et].transform.position;
-			Unit[] alo = GetArmies(team, allotment[et], ep, assigned);
+			//this loop executes from biggest to smallest threat
+			int enemyTeam = teamArray[i];
+
+			if (allocationArray[enemyTeam] < 0.01f) continue;
+			allotment[enemyTeam] = Mathf.FloorToInt(uns.Length * allocationArray[enemyTeam]);
+			if (allotment[enemyTeam] < 1) continue; //no troops assigned
+
+			//grab units closest to arbitrary enemy city
+			City c = NearestCity(transform.position, enemyTeam, null);
+			if(c == null) return;
+			Unit[] alo = GetArmies(team, allotment[enemyTeam], c.wpos, assigned);
 			for (int u = 0; u < alo.Length; u++)
 			{
 				Unit un = alo[u];
-				garrisons[et].Add(un);
+				garrisons[enemyTeam].Add(un);
 				assigned.Add(un);
 			}
 		}
