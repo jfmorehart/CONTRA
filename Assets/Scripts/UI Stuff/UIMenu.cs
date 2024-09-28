@@ -14,4 +14,6 @@ public class UIMenu : MonoBehaviour
 
 	public bool preserveLastSelected = true; // disable for confirmation screens
 	public int defaultSelected;
+
+	public Color highlight_recolor = Color.green;
 }

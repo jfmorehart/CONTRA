@@ -87,6 +87,7 @@ public class Map : MonoBehaviour
 		Diplomacy.SetupDiplo();
 		ROE.SetUpRoe();
 		Economics.SetupEconomics();
+		TerminalMissileRegistry.Setup();
 
 		//Create basic info
 		NewMap();

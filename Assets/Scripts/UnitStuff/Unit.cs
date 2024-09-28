@@ -15,6 +15,10 @@ public class Unit : MonoBehaviour
 	public int positionChunk; //used for efficiently knowing where units are
 
 	public int constructionCost;
+
+	public int baseUpkeepCost;
+
+	[HideInInspector]
 	public int upkeepCost;
 
 	protected int maxHP;
@@ -42,9 +46,12 @@ public class Unit : MonoBehaviour
 
 	public virtual void Start()
 	{
+		upkeepCost = baseUpkeepCost;
 		ren = GetComponent<Renderer>();
 		ren.material = new Material(ren.material);
 		Pool.ins.GetRingEffect().Spawn(transform.position);
+		Research.ResearchChange[team] += ApplyUpgrades;
+		ApplyUpgrades();
 		//ren.material.color = Map.ins.state_colors[team] + Color.white * 0.5f;
 	}
 	public void Check4ChunkUpdate() {
@@ -83,6 +90,7 @@ public class Unit : MonoBehaviour
 
 	public virtual void Kill() {
 		ArmyManager.ins.DeregisterUnit(this);
+		Research.ResearchChange[team] -= ApplyUpgrades;
 
 		if (useChunkSystem) {
 			UnitChunks.RemoveFromChunk(positionChunk, this);
@@ -98,4 +106,8 @@ public class Unit : MonoBehaviour
 			Kill();
 		}
 	}
+
+	public virtual void ApplyUpgrades() { 
+    
+    }
 }

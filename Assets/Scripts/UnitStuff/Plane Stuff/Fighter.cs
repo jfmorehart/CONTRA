@@ -34,6 +34,9 @@ public class Fighter : Plane
 
 	SFX_OneShot speaker;
 
+	float yield = 0.3f;
+	int bombCapacity = 4;
+
 	public override void Start()
 	{
 		base.Start();
@@ -44,6 +47,45 @@ public class Fighter : Plane
 		speed += Random.Range(-10, 10);
 
 		state = Diplomacy.states[team] as State_AI;
+	}
+	public override void ApplyUpgrades()
+	{
+		Debug.Log("apply");
+		if (Research.unlockedUpgrades[team][2] > 2)
+		{
+			// "missiles i"
+			reloadTime = 4f;
+			firingRange = 430;
+			firingRange += Random.Range(-30, 30);
+
+			//bombs
+			yield = 1.5f;
+			bombCapacity = 4;
+			Debug.Log("a");
+		}
+		if (Research.unlockedUpgrades[team][2] > 3)
+		{
+			// "range"
+			fuel = 60;
+			speed = 90;
+			turnRate = 90;
+			turnRate += Random.Range(-10, 10);
+			speed += Random.Range(-10, 10);
+			firingRange = 500;
+			firingRange += Random.Range(-30, 30);
+			trackingRange = 600;
+			Debug.Log("b");
+		}
+		if (Research.unlockedUpgrades[team][2] > 4)
+		{
+			//"missiles ii"
+			reloadTime = 3f;
+
+			//bombs
+			yield = 3f;
+			bombCapacity = 3;
+			Debug.Log("c");
+		}
 	}
 	public override void Update()
 	{
@@ -88,7 +130,7 @@ public class Fighter : Plane
 	}
 	protected override void ArrivedOverTarget() {
 		if(target.distance == AcceptableDistance.Bombtarget && hasBombs) {
-			StartCoroutine(BombingRun(4));
+			StartCoroutine(BombingRun(bombCapacity));
 		}
 		else {
 			base.ArrivedOverTarget();
@@ -101,9 +143,12 @@ public class Fighter : Plane
 	IEnumerator BombingRun(int count) {
 		bingo = true;
 		hasBombs = false;
+		yield return new WaitForSeconds(0.1f * (3 - count));
+
+
 		for (int i = 0; i < count; i++)
 		{
-			BombManager.ins.Drop(team, transform.position, 1f);
+			BombManager.ins.Drop(team, transform.position, yield);
 			yield return new WaitForSeconds(0.1f + Random.Range(-0.05f, 0.1f));
 		}
     }

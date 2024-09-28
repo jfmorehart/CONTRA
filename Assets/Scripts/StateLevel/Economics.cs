@@ -9,6 +9,7 @@ public static class Economics
 	public static float cost_siloUpkeep = 20f;
 	public static float cost_armyUpkeep = 2;
 	public static float cost_armySpawn = 5;
+	public static float max_research_budget = 0.25f;
 
 	public static float maxPowerPerSite = 30;
 
@@ -117,16 +118,30 @@ public static class Economics
 		float demand = state.construction_sites.Count * maxPowerPerSite;
 		float usage;
 		if(demand > 0) {
-			usage = 1;//  Mathf.Min(conPower / demand, 1); //construction no longer limited by surplus
+			if(overrun > 0) {
+				usage = 0.25f; //quarter growth when shrinking
+			}
+			else {
+				//usage = Mathf.Min(conPower / demand, 1); surplus-limited
+
+				usage = 1;   //construction no longer limited by surplus
+			}
+		
 		}
 		else {
 			usage = 0;
 		}
 		float totalConstructionCosts = usage * demand;
 
-		overrun += totalConstructionCosts; //subtract construction from surplus
 
 		float manHoursPerSite = totalConstructionCosts / (state.construction_sites.Count + 0.01f);
+
+		float researchBudget = 0;
+		if (Research.currentlyResearching[team].x > -1) {
+			researchBudget = Research.budget[team] * buyingPower * max_research_budget;
+			totalConstructionCosts += researchBudget;
+		}
+		overrun += totalConstructionCosts; //subtract construction from surplus
 
 		float net = (buyingPower - upkeep) - totalConstructionCosts;
 		float percentGrowth = net / gross; //used for growing the country
@@ -136,7 +151,11 @@ public static class Economics
 			Diplomacy.states[team].manHourDebt -= (buyingPower - gross) * 0.8f;
 		}
 
-		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth);
+		if(percentGrowth < -1) { 
+			//we really got issues
+		}
+
+		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth, researchBudget);
     }
 
 	public struct Assesment {
@@ -154,8 +173,10 @@ public static class Economics
 
 		public float percentGrowth; // (net / gross= used for growth metrics
 
+		public float researchBudget; //allocated manHours for research
+
 		public Assesment(float buying, float upkeep, float over, float constr, float ne, 
-	    float conperspeed, float manHoursPS, float pctG) {
+	    float conperspeed, float manHoursPS, float pctG, float rBudget) {
 
 			buyingPower = buying;
 			upkeepCosts = upkeep;
@@ -166,6 +187,8 @@ public static class Economics
 			constructionPercentSpeed = conperspeed;
 			manHoursPerSite = manHoursPS;
 			percentGrowth = pctG;
+
+			researchBudget = rBudget;
 		}
     }
 }

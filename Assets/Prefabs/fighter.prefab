@@ -212,6 +212,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
+  actingTeam: 0
   hP: 1
   positionChunk: 0
   constructionCost: 0
@@ -226,4 +227,4 @@ MonoBehaviour:
   bogey: {fileID: 0}
   trackingRange: 500
   firingRange: 400
-  patrolcham: 0
+  reloadTime: 7

@@ -128,7 +128,7 @@ public class UI : MonoBehaviour
 			switch(currentMenu.children[selected].kind) {
 				case UIOption.Kind.Button:
 					if (currentMenu.children[selected].locked) break;
-					Debug.Log(currentMenu.children[selected].text.text);
+					//Debug.Log(currentMenu.children[selected].text.text);
 					currentMenu.children[selected].onSelect?.Invoke();
 					break;
 				case UIOption.Kind.Slider:
@@ -201,7 +201,7 @@ public class UI : MonoBehaviour
 			SwitchMenus(currentMenu, currentMenu.parent);
 		}
 	}
-	void SwitchMenus(UIMenu start, UIMenu end) {
+	public void SwitchMenus(UIMenu start, UIMenu end) {
 
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
@@ -225,7 +225,13 @@ public class UI : MonoBehaviour
 		}
 
 		if (selected >= currentMenu.children.Length) selected = currentMenu.children.Length - 1;
+
+		for(int i = 0; i < end.children.Length; i++)
+		{
+			end.children[i].UnHighlight();
+		}
 		currentMenu.children[selected].Highlight();
+
 		if (currentMenu.stateColor != null)
 		{
 			currentMenu.stateColor.color = Map.ins.state_colors[targetNation];

@@ -14,6 +14,7 @@ public class BombManager : MonoBehaviour
 	public void Drop(int mteam, Vector2 wpos, float myield, float CEP = 20, float dyield = 1) {
 		Vector2 apos = wpos + CEP * Random.insideUnitCircle;
 		float ryield = Mathf.Max(0.3f, myield + dyield * Random.Range(-1, 1));
+		Debug.Log("myield = " + myield + " ryield " + ryield);
 		StartCoroutine(Fall(new Bomb(mteam, apos, ryield)));
     }
 

@@ -51,6 +51,13 @@ public class State_Enemy : State_AI
 		//	Debug.Log(ArmiesReadyOnFront(0));
 		//}
 
+		if (Research.currentlyResearching[team] == -Vector2Int.one) {
+			NewResearch();
+			Debug.Log("team " + team + " is now researching " + Research.currentlyResearching[team]);
+		}
+		Research.budget[team] = Mathf.Clamp(assesment.percentGrowth + 0.5f, 0.1f, 1);
+		//Debug.Log(team + " progress = " + Research.unlockProgress[team]);
+
 		//are we preparing an invasion?
 		if (invasionTarget != -1) {
 			opinion[invasionTarget] -= 0.005f;
@@ -62,7 +69,6 @@ public class State_Enemy : State_AI
 				invasionTarget = -1;
 			}
 		}
-
 
 		//can support foreign adventures
 		if ((confidence > 0.6 && assesment.percentGrowth > 0f) ||invasionTarget != -1) {
@@ -347,21 +353,25 @@ public class State_Enemy : State_AI
 
 		//Debug.Log(team + " " + AirDefenseStrength(team) + " " + batteries[team].Count);
 		//Debug.Log(team + "  aa " + AirAttackStrength(team) + "  - - ad " + AirDefenseStrength(team));
+		bool canAAA = Research.unlockedUpgrades[team][(int)Research.Branch.aaa] > 0;
+		bool canAirbase = Research.unlockedUpgrades[team][(int)Research.Branch.air] > 0;
+		bool canSilo = Research.unlockedUpgrades[team][(int)Research.Branch.silo] > 0;
+
 		if (airbases[team].Count + batteries[team].Count + construction_sites.Count < (assesment.buyingPower / 70) - 1)
 		{
 			//todo make this mean something
 			
-			if (AirDefenseStrength(team) + 1 > airThreat) {
+			if (AirDefenseStrength(team) + 1 > airThreat && canAirbase) {
 				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Airbase);
 			}
-			else {
+			else if(canAAA) {
 				ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.AAA);
 			}
 			
 			return;
 		}
 
-		if (silos[team].Count + construction_sites.Count < (assesment.buyingPower / 90) - 1)
+		if (canSilo && silos[team].Count + construction_sites.Count < (assesment.buyingPower / 90) - 1)
 		{
 			ArmyManager.ins.NewConstruction(team, MapUtils.RandomPointInState(team), ArmyManager.BuildingType.Silo);
 			return;
@@ -492,6 +502,33 @@ public class State_Enemy : State_AI
 				break;
 		}
 	}
+
+	public void NewResearch() { 
+		//begin new research and decide budget based on gamestate
+		if(groundThreat > assesment.buyingPower * 0.3f) {
+			if (CanResearchBranch(Research.Branch.ground)) {
+				Research.DeclareResearchTopic(team, Research.Branch.ground);
+				return;
+			}
+		}
+		if(airThreat > AirDefenseStrength(team)){
+			if (CanResearchBranch(Research.Branch.aaa))
+			{
+				Research.DeclareResearchTopic(team, Research.Branch.aaa);
+				return;
+			}
+		}
+		Research.Branch branch = (Research.Branch)(Random.Range(0, 4));
+		if (CanResearchBranch(branch)) {
+			Research.DeclareResearchTopic(team, branch);
+		}
+	}
+	bool CanResearchBranch(Research.Branch branch) {
+		if (Research.unlockedUpgrades[team][(int)branch] > 4) {
+			return false;
+		}
+	return true;
+    }
 
 	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
 	{

@@ -26,18 +26,27 @@ public class RTopicMenu : UIMenu
 			children[i].text.text = Research.names[(int)branch][i];
 			if (Research.unlockedUpgrades[0][(int)branch] == i) {
 				//unlocked
+
+				//select unlocked
+				children[UI.ins.selected].UnHighlight();
+				UI.ins.selected = i;
+				//children[i].text.color = Color.green;
+				//children[i].defaultColor = Color.green;
+
 				children[i].locked = false;
 				children[i].text.fontStyle = FontStyles.Bold | FontStyles.Italic;
 				children[i].text.fontSize = 25;
+
+				children[UI.ins.selected].Highlight();
 			}
 			else {
 				//locked
 				children[i].locked = true;
 				if(Research.unlockedUpgrades[0][(int)branch] > i) {
 					children[i].text.fontStyle = FontStyles.Italic;
-					//children[i].text.color = Color.green;
-					//children[i].defaultColor = Color.green;
+					children[i].text.color = Color.grey;
 					children[i].text.fontSize = 20;
+					children[i].defaultColor = Color.grey;
 				}
 				else {
 					children[i].text.fontStyle = FontStyles.Normal;
@@ -48,7 +57,6 @@ public class RTopicMenu : UIMenu
 
 			}	
 		}
-		children[UI.ins.selected].Highlight();
 	}
 
 	public void BeginNewResearch()

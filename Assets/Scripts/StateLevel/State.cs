@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 using static ArmyUtils;
@@ -66,13 +67,24 @@ public class State : MonoBehaviour
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
 
-		//if(team == 0) {
-		//	Debug.Log(team + "  pg " + assesment.percentGrowth + "  net " + assesment.net + " uk " + assesment.upkeepCosts + " cc " + assesment.constructionCosts +  " bp " + assesment.buyingPower);
-		//}
-		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
+		if(assesment.percentGrowth < -1) {
+			//lower than this number cheats the game a little
+			//-1 is the max shrink rate, so we can't let them sit at -5 with a bunch of silos
+			BalanceBudget(assesment.costOverrun * 0.3f);
+			if(team == 0) {
+				ConsolePanel.Log("<color=\"red\"> your economy is very unstable! </color>", 5);
+			}
+			
+		}
+		else {
+			Research.ConductResearch(team, assesment.researchBudget);
 
-		ConstructionWork();
-		Research.ConductResearch(team, 4f);
+			if(assesment.percentGrowth > -0.5) {
+				ConstructionWork();
+			}
+		}
+
+		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);
 
 		//delete all troops if you have no cities left
 		if (Map.ins.state_populations[team] < 5 || (GetCities(team).Count < 1)) {
@@ -91,22 +103,20 @@ public class State : MonoBehaviour
 		for (int i = 0; i < armies.Length; i++)
 		{
 			if(budgetCut > 0) {
-				armies[i].Kill();
-				budgetCut -= armies[i].upkeepCost;
+				armies[armies.Length - i - 1].Kill();
+				budgetCut -= armies[armies.Length - i - 1].upkeepCost;
 			}
 			else {
 				//Debug.Log(team + " disbanded " + i + " units");
 				return;
 			}
 		}
-		if (budgetCut < 0) return;
 
 		//construction cancellation
 		for (int i = 0; i < construction_sites.Count; i++)
 		{
 			if (budgetCut > 0)
 			{
-
 				Construction co = construction_sites[i];
 				co.Kill();
 				budgetCut -= 5;
@@ -117,6 +127,8 @@ public class State : MonoBehaviour
 			}
 		}
 
+		if (budgetCut < 0) return;
+
 		Unit[] bases = ArmyUtils.GetAirbases(team);
 		for (int i = 0; i < bases.Length; i++)
 		{
@@ -124,8 +136,8 @@ public class State : MonoBehaviour
 			{
 				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
 				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Airbase);
-				if(u is Building) {
-					(u as Building).manHoursRemaining = 25;
+				if(u is Construction construction) {
+					construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
 				}
 				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
@@ -145,8 +157,10 @@ public class State : MonoBehaviour
 			{
 				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
 				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Silo, true);
-				if (u is not Building) continue;
-				(u as Building).manHoursRemaining = 25;
+				if (u is Construction construction)
+				{
+					construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
+				}
 				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
 			}
@@ -163,8 +177,10 @@ public class State : MonoBehaviour
 			{
 				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
 				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.AAA);
-				if (u is not Building) continue;
-				(u as Building).manHoursRemaining = 25;
+				if (u is Construction construction)
+				{
+					construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
+				}
 				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
 			}

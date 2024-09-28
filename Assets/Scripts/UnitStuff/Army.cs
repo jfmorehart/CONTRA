@@ -7,7 +7,6 @@ using UnityEngine;
 public class Army : Unit
  {
 	[Header("Army")]
-	public float strength;
 
 	//Movement
 	public float speed;
@@ -20,6 +19,8 @@ public class Army : Unit
 	//List<Unit> inView;
 	public int range;
 	public float reload;
+	int damage = 1;
+
 	float lastShot;
 
 	public Vector2Int[] path;
@@ -40,6 +41,48 @@ public class Army : Unit
 		//so that they dont spawn big
 		if (PlayerInput.ins.airMode) {
 			ToggleMinimize(true);
+		}
+	}
+	public override void ApplyUpgrades()
+	{
+		if (Research.unlockedUpgrades[team][0] > 0)
+		{
+			//"training"
+			//does nothing
+		}
+		if (Research.unlockedUpgrades[team][0] > 1)
+		{
+			//"armor support"
+			if(maxHP < 5) {
+				int shp = maxHP;
+				maxHP = 5;
+				hP = Mathf.CeilToInt(hP * (maxHP / (float)shp));
+			}
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.1f);
+		}
+		if (Research.unlockedUpgrades[team][0] > 2)
+		{
+			//"mechanization"
+			speed = 12;
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.2f);
+		}
+		if (Research.unlockedUpgrades[team][0] > 3)
+		{
+			//"combined arms"
+			damage = 2;
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.3f);
+		}
+		if (Research.unlockedUpgrades[team][0] > 4)
+		{
+			//"modernization"
+			if (maxHP < 7)
+			{
+				int shp = maxHP;
+				maxHP = 7;
+				hP = Mathf.CeilToInt(hP * (maxHP / (float)shp));
+			}
+			speed = 15f;
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.6f);
 		}
 	}
 	public override void Start()
@@ -154,7 +197,12 @@ public class Army : Unit
 		if (un == null) return;
 		Vector2 delta = un.transform.position - transform.position;
 		float hTime = Pool.ins.GetBullet().Fire(transform.position, delta, team);
-		un.Hit(hTime);
+
+		//this is stupid, but i dont want to fuck with the basic functions at this point
+		for(int i = 0; i < damage; i++) {
+			un.Hit(hTime);
+		}
+
 		return;
 	}
 

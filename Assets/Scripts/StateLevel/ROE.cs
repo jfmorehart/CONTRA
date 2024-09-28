@@ -8,6 +8,8 @@ using static ConsolePanel;
 
 public static class ROE
 {
+	//this class is for the more registration-y side of war and peace stuff, less readable. 
+
 	//2D array of 0 or 1 shorts
     //Not bools for ease of use with compute shaders
 	public static int[] atWar;

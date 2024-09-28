@@ -44,6 +44,39 @@ public class Airbase : Building
 		}
 
 		LaunchAircraft();
+		ApplyUpgrades();
+	}
+
+	public override void ApplyUpgrades()
+	{
+		if (Research.unlockedUpgrades[team][1] > 0)
+		{
+			//unlock
+			//does nothing
+	}
+		if (Research.unlockedUpgrades[team][1] > 1)
+		{
+			//"production i"
+			reloadTime = 20;
+			maxPlanes = 8;
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.1f);
+		}
+		if (Research.unlockedUpgrades[team][1] > 2)
+		{
+			// "missiles i"
+			//todo change missiles
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.5f);
+		}
+		if (Research.unlockedUpgrades[team][1] > 3)
+		{
+			// "range"
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 2f);
+		}
+		if (Research.unlockedUpgrades[team][1] > 4)
+		{
+			//"missiles ii"
+			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 3f);
+		}
 	}
 
 	public override void Update()
@@ -94,6 +127,7 @@ public class Airbase : Building
 	}
 	protected override bool CanReload()
 	{
+		ApplyUpgrades();
 		CleanLaunched();
 		return (launched.Count + numPlanes) < maxPlanes;
 	}

@@ -3,6 +3,7 @@ Shader "ProgressBar"
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _scale ("scale Vector", Vector) = (0.5, 1, 1, 1)
     }
     SubShader
     {
@@ -42,12 +43,13 @@ Shader "ProgressBar"
             }
 
             sampler2D _MainTex;
+            float3 _scale;
 
             fixed4 frag (v2f i) : SV_Target
             {
 
                 float op = 1;
-                op *= frac((i.worldPos.y * 1) - i.worldPos.x * 0.5);
+                op *= frac((i.worldPos.y * _scale.y) - i.worldPos.x * _scale.x);
                 op = step(0.5, op);
                 return float4(0, op, 0, 1);
             }

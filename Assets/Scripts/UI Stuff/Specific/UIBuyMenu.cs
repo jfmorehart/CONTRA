@@ -37,5 +37,6 @@ public class UIBuyMenu : UIMenu
 			emptyMessage.SetActive(false);
 		}
         children = kiddos.ToArray();
+        children[UI.ins.selected].Highlight();
     }
 }

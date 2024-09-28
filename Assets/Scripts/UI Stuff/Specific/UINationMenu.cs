@@ -8,6 +8,8 @@ public class UINationMenu : UIMenu
     public UIOption[] peaceChildren;
     public UIOption[] warChildren; //its just a shot away
 
+	public UIOption troopSlider;
+
 	private void Awake()
 	{
 		children = peaceChildren;
@@ -20,6 +22,23 @@ public class UINationMenu : UIMenu
 	// Update is called once per frame
 	void Update()
     {
+		if ((Diplomacy.states[UI.ins.targetNation] as State_Enemy).sharesBorder[0]) {
+			if (!troopSlider.gameObject.activeInHierarchy) {
+				troopSlider.gameObject.SetActive(true);
+			}
+		}
+		else {
+			if (troopSlider.gameObject.activeInHierarchy)
+			{
+				troopSlider.gameObject.SetActive(false);
+			}
+		}
+
+		if(highlight_recolor != Map.ins.state_colors[UI.ins.targetNation]) {
+			highlight_recolor = Map.ins.state_colors[UI.ins.targetNation];
+			children[UI.ins.selected].Highlight();
+		}
+
         if(ROE.AreWeAtWar(0, UI.ins.targetNation)) {
             if (!warMode) {
                 ToggleWarMode(true);

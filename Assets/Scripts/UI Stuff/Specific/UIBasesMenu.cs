@@ -84,11 +84,11 @@ public class UIBasesMenu : UIMenu
 			UI.ins.selected = children.Length - 1;
 		}
 		if (children.Length < 1) return;
-		children[UI.ins.selected].Highlight();
 		foreach (UIOption child in newset)
 		{
 			child.gameObject.SetActive(true);
 		}
+		children[UI.ins.selected].Highlight();
 	}
     void DisplayInfo() {
 

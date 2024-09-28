@@ -16,7 +16,9 @@ public class UIResearch : UIMenu
     public Vector3 p2;
 
     public UIOption[] kiddos;
-    public UIOption cancel;
+	public UIOption[] k2;
+
+    public Research.Branch prevBranch;
 
 	private void Start()
 	{
@@ -37,28 +39,32 @@ public class UIResearch : UIMenu
         }
 
         if (displayActive) {
-            Vector3 pos = Vector3.Lerp(p1, p2, Research.unlockProgress[0]);
-            Vector3 scale = Vector3.one * 0.5f;
-            scale.x = Research.unlockProgress[0] * 6.9f;
+			subtitle.text =
+Research.headers[Research.currentlyResearching[0].x] + " :" +
+Research.names[Research.currentlyResearching[0].x][Research.currentlyResearching[0].y];
 
-            bar.anchoredPosition = pos;
-            bar.transform.localScale = scale;
-			subtitle.text = Research.headers[Research.currentlyResearching[0].x] + " :" + Research.names[Research.currentlyResearching[0].x][Research.currentlyResearching[0].y];
-
+            Research.budget[0] = k2[0].value;
 		}
-        //Research.unlockProgress[0] += Time.deltaTime * 0.3f;
+
 	}
 
     void HideBar() {
         displayActive = false;
         bar.gameObject.SetActive(false);
         back.SetActive(false);
-        cancel.gameObject.SetActive(false);
+
 		foreach (UIOption ui in kiddos)
 		{
 			ui.gameObject.SetActive(true);
+            ui.UnHighlight();
+		}
+		foreach (UIOption ui in k2)
+		{
+			ui.gameObject.SetActive(false);
 		}
 		children = kiddos.ToArray();
+        UI.ins.selected = (int)prevBranch;
+        children[UI.ins.selected].Highlight();
 	}
 
 
@@ -70,13 +76,20 @@ public class UIResearch : UIMenu
         foreach(UIOption ui in kiddos) {
             ui.gameObject.SetActive(false);
 	    }
-        children = new UIOption[1];
-        children[0] = cancel;
-		cancel.gameObject.SetActive(true);
-        cancel.Highlight();
+		foreach (UIOption ui in k2)
+		{
+			ui.gameObject.SetActive(true);
+			ui.UnHighlight();
+		}
+        children = k2;
+        k2[0].Highlight();
+
+        prevBranch = (Research.Branch)Research.currentlyResearching[0].x;
 	}
 
     public void CancelResearch() {
+        UI.ins.selected = Research.currentlyResearching[0].x;
+        Research.unlockProgress[0] = 0;
         Research.currentlyResearching[0] = new Vector2Int(-1, -1);
         HideBar();
     }

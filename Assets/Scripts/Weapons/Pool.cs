@@ -31,7 +31,7 @@ public class Pool : MonoBehaviour
 	public AppearEffect[] rpool;
 	int rcham;
 
-	private void Awake()
+	private void Start()
 	{
 		ins = this;
 		bpool = new Bullet[psize];

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,8 +13,8 @@ public static class Research
 	}
 
 	public static string[] headers = { "groundforces", "air defense" , "aircraft", "icbms"};
-	public static string[] groundUpgrades = { "strength i", "damage i", "strength ii", "damage ii", "modernization" };
-	public static string[] airUpgrades = { "unlock", "production", "missiles i", "range", "missiles ii" };
+	public static string[] groundUpgrades = { "training", "armor support", "mechanization" , "combined arms", "modernization" };
+	public static string[] airUpgrades = { "unlock", "production", "payload i", "engines", "payload ii" };
 	public static string[] icbmUpgrades = { "unlock", "warhead i", "production", "warhead ii", "mirv" };
 	public static string[] aaaUpgrades = { "unlock", "production i", "missile tech", "production ii", "abm capable" };
 	public static string[][] names = { groundUpgrades, aaaUpgrades, airUpgrades, icbmUpgrades};
@@ -23,17 +24,24 @@ public static class Research
 	public static float[] unlockSpeed; //x = team
 	public static Vector2Int[] currentlyResearching; //x = branch, y = upgrade
 
-	public static float[] baseCosts = { 20, 20, 30, 40 };
-	public static float[] rankMultipliers = { 1, 2f, 3f, 4f, 5f};
+	//								ground, AAA, air, icbm
+	public static float[] baseCosts = {200, 200, 200, 200};
+	public static float[] rankMultipliers = { 1, 2f, 2.5f, 3f, 3.5f};
 	public static float[][] costs;
+	public static float[] budget;
+
+	public static Action[] ResearchChange;
 
 	public static void Setup() {
 		unlockedUpgrades = new int[Map.ins.numStates][];
 		unlockProgress = new float[Map.ins.numStates];
 		unlockSpeed = new float[Map.ins.numStates];
+		budget = new float[Map.ins.numStates];
 		currentlyResearching = new Vector2Int[Map.ins.numStates];
 
+		ResearchChange = new Action[Map.ins.numStates];
 		for (int i =0; i < Map.ins.numStates; i++) {
+			currentlyResearching[i] = -Vector2Int.one;
 			unlockedUpgrades[i] = new int[4];
 		}
 
@@ -47,9 +55,14 @@ public static class Research
 	}
 
 	public static void ConductResearch(int teamOf, float manHours) {
-
 		unlockSpeed[teamOf] = manHours / State.stateUpdateDelay;
 	}
+
+	public static void DeclareResearchTopic(int teamOf, Research.Branch branch) {
+		int progress = unlockedUpgrades[teamOf][(int)branch];
+		currentlyResearching[teamOf] = new Vector2Int((int)branch, progress);
+		unlockProgress[teamOf] = 0;
+    }
 
 	public static void PerFrameResearch() {
 		for (int i = 0; i < Map.ins.numStates; i++)
@@ -58,13 +71,18 @@ public static class Research
 			if (unlockSpeed[i] < 0f) continue;
 			unlockProgress[i] += unlockSpeed[i] / costs[currentlyResearching[i].x][currentlyResearching[i].y] * Time.deltaTime;
 
-			if (unlockProgress[0] > 1)
+			if (unlockProgress[i] > 1)
 			{
-				unlockedUpgrades[i][currentlyResearching[i].x]++;
-				unlockProgress[currentlyResearching[i].x]++;
-				unlockProgress[i] = 0;
-				currentlyResearching[i] = new Vector2Int(-1, -1);
+				ResearchCompleted(i);
 			}
 		}
+	}
+
+	public static void ResearchCompleted(int i) {
+		Debug.Log(i + "completed research");
+		unlockedUpgrades[i][currentlyResearching[i].x]++;
+		unlockProgress[i] = 0;
+		currentlyResearching[i] = new Vector2Int(-1, -1);
+		ResearchChange[i]?.Invoke();
 	}
 }

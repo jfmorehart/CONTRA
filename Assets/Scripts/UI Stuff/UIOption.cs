@@ -49,7 +49,7 @@ public class UIOption : MonoBehaviour
 			return;
 		}
 		if (highlight_recolors_sprite) {
-			text.color = Color.yellow;
+			text.color = parentMenu.highlight_recolor;
 		}
 		else {
 			text.fontStyle = FontStyles.Underline | FontStyles.Bold;
