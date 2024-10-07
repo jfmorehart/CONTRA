@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using System.Linq;
 
 public class City : MonoBehaviour
 {
@@ -25,17 +26,25 @@ public class City : MonoBehaviour
 	public Vector2Int mpos;
 	public Vector2 wpos;
 
+	public List<int> reachableCountries;
+	public string debugInfo;
+
+	float neighborCheck_last = 0.1f;
+	float neighborCheck_delay = 1.5f;
+
 	public void SetUpCity(int te, float popu)
 	{
 		team = te;
 		pop = popu;
 		//truepop = pop;
 
-		lastPop = Random.Range(0f, 5f);
+		lastPop = Random.Range(Time.time, Time.time + 5);
+		neighborCheck_last = Random.Range(Time.time, Time.time + 1);
 		mpos = MapUtils.PointToCoords(transform.position);
 		wpos = transform.position;
 
 		truepop = Map.ins.CountPop_City(MapUtils.PointToCoords(transform.position));
+		reachableCountries = new List<int>();
 	}
 
 	private void Update()
@@ -50,6 +59,11 @@ public class City : MonoBehaviour
 			lastPop = Time.unscaledTime;
 			PopCount();
 		}
+
+		if(Time.time - neighborCheck_last > neighborCheck_delay) {
+			CheckReachableCountries();
+			neighborCheck_last = Time.time;
+		}
 	}
 
 	void PopCount() {
@@ -60,6 +74,38 @@ public class City : MonoBehaviour
 			Destroy(gameObject);
 		}
     }
+
+	async void CheckReachableCountries() {
+		//return;
+
+		List<int> neighborlist = new List<int>();
+
+		debugInfo = ""; 
+		for (int i= 0; i< Map.ins.numStates; i++) {
+			if (i == team) continue;
+			if ((Diplomacy.states[team] as State_AI).sharesBorder[i]) {
+				//possibly a neighbor
+				debugInfo += i.ToString() + "mb, ";
+				//loop thru cities until we can make it to one
+				City checkC = ArmyUtils.NearestCity(wpos, i, null);
+				if (checkC == null) continue;
+				List<int> pas = ROE.Passables(team).ToList();
+				pas.Add(i);
+				Vector2Int[] path = await Task.Run(() => AsyncPath.ins.Path(mpos, checkC.mpos, pas.ToArray(), 1, 3200));
+				if(path == null) {
+					//debugInfo += "nullp " + i.ToString() + ",";
+					continue;
+				}else if(path.Length > 1) {
+					//debugInfo += "add " + i.ToString() +", ";
+					neighborlist.Add(i);
+				}
+
+			}
+		}
+		//debugInfo += " reached end, updated + " + Time.time.ToString();
+		reachableCountries = neighborlist;
+    }
+
 	public void IncrementalCapture() {
 		//Async!!!
 
@@ -77,6 +123,7 @@ public class City : MonoBehaviour
 			if (!ROE.AreWeAtWar(team, i)) continue;
 
 			//this info may be old!
+			if (CityCapturing.ins.icprep[i] == null) return;
 			foreach (Unit un in CityCapturing.ins.icprep[i]) {
 				if (un == null) continue;
 				float d = Vector2.Distance(wpos, (un as Army).wpos);

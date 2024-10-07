@@ -133,9 +133,9 @@ public class ArmyManager : MonoBehaviour
 		return true;
     }
 
-	public void Spawn_CityLogic(int index, Inf city)
+	public City Spawn_CityLogic(int index, Inf city)
 	{
-		if (city.team == -1) return;
+		if (city.team == -1) return null;
 
 		Vector3 p = MapUtils.CoordsToPoint(city.pos);
 		City c = Instantiate(
@@ -148,6 +148,7 @@ public class ArmyManager : MonoBehaviour
 
 		c.SetUpCity(city.team, city.pop);
 		c.name = index.ToString();
+		return c;
 	}
 
 

@@ -15,16 +15,40 @@ public class DisplayHandler : MonoBehaviour
 
 	public static Action resetGame;
 
+	public bool menuNotGame;
 
 	private void Awake()
 	{
 		ins = this;
-		TimePanel.timesUp += EndScreens;
+
+		if (!menuNotGame)
+		{
+			TimePanel.timesUp += EndScreens;
+		}
 	}
 	private void Start()
 	{
 		//UI.ins.UIScreenToggle(true);
-		MoveCam.ins.canMove = true;
+
+		if (menuNotGame) {
+			foreach (Screen s in screens)
+			{
+				//s.Switch(0);
+				if (s.wideFormat)
+				{
+					s.Switch(0);
+				}
+				else
+				{
+					s.Switch(1);
+				}
+
+			}
+		}
+		else {
+			MoveCam.ins.canMove = true;
+		}
+
 	}
 	public void EndScreens() {
 		EndPanel.ins.Enable();
@@ -79,7 +103,7 @@ public class DisplayHandler : MonoBehaviour
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Escape) && !EndPanel.over)
+		if (Input.GetKeyDown(KeyCode.Escape) && !EndPanel.over && !menuNotGame)
 		{
 			if (paused) {
 				UnPause();
@@ -90,13 +114,13 @@ public class DisplayHandler : MonoBehaviour
 
 		}
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && !menuNotGame)
         {
             if (paused || EndPanel.over)
             {
                 resetGame?.Invoke();
 				TimePanel.timesUp -= EndScreens;
-				SceneManager.LoadScene(1);
+				SceneManager.LoadScene("Menu");
             }
         }
 	}

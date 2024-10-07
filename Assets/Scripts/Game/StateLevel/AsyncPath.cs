@@ -12,6 +12,7 @@ public class AsyncPath : MonoBehaviour
 	public static AsyncPath ins;
 
 	public static bool[,] borders;
+	int storedSeed;
 
 	private void Awake()
 	{
@@ -32,6 +33,7 @@ public class AsyncPath : MonoBehaviour
     }
 
 	public void Setup() {
+		storedSeed = Map.ins.mapSeed;
 		borders = new bool[Map.ins.numStates, Map.ins.numStates];
 		//InvokeRepeating(nameof(CalcBorders), 0.1f, 5);
 	}
@@ -59,6 +61,17 @@ public class AsyncPath : MonoBehaviour
 
 	public Vector2Int[] Path(Vector2Int start, Vector2Int end, int[] passableTeams, int downres, int maxTries = 800)
 	{
+		if(Map.ins == null) {
+			Debug.LogError("messy async");
+			//async operations are messy as fuck
+			return null;
+		}
+		if(Map.ins.mapSeed != storedSeed) {
+			Debug.LogError("messy async, wrong seed");
+			return null;
+		}
+
+
 		//Task<Vector2Int> tempPath = new Task<Vector2Int>()
 		Vector2Int st = start / downres;
 		Vector2Int en = end / downres;

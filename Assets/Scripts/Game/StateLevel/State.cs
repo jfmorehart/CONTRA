@@ -204,17 +204,65 @@ public class State : MonoBehaviour
 
 	public void SpawnTroops(int toSpawn) {
 
-		City[] cities = GetCities(team).ToArray();
-		int[] r = new int[cities.Length];
+		List<City> lcities = GetCities(team);
+		int[] r = new int[lcities.Count];
+
+		List<int> enemies = ROE.GetEnemies(team);
+		bool onlyBorderingCities = enemies.Count > 0;
+
+
 		for (int i = 0; i < r.Length; i++)
 		{
-			bool homeTurf = Map.ins.GetOriginalMap(cities[i].mpos) == team;
+			bool homeTurf = Map.ins.GetOriginalMap(lcities[i].mpos) == team;
 			r[i] = homeTurf ? Random.Range(0, 100) : Mathf.Max(Random.Range(1, 100), Random.Range(1, 100));
+
+			if (onlyBorderingCities)
+			{
+				bool validSpawn = false;
+				foreach (int e in enemies)
+				{
+					//spawn in cities that can reach the enemy
+					if (lcities[i].reachableCountries.Contains(e))
+					{
+						validSpawn = true;
+						break;
+					}
+				}
+				if (validSpawn) {
+					r[i] = homeTurf ? Random.Range(0, 100) : Mathf.Max(Random.Range(1, 100), Random.Range(1, 100));
+				}
+				else {
+					//this city cannot reach the enemy
+					r[i] = 1000;
+				}
+			}
+			else //not at war, spawn if not an island 
+			{
+				if (lcities[i].reachableCountries.Count > 0)
+				{
+					//bool homeTurf = Map.ins.GetOriginalMap(cities[i].mpos) == team;
+					r[i] = homeTurf ? Random.Range(0, 100) : Mathf.Max(Random.Range(1, 100), Random.Range(1, 100));
+				}
+				else
+				{
+					//dont spawn here
+					r[i] = 1000;
+				}
+			}
+
 		}
+		City[] cities = lcities.ToArray();
 		System.Array.Sort(r, cities);
 
 		for (int i = 0; i < cities.Length; i++)
 		{
+			if (r[i] > 999) {
+				//no cities border the enemy;
+				if (team != 0) return; //the AI shouldnt spawn anything
+
+				//let the player do it anyhow
+			}
+
 			if (toSpawn == 0) {
 				if(team == 0)ConsolePanel.Log("conscripting additional men", 5);
 				return;

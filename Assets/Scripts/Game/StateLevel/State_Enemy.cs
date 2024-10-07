@@ -33,10 +33,37 @@ public class State_Enemy : State_AI
 		base.Awake();
 		rivals = new StateDynamic[Map.ins.numStates];
 		opinion = new float[Map.ins.numStates];
-		for(int i =0; i < Map.ins.numStates; i++) {
-			opinion[i] = Random.Range(0.45f, 0.55f);
-		}
  	}
+
+	public override void Setup(int i, Vector2Int pos)
+	{
+		base.Setup(i, pos);
+
+		//Default to random, relevant for unafilliated states
+		for (int x = 0; x < Map.ins.numStates; x++)
+		{
+			opinion[x] = Random.Range(0.45f, 0.5f);
+		}
+
+		//Update for scenario
+		int affiliation = Simulator.AffiliatedCheck(team);
+		if (affiliation != -1)
+		{
+			for (int y = 0; y < Simulator.activeScenario.affiliations.Length; y++)
+			{
+				if (y == affiliation)
+				{
+					//allies
+					opinion[y] = 0.95f;
+				}
+				else
+				{
+					//enemies
+					opinion[y] = 0.05f;
+				}
+			}
+		}
+	}
 
 	protected override void StateUpdate()
 	{

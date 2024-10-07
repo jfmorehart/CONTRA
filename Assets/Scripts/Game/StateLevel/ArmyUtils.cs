@@ -325,6 +325,32 @@ public static class ArmyUtils
 		}
 		return trim.ToArray();
 	}
+
+	public static List<City> GetNearestCitiesOfTeams(List<City> cities,List<int> ofTeams, Vector2 pos) {
+		int n = cities.Count;
+		for (int i = 0; i < n; i++)
+		{
+			if (cities.Count <= i) break;
+			if (!ofTeams.Contains(cities[i].team)) {
+				cities.RemoveAt(i);
+			}
+		}
+
+		float[] darr = new float[cities.Count];
+		for(int i =0; i < darr.Length; i++) {
+			darr[i] = Vector2.Distance(cities[i].mpos, pos);
+		}
+		City[] carr = cities.ToArray();
+		System.Array.Sort(darr, carr);
+
+		List<City> output = new List<City>();
+		for (int i = 0; i < darr.Length; i++)
+		{
+			output.Add(carr[i]);
+		}
+		return output;
+	}
+
 	public static City NearestCity(Vector2 pos, int teamOf, List<City> ignore) {
 		List<City> cities = ArmyManager.ins.cities;
 		float cdist = float.MaxValue;

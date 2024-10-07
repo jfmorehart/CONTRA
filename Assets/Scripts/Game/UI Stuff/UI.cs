@@ -123,7 +123,7 @@ public class UI : MonoBehaviour
 			}
 		}
 
-		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.X))
 		{
 			switch(currentMenu.children[selected].kind) {
 				case UIOption.Kind.Button:
@@ -142,7 +142,7 @@ public class UI : MonoBehaviour
 			}
 
 		}
-		if (Input.GetKeyDown(KeyCode.Tab))
+		if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Z))
 		{
 			Cancel();
 		}

@@ -10,11 +10,12 @@ public class CityCapturing : MonoBehaviour
 	private void Start()
 	{
 		ins = this;
-		InvokeRepeating(nameof(PrepForIC), 0.9f, 0.25f);
+		//InvokeRepeating(nameof(PrepForIC), 0.9f, 0.25f);
 		InvokeRepeating(nameof(DistributedIncrementCapture), 1, 0.25f);
 	}
 
 	public async void DistributedIncrementCapture() {
+		PrepForIC();
 		for (int i = 0; i < Map.ins.numCities; i++)
 		{
 			City c = ArmyManager.ins.cities[i];

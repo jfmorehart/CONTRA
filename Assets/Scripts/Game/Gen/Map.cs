@@ -28,7 +28,7 @@ public class Map : MonoBehaviour
 	int[] pixTeam;
 
 	int[] originalMap;
-	int mapSeed;
+	public int mapSeed;
 
 	[Header("Compute Stuff")]
 	public ComputeShader POP;
@@ -81,6 +81,12 @@ public class Map : MonoBehaviour
 
 		mapSeed = UnityEngine.Random.Range(-500, 500);
 		Debug.Log(mapSeed);
+
+
+		if (!Simulator.IsSetup) Simulator.Setup();
+		numStates = Simulator.activeScenario.numTeams;
+
+
 		Research.Setup();
 		UnitChunks.Init();
 		ArmyUtils.Init();
@@ -88,6 +94,7 @@ public class Map : MonoBehaviour
 		ROE.SetUpRoe();
 		Economics.SetupEconomics();
 		TerminalMissileRegistry.Setup();
+
 
 		//Create basic info
 		NewMap();
@@ -257,28 +264,12 @@ public class Map : MonoBehaviour
 		}
 
 		ArmyManager.ins.Setup();
-		//Put cities everywhere
-		Inf[] cities = new Inf[numCities];
-		for(int i = 0; i < numCities - numStates * 2; i++) {
-			ArmyManager.ins.Spawn_CityLogic(i, PlaceCity(i));
-		}
 
-		//Put at least one in each state
-		for (int i = numCities - numStates * 2; i < numCities; i++)
-		{
-			int tries = 0;
-			Inf testCity = PlaceCity(i);
-			while(testCity.team != i % numStates && tries < 500) {
-				testCity = PlaceCity(i);
-				tries++;
-			}
-			ArmyManager.ins.Spawn_CityLogic(i, testCity);
-
-		}
-
+		PopulateCities();
 		//Populate cityBuffer
 		citybuffer = new ComputeBuffer(numCities, 20);
 		citybuffer.SetData(ArmyManager.ins.UpdateCities());
+
 
 		//POPBUFFER
 		// POP is a compute shader that generates popbuffer, a per-texel float value 
@@ -301,7 +292,113 @@ public class Map : MonoBehaviour
 		popbuffer.GetData(pixelPop);
 		popbuffer.Release();
 	}
+	void PopulateCities() {
 
+		//Put cities everywhere
+
+		List<City>[] citiesPerTeam = new List<City>[Map.ins.numStates];
+		for (int i = 0; i < numStates; i++)
+		{
+			citiesPerTeam[i] = new List<City>();
+		}
+
+		List<City> cities = new List<City>();
+		List<float> distancesFromCorner = new List<float>();
+		for (int i = 0; i < numCities; i++)
+		{
+			City c = ArmyManager.ins.Spawn_CityLogic(i, PlaceCity(i));
+			if (c != null)
+			{
+				cities.Add(c);
+				citiesPerTeam[c.team].Add(c);
+				distancesFromCorner.Add(c.transform.position.magnitude);
+			}
+		}
+		numCities = cities.Count();
+
+		if (Simulator.activeScenario.percentOfCities == null) return;
+		Debug.Log(Simulator.activeScenario.percentOfCities);
+		//reassign cities protocol is active
+
+		//calculate city deficits
+		int[] calloc = new int[numStates];
+		int[] deficit = new int[numStates];
+		List<int> surplusTeams = new List<int>();
+		List<int> unlockedTeams = new List<int>();
+
+		for (int i = 0; i < numStates; i++)
+		{
+			unlockedTeams.Add(i);
+			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
+			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
+			if (deficit[i] < 0) surplusTeams.Add(i);
+			Debug.Log(i + " deficit " + deficit[i]);
+		}
+
+		List<int> orderbyDistance = new List<int>();
+
+		//sort teams by distance from map corner
+		City[] carr = cities.ToArray();
+		float[] darr = distancesFromCorner.ToArray();
+		Array.Sort(darr, carr);
+		for(int i = 0; i < numCities; i++) {
+			if (!orderbyDistance.Contains(carr[i].team)) {
+				orderbyDistance.Add(carr[i].team);
+			}
+			if(orderbyDistance.Count == numStates) {
+				break;
+			}
+		}
+
+		//steal cities from other teams
+		for(int i =0;i < numStates; i++) {
+			int team = orderbyDistance[i];
+			Debug.Log("checking team " + team);
+			if (citiesPerTeam[team].Count > calloc[team]) continue;
+			unlockedTeams.Remove(team);
+
+			Debug.Log("processing team " + team);
+
+			//generate a list of nearby cities from unlocked teams
+			//its as long as the deficit is
+			List<City> stolen = ArmyUtils.GetNearestCitiesOfTeams(cities, unlockedTeams, state_centers[team]);
+			foreach(City stole in stolen) {
+
+				Debug.Log("attempting to steal");
+				//we may have locked this team during this loop, so check anyhow
+				if (!unlockedTeams.Contains(stole.team)) continue;
+
+				//mark it stolen
+				citiesPerTeam[stole.team].Remove(stole);
+
+				//they're at a good spot, lock them
+				if (citiesPerTeam[stole.team].Count == calloc[stole.team]){
+					
+					//if they've already gone, lock them
+					if(stole.team < team) {
+						Debug.Log("locked team" + stole.team);
+						unlockedTeams.Remove(stole.team);
+					}
+				}
+
+				//steal it
+				Debug.Log("transfered " + stole.team + " city to " + team);
+				stole.team = team;
+				citiesPerTeam[team].Add(stole);
+				if (citiesPerTeam[team].Count >= calloc[team]) {
+					break;
+				}
+			}
+
+		}
+
+		for (int i = 0; i < numStates; i++)
+		{
+			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
+			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
+			Debug.Log(i + " deficit " + deficit[i]);
+		}
+	}
 	void BuildInfluences() {
 
 		teamOf.SetData(pixTeam);
@@ -352,6 +449,7 @@ public class Map : MonoBehaviour
 		atWar.Release();
 		//stin.Release(); we're gonna leave this allocated
 		infs.Release();
+		liveteams.Release();
 	}
 
 	public void CountPop()
@@ -605,6 +703,7 @@ public class Map : MonoBehaviour
 		return originalMap[index];
 	}
 	public int GetPixTeam(Vector2Int coordinate) {
+		if (pixTeam == null) return 0;
 		int index = (coordinate.y * texelDimensions.x) + coordinate.x;
 		index = Mathf.Clamp(index, 0, pixTeam.Length - 1);
 		return pixTeam[index];

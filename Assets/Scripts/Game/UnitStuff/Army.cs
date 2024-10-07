@@ -88,7 +88,7 @@ public class Army : Unit
 	public override void Start()
 	{
 		base.Start();
-		lastShot = Random.Range(0, 1f);
+		lastShot = Random.Range(Time.time, Time.time + 1);
 		DisplayHandler.resetGame += Reset;
 	}
 

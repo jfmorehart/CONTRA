@@ -21,6 +21,17 @@ public class EndPanel : MonoBehaviour
 		endCam.enabled = false;
 	}
 
+	private void Update()
+	{
+		for(int i =1; i < Map.ins.numStates; i++) {
+			if (Diplomacy.states[i].alive) {
+				return;
+			}
+		}
+
+		Enable();
+	}
+
 	public void Enable() {
 		over = true;
 		endCam.enabled = true;
