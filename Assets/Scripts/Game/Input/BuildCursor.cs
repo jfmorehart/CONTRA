@@ -14,7 +14,7 @@ public class BuildCursor : MonoBehaviour
 
 	private void Awake()
 	{
-        pos = transform.position;
+		pos = Camera.main.transform.position;
 	}
 	void FixedUpdate()
     {

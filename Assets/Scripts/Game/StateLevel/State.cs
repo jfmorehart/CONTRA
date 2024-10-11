@@ -397,8 +397,8 @@ public class State : MonoBehaviour
 	public virtual void SendAid(int to)
 	{
 		ConsolePanel.Log(ConsolePanel.ColoredName(team) + " sent aid to " + ConsolePanel.ColoredName(to)); ;
-		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 3;
-		Diplomacy.states[to].manHourDebt -= Economics.cost_armySpawn * 5;
+		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 8;
+		Diplomacy.states[to].manHourDebt -= Economics.cost_armySpawn * 10;
 		Diplomacy.states[to].RecieveAid(team);
 
 		Diplomacy.AnnounceNews(Diplomacy.NewsItem.Aid, team, to);

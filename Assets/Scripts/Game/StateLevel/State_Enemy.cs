@@ -584,7 +584,7 @@ public class State_Enemy : State_AI
 	public override void RecieveAid(int from)
 	{
 		base.RecieveAid(from);
-		opinion[from] += 0.05f;
+		opinion[from] += 0.1f;
 	}
 
 	public override void WarStarted(int by)

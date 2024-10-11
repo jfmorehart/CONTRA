@@ -23,6 +23,8 @@ public class FinalCam : MonoBehaviour
 	}
 	private void OnRenderImage(RenderTexture source, RenderTexture destination)
 	{
+		if (Time.timeSinceLevelLoad < 0.15f) return;
+
 		//Graphics.Blit(source, destination, isolateBloomMat);
 		Graphics.Blit(source, tempRt, isolateBloomMat);
 		Graphics.Blit(source, tempRt2);

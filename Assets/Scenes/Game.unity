@@ -6428,6 +6428,7 @@ Transform:
   - {fileID: 436816038}
   - {fileID: 563288205}
   - {fileID: 579717031}
+  - {fileID: 1924254493}
   m_Father: {fileID: 452270828}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &739554375
@@ -6446,6 +6447,8 @@ MonoBehaviour:
   textPrefab: {fileID: 2856113202255912706, guid: ea04e1ae3d625493c9089eb7d286bf4e, type: 3}
   spaces: []
   offset: {x: 0, y: -10}
+  toolhead: {fileID: 1480306633}
+  tooltext: {fileID: 1847971159}
 --- !u!1 &746065737
 GameObject:
   m_ObjectHideFlags: 0
@@ -7544,6 +7547,124 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e74c4535114f479caf3aaa8badc0c38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &945439139
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1924254493}
+    m_Modifications:
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 860
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -227
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_text
+      value: _______________________________________
+      objectReference: {fileID: 0}
+    - target: {fileID: 9053520773003539838, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Name
+      value: dashline
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+--- !u!224 &945439140 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+  m_PrefabInstance: {fileID: 945439139}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &962058262
 GameObject:
   m_ObjectHideFlags: 0
@@ -7736,7 +7857,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 383
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 8400000, guid: 63f901c2087dc42f191eadae63a617d0, type: 2}
   m_TargetDisplay: 0
@@ -7977,9 +8098,10 @@ MonoBehaviour:
   armyChart: []
   chartPrefab: {fileID: 8892457780034950727, guid: e28436b5b8ddb4392b08df69f45088a2, type: 3}
   center: {fileID: 4518871783517726825}
-  spacer: 20
+  spacer: 40
   armySpacer: 0.25
-  armyWidth: 0.15
+  armyWidth: 0.3
+  popwidth: 1.4
   pop2Scale: -0.03
   maxChartValue: 180
   scaleFactor: 0
@@ -8670,6 +8792,128 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff55fc91c792947e89144913a6b131bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &1100517179
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1924254493}
+    m_Modifications:
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 860
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -402
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_text
+      value: used to grow/shrink army and military bases
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_fontStyle
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9053520773003539838, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Name
+      value: body
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+--- !u!224 &1100517180 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+  m_PrefabInstance: {fileID: 1100517179}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1101382264
 GameObject:
   m_ObjectHideFlags: 0
@@ -8860,7 +9104,7 @@ MonoBehaviour:
   state_centers: []
   state_colors:
   - {r: 0.3584906, g: 0, b: 0, a: 1}
-  - {r: 0.4528302, g: 0.337933, b: 0, a: 1}
+  - {r: 0.4339623, g: 0.32709664, b: 0.0020469967, a: 1}
   - {r: 0.3945112, g: 0, b: 0.4339623, a: 1}
   - {r: 0.057938762, g: 0.09876657, b: 0.3962264, a: 1}
   - {r: 0, g: 0.3679245, b: 0.35466596, a: 1}
@@ -10294,6 +10538,136 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1339925101}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1341265493
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1924254493}
+    m_Modifications:
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 860
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.6833152
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -295
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_text
+      value: defense menu
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_fontSize
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 9053520773003539838, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+      propertyPath: m_Name
+      value: header
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+--- !u!224 &1341265494 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5322081119779664830, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+  m_PrefabInstance: {fileID: 1341265493}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1356043066
 GameObject:
   m_ObjectHideFlags: 0
@@ -10603,6 +10977,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1444432881}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1480306633 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+  m_PrefabInstance: {fileID: 1341265493}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1501228174
 GameObject:
   m_ObjectHideFlags: 0
@@ -10646,6 +11031,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!114 &1501228176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13194,6 +13581,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1802070059}
   m_CullTransparentMesh: 1
+--- !u!114 &1847971159 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7102354086548546758, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+  m_PrefabInstance: {fileID: 1100517179}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1863474026
 GameObject:
   m_ObjectHideFlags: 0
@@ -13748,6 +14146,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1907858688}
   m_CullTransparentMesh: 1
+--- !u!1 &1924254492
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924254493}
+  m_Layer: 0
+  m_Name: Tooltip Menu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1924254493
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924254492}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 945439140}
+  - {fileID: 1341265494}
+  - {fileID: 1100517180}
+  m_Father: {fileID: 739554373}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1953803878
 GameObject:
   m_ObjectHideFlags: 0
@@ -15012,6 +15444,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: relationships menu
+  tooltip_bodyText: see how this nation feels about its neigbors
 --- !u!224 &380104542709760179
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15074,13 +15508,13 @@ MonoBehaviour:
   types:
   - icbm silo
   - airbase
-  - AAA Battery
+  - air-defense
   icons:
   - {fileID: 2800000, guid: d9ebc1769bb9f4ad68602f4282c7b7e8, type: 3}
   - {fileID: 2800000, guid: 1d726d56a7a73497781b00d505a27b44, type: 3}
   - {fileID: 2800000, guid: e39ff6c35bd484fbb8345f0cbc65fcfd, type: 3}
   subtitles:
-  - 'warheads : 10'
+  - 'warheads : 2'
   - 'bombers : 5'
   - 'missiles : 3'
   type_text: {fileID: 1669323570660620671}
@@ -16151,6 +16585,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: tier 2 research
+  tooltip_bodyText: unlock new tech
 --- !u!222 &1076324432151492867
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -16300,6 +16736,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: disband troops button
+  tooltip_bodyText: release five units from your army
 --- !u!114 &1179015232413680246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16409,9 +16847,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'aaa
-
-'
+  m_text: aaa
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a099b5f00a3dd49d788b83ed864f1858, type: 2}
   m_sharedMaterial: {fileID: 1798366782539071105, guid: a099b5f00a3dd49d788b83ed864f1858, type: 2}
@@ -16841,6 +17277,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: confirm new construction
+  tooltip_bodyText: are you sure?
 --- !u!114 &1643310010295329548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16877,6 +17315,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: research
+  tooltip_bodyText: develop new military technologies
 --- !u!224 &1662276874855310320
 RectTransform:
   m_ObjectHideFlags: 0
@@ -16981,7 +17421,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -46.18637, y: 0, z: -52.210167, w: 0}
+  m_margin: {x: 31.10669, y: -15.278788, z: 16.993843, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -17503,6 +17943,9 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: troop-deployment slider
+  tooltip_bodyText: this sways the ratio of troops allocated to the defense of this
+    border
 --- !u!114 &1959622288632214743
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18326,6 +18769,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: nuclear target selector
+  tooltip_bodyText: instructs your airforce to bomb silos and airbases
 --- !u!114 &2535055420895051159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18350,6 +18795,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: groundforce target selector
+  tooltip_bodyText: instructs your airforce to bomb enemy troops
 --- !u!222 &2536594403436853132
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -18761,6 +19208,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: launch button
+  tooltip_bodyText: <color=#ff0000> this action cannot be undone </color>
 --- !u!114 &2744571846194721682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18875,6 +19324,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: tier 3 research
+  tooltip_bodyText: unlock new tech
 --- !u!1 &2849868478475695996
 GameObject:
   m_ObjectHideFlags: 0
@@ -18930,6 +19381,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: aircraft research
+  tooltip_bodyText: unlock and improve aircraft technology
 --- !u!222 &2874912479191071564
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -19326,6 +19779,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: defense menu
+  tooltip_bodyText: manage your military
 --- !u!222 &3056445933305803620
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -19467,6 +19922,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: air-superiority target selector
+  tooltip_bodyText: instructs your airforce to bomb airbases and air defenses
 --- !u!222 &3263381567005148844
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -20243,6 +20700,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: tier 4 research
+  tooltip_bodyText: unlock new tech
 --- !u!222 &3832184769047766571
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -20306,6 +20765,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: tier 1 research
+  tooltip_bodyText: unlock new tech
 --- !u!222 &3897941644006020576
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -20350,6 +20811,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: airbase construction
+  tooltip_bodyText: build a new airbase
 --- !u!224 &3944871920411134390
 RectTransform:
   m_ObjectHideFlags: 0
@@ -22223,6 +22686,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!222 &4867472601681489161
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -22282,6 +22747,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: civilian target selector
+  tooltip_bodyText: target enemy cities
 --- !u!1 &4903852782869301430
 GameObject:
   m_ObjectHideFlags: 0
@@ -22425,6 +22892,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: groundforces research
+  tooltip_bodyText: improve the quality (and cost) of your armies
 --- !u!1 &4985381717132273315
 GameObject:
   m_ObjectHideFlags: 0
@@ -23021,6 +23490,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: send air button
+  tooltip_bodyText: send a small sum of money to this country
 --- !u!114 &5258684612559363358
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23057,6 +23528,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!222 &5353774659360372621
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -23200,6 +23673,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: aaa construction
+  tooltip_bodyText: construct an anti-aircraft-artillery battery
 --- !u!222 &5373339774063015126
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -23528,6 +24003,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: groundforce target selector
+  tooltip_bodyText: target enemy armies (could miss)
 --- !u!224 &5541009170539964582
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23629,6 +24106,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: tier 5 research
+  tooltip_bodyText: unlock new tech
 --- !u!222 &5656549121669694152
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -24120,6 +24599,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!114 &5993816773059990407
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24245,6 +24726,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: nuclear strike menu
+  tooltip_bodyText: design and launch a nuclear strike
 --- !u!224 &6006117694993917591
 RectTransform:
   m_ObjectHideFlags: 0
@@ -24591,6 +25074,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: budget slider
+  tooltip_bodyText: a lower budget means slower research, but less economic strain
 --- !u!222 &6172726137098919567
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -24871,6 +25356,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: cancel button
+  tooltip_bodyText: scrap current research?
 --- !u!222 &6461474508981684491
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -25289,6 +25776,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: construction menu
+  tooltip_bodyText: build new military bases
 --- !u!222 &6919860201238442880
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -25333,6 +25822,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: air-defense research
+  tooltip_bodyText: unlock and improve anti-aircraft-artillery technology
 --- !u!114 &7019656388404119105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25496,6 +25987,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!114 &7297933110011782444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25532,6 +26025,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: conscript troops button
+  tooltip_bodyText: deploy five new units to your army
 --- !u!222 &7313563675717341988
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -25685,6 +26180,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: icbm silo construction
+  tooltip_bodyText: build a new intercontinental ballistic missile silo
 --- !u!1 &7368679111647098945
 GameObject:
   m_ObjectHideFlags: 0
@@ -25768,6 +26265,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!1 &7447166516366100375
 GameObject:
   m_ObjectHideFlags: 0
@@ -26939,6 +27438,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: no bases unlocked
+  tooltip_bodyText: 'conduct research to unlock bases '
 --- !u!114 &7866691869575313346
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27132,6 +27633,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: icbm research
+  tooltip_bodyText: unlock and improve intercontinental ballistic missile  technology
 --- !u!1 &8020757935780162587
 GameObject:
   m_ObjectHideFlags: 0
@@ -27512,6 +28015,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: demolish base button
+  tooltip_bodyText: this button deletes this base
 --- !u!1 &8313602181615205771
 GameObject:
   m_ObjectHideFlags: 0
@@ -27610,6 +28115,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: cancel button
+  tooltip_bodyText: return to previous menu
 --- !u!224 &8348790665057986814
 RectTransform:
   m_ObjectHideFlags: 0
@@ -27742,6 +28249,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: civilian target selector
+  tooltip_bodyText: instructs your airforce to bomb enemy cities
 --- !u!114 &8373448622367362930
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27778,6 +28287,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: 
+  tooltip_bodyText: 
 --- !u!114 &8380031868193614122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27814,6 +28325,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: air doctrine menu
+  tooltip_bodyText: select which targets your airforce attacks
 --- !u!114 &8389648675558023209
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27850,6 +28363,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: diplomacy menu
+  tooltip_bodyText: interact with other countries
 --- !u!1 &8398036158574808180
 GameObject:
   m_ObjectHideFlags: 0
@@ -28132,6 +28647,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: strategic target selector
+  tooltip_bodyText: target enemy bases
 --- !u!1 &8614060254481530062
 GameObject:
   m_ObjectHideFlags: 0
@@ -28776,6 +29293,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  tooltip_headerText: manage bases menu
+  tooltip_bodyText: demolish existing bases
 --- !u!222 &8967717873154911731
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -28897,6 +29416,8 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: attack saturation slider
+  tooltip_bodyText: changes how many missiles you send
 --- !u!114 &9076247986494086275
 MonoBehaviour:
   m_ObjectHideFlags: 0

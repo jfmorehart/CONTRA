@@ -23,13 +23,16 @@ public class ConsolePanel : MonoBehaviour
 	}
 	public static List<Logline> lines;
 	public TMP_Text[] spaces;
-	public static int linecount = 8;
+	public static int linecount = 5;
 
 	public Vector2 offset;
 
 	const string carat = "<color=\"yellow\"> > </color>";
 	const string greencarat = "<color=\"green\"> > </color>";
 	public const string you = "<color=\"red\"> you </color>";
+
+	public TMP_Text toolhead;
+	public TMP_Text tooltext;
 
 	private void Start()
 	{
@@ -48,10 +51,15 @@ public class ConsolePanel : MonoBehaviour
 			spaces[i].transform.position = center.transform.position;
 			spaces[i].transform.Translate(i * offset, Space.World);
 		}
+		for (int i = 0; i < linecount; i++)
+		{
+			Log(" the <color=\"red\"> FEAR </color> to attack" + Random.Range(0, 100).ToString());
+		}
 	}
 
 	void Update()
 	{
+		RefreshTooltip();
 		List<Logline> expired = new List<Logline>();
 		for(int i = 0; i < lines.Count; i++) { 
 			if(Time.time - lines[i].startTime > lines[i].lifeTime) {
@@ -61,7 +69,6 @@ public class ConsolePanel : MonoBehaviour
 		foreach(Logline log in expired) {
 			lines.Remove(log);
 		}
-
 
 		for (int i = 0; i < linecount; i++)
 		{
@@ -85,6 +92,15 @@ public class ConsolePanel : MonoBehaviour
 			spaces[i].text = line;
 
 		}
+	}
+	void RefreshTooltip()
+	{
+		Debug.Log("a");
+		if (UI.ins.selected > UI.ins.currentMenu.children.Length) return;
+		if (UI.ins.currentMenu.children[UI.ins.selected] == null) return;
+		toolhead.text = UI.ins.currentMenu.children[UI.ins.selected].tooltip_headerText;
+		tooltext.text = UI.ins.currentMenu.children[UI.ins.selected].tooltip_bodyText;
+		Debug.Log("b" + UI.ins.currentMenu.children[UI.ins.selected].tooltip_headerText);
 	}
 
 	public static void Log(string str, float lifeTime = 10) {

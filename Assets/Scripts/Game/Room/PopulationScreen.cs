@@ -11,7 +11,7 @@ public class PopulationScreen : MonoBehaviour
 	public Transform[] armyChart;
 	public GameObject chartPrefab;
 	public Transform center;
-	public float spacer, armySpacer, armyWidth;
+	public float spacer, armySpacer, armyWidth, popwidth;
 
 	public float pop2Scale;
 
@@ -64,7 +64,7 @@ public class PopulationScreen : MonoBehaviour
 		}
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
-			Vector3 scale = new Vector3(1, scaleFactor * pop2Scale * Map.ins.state_populations[i], 0);
+			Vector3 scale = new Vector3(popwidth, scaleFactor * pop2Scale * Map.ins.state_populations[i], 0);
 			popChart[i].transform.localScale = scale;
 			Vector2 pos = popChart[i].transform.localPosition;
 			popChart[i].transform.localPosition = new Vector3(pos.x, center.transform.localPosition.y - scale.y / 2, 0);

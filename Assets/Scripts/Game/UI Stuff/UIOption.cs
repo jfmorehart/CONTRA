@@ -22,8 +22,13 @@ public class UIOption : MonoBehaviour
 
 	public UnityEvent onSelect;
 
+	public string tooltip_headerText;
+	public string tooltip_bodyText;
+
 	private void Awake()
 	{
+
+
 		if (text == null) {
 			text = GetComponent<TMP_Text>();
 		}
@@ -33,10 +38,8 @@ public class UIOption : MonoBehaviour
 		plaintext = text.text;
 		defaultColor = text.color;
 
-		//if (locked)
-		//{
-		//	text.color = Color.grey;
-		//}
+		if (tooltip_headerText == "") tooltip_headerText = plaintext;
+		if (tooltip_bodyText == "") tooltip_bodyText = "handles " + plaintext;
 	}
 
 	public void Highlight()

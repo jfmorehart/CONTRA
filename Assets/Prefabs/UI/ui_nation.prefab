@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parentMenu: {fileID: 0}
+  locked: 0
   highlighted: 0
   highlight_recolors_sprite: 0
   kind: 0
@@ -170,3 +171,5 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  headerText: nation menu
+  bodyText: this menu contains options for interacting with the selected state
