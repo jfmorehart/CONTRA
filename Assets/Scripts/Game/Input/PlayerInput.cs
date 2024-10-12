@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class PlayerInput : MonoBehaviour
 {
@@ -19,6 +20,8 @@ public class PlayerInput : MonoBehaviour
 	public bool airMode;
 
 	public static Action<bool> minimize;
+
+	public AudioClip[] keyPress;
 
 	private void Awake()
 	{
@@ -41,6 +44,13 @@ public class PlayerInput : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.B)) {
 			UI.ins.BuildScreen();
 	    }
+		if (Input.anyKeyDown) {
+			KeyClick();
+		}
+	}
+	public void KeyClick() {
+		AudioSource src = SFX.ins.NewSource(keyPress[Random.Range(0, keyPress.Length)], 0.01f, false);
+		src.pitch = Random.Range(0.95f, 1.05f);
 	}
 
 	public void ToggleAirMode(bool enable) {

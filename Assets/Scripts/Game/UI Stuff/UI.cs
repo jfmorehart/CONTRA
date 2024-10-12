@@ -39,6 +39,9 @@ public class UI : MonoBehaviour
 
 	public GameObject diploStateOptionPrefab;
 
+	float sliderSoundDelay = 0.05f;
+	float lastSliderSound;
+
 	private void Awake()
 	{
 		ins = this;
@@ -105,6 +108,11 @@ public class UI : MonoBehaviour
 		if (Input.GetKey(KeyCode.LeftArrow))
 		{
 			if(currentMenu.children[selected].kind == UIOption.Kind.Slider) {
+
+				if(Time.time - lastSliderSound > sliderSoundDelay) {
+					PlaySliderSound();
+				}
+
 				currentMenu.children[selected].value -= 1f * Time.deltaTime;
 				if(currentMenu.children[selected].value < 0) {
 					currentMenu.children[selected].value = 0;
@@ -115,6 +123,11 @@ public class UI : MonoBehaviour
 		{
 			if (currentMenu.children[selected].kind == UIOption.Kind.Slider)
 			{
+				if (Time.time - lastSliderSound > sliderSoundDelay)
+				{
+					PlaySliderSound();
+				}
+
 				currentMenu.children[selected].value += 1f * Time.deltaTime;
 				if (currentMenu.children[selected].value > 1)
 				{
@@ -147,6 +160,10 @@ public class UI : MonoBehaviour
 			Cancel();
 		}
 	}
+	void PlaySliderSound() {
+		lastSliderSound = Time.time;
+		PlayerInput.ins.KeyClick();
+    }
 	public void DiplomacyScreen()
 	{
 		SwitchMenus(currentMenu, menu_diplo);

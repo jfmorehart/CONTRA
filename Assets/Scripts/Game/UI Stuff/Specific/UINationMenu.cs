@@ -72,16 +72,18 @@ public class UINationMenu : UIMenu
 		airdoctrine?.gameObject.SetActive(false);
 
 		if (atWar) {
-
 			StateEval eval = new StateEval(0);
+			if (eval.str_air > 0)
+			{
+				airdoctrine.gameObject.SetActive(true);
+				kiddos.Add(airdoctrine);
+			}
+
 			if(eval.str_nuke > 0) {
 				nuclearstrike.gameObject.SetActive(true);
 				kiddos.Add(nuclearstrike);
 			}
-			if(eval.str_air > 0) {
-				airdoctrine.gameObject.SetActive(true);
-				kiddos.Add(airdoctrine);
-			}
+
 		}
 		else {
 			sendAid.gameObject?.SetActive(true);

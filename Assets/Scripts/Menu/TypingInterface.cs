@@ -30,11 +30,24 @@ public class TypingInterface : MonoBehaviour
 	[SerializeField]
 	int[] lengths;
 
-	float typingDelay = 0.001f;
+	public float typingDelay = 0.001f;
+	public float boopDelay = 0.07f;
 	float lastcharTime;
 	bool newchar;
 
 	List<string> unwritten;
+
+	//sound stuff
+	public GameObject oneshotPrefab;
+	public GameObject pooledSourcePrefab;
+	public AudioSource src;
+	public AudioClip[] keyclick;
+	public AudioClip[] boops;
+	AudioSource[] boopsources;
+	float lastBoop;
+	int booplength = 50;
+	int bcham;
+
 
 	private void Awake()
 	{
@@ -57,7 +70,31 @@ public class TypingInterface : MonoBehaviour
 			lengths[i] = 0;
 		}
 
+		boopsources = new AudioSource[booplength];
+		for(int i = 0; i < booplength; i++) {
+			boopsources[i] = Instantiate(pooledSourcePrefab, transform).GetComponent<AudioSource>();
+		}
 		WriteOptions();
+	}
+
+	SFX_OneShot KeyPressSound() {
+
+		GameObject go = Instantiate(oneshotPrefab, transform);
+		SFX_OneShot os = go.GetComponent<SFX_OneShot>();
+		os.Play(keyclick[Random.Range(0, keyclick.Length)], 0.01f * SFX.globalVolume);
+		os.GetComponent<AudioSource>().pitch = Random.Range(0.95f, 1.05f);
+		return os;
+	}
+	void BoopSound(float minPitch = 1, float maxPitch = 1)
+	{
+		if (Time.time - lastBoop < boopDelay) return;
+		lastBoop = Time.time;
+		bcham++;
+		if (bcham >= booplength) bcham = 0;
+		boopsources[bcham].clip = boops[Random.Range(0, boops.Length)];
+		boopsources[bcham].pitch = Random.Range(minPitch, maxPitch);
+		boopsources[bcham].volume = 0.01f * SFX.globalVolume;
+		boopsources[bcham].Play();
 	}
 
 	void WriteOptions() {
@@ -92,6 +129,9 @@ public class TypingInterface : MonoBehaviour
 
 		foreach (char c in Input.inputString) {
 			if (!doneWriting) break;
+
+			KeyPressSound();
+
             if (!pstring.Contains(c)) {
 				if (c == '\b')
 				{
@@ -160,6 +200,7 @@ public class TypingInterface : MonoBehaviour
 				if (newchar)
 				{
 					lengths[i]++;
+					BoopSound(0.95f, 1.05f);
 					if (lengths[i] >= lines[i].Length) finishedWriting[i] = true;
 					newchar = false;
 				}
@@ -233,7 +274,7 @@ public class TypingInterface : MonoBehaviour
 		{
 			WriteOptions();
 		}
-		if (message == ">ls")
+		if (message == ">list games")
 		{
 			WriteOut("tic-tac-toe");
 			WriteOut("falkens maze");
@@ -357,6 +398,7 @@ public class TypingInterface : MonoBehaviour
 		{
 			s += ".";
 		}
+		BoopSound(3f, 3.1f);
 		WriteOut(s, true, true);
 	}
 

@@ -62,7 +62,7 @@ public class SFX_OneShot : MonoBehaviour
 	{
         life -= Time.deltaTime;
         if (life < 0) Destroy(gameObject);
-		src.volume = baseVolume * SFX.ins.globalVolume;
+		src.volume = baseVolume * SFX.globalVolume;
 
 		if (tracking) {
 			RecreateMapVector((Vector3)track, decayAmt);

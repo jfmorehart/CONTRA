@@ -51,10 +51,10 @@ public class ConsolePanel : MonoBehaviour
 			spaces[i].transform.position = center.transform.position;
 			spaces[i].transform.Translate(i * offset, Space.World);
 		}
-		for (int i = 0; i < linecount; i++)
-		{
-			Log(" the <color=\"red\"> FEAR </color> to attack" + Random.Range(0, 100).ToString());
-		}
+		//for (int i = 0; i < linecount; i++)
+		//{
+		//	Log(" the <color=\"red\"> FEAR </color> to attack" + Random.Range(0, 100).ToString());
+		//}
 	}
 
 	void Update()
@@ -95,12 +95,10 @@ public class ConsolePanel : MonoBehaviour
 	}
 	void RefreshTooltip()
 	{
-		Debug.Log("a");
 		if (UI.ins.selected > UI.ins.currentMenu.children.Length) return;
 		if (UI.ins.currentMenu.children[UI.ins.selected] == null) return;
 		toolhead.text = UI.ins.currentMenu.children[UI.ins.selected].tooltip_headerText;
 		tooltext.text = UI.ins.currentMenu.children[UI.ins.selected].tooltip_bodyText;
-		Debug.Log("b" + UI.ins.currentMenu.children[UI.ins.selected].tooltip_headerText);
 	}
 
 	public static void Log(string str, float lifeTime = 10) {

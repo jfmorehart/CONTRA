@@ -15,12 +15,17 @@ public class LaunchSiren : MonoBehaviour
 	public bool sirenPlaying;
 	public float lowPitch, highPitch;
 	public float spinUpAmt, noiseAccel, maxVolume, ndrag;
+	Renderer ren;
+	Renderer ren2;
+
  
 	public bool on;
 
 	private void Awake()
 	{
 		src = GetComponent<AudioSource>();
+		ren = GetComponent<Renderer>();
+		ren2 = transform.GetChild(0).GetChild(0).GetComponent<Renderer>();
 		highPitch += (Random.value - 0.5f) * 0.5f;
 	}
 	private void Start()
@@ -29,7 +34,8 @@ public class LaunchSiren : MonoBehaviour
 	}
 	private void Update()
 	{
-		//Debug.Log(UI.ins.incoming);
+		if (UI.ins == null) return;
+
 		if (!on) { 
 			if(UI.ins.incomingMissiles > 0) {
 				on = true;
@@ -53,7 +59,7 @@ public class LaunchSiren : MonoBehaviour
 		}
 		if (sirenPlaying) {
 			src.pitch = Mathf.Lerp(lowPitch, highPitch, spinUpAmt);
-			src.volume = Mathf.Lerp(0, maxVolume, spinUpAmt * spinUpAmt) * SFX.ins.globalVolume;
+			src.volume = Mathf.Lerp(0, maxVolume, spinUpAmt * spinUpAmt) * SFX.globalVolume;
 			if (spinUpAmt < 0) {
 				src.Stop();
 				src.volume = 0;
@@ -73,11 +79,16 @@ public class LaunchSiren : MonoBehaviour
 		spinUpAmt = 0.01f;
 		sirenPlaying = true;
 		src.Play();
-    }
+		ren.material.SetColor("_EmissionColor", Color.red);
+		ren2.material.SetColor("_EmissionColor", Color.red);
+
+	}
 
 	public void Off()
 	{
 		ToggleLights(false);
+		ren.material.SetColor("_EmissionColor", Color.black);
+		ren2.material.SetColor("_EmissionColor", Color.black);
 	}
 
 	void ToggleLights(bool t_on) { 

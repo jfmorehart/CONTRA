@@ -564,6 +564,8 @@ public class State_Enemy : State_AI
 
 	public override void StrikeDetect(int perp, int victim, bool provoked)
 	{
+		if (victim == -1) return;
+
 		base.StrikeDetect(perp, victim, provoked);
 		if (victim == team)
 		{

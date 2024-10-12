@@ -50,7 +50,7 @@ public class PooledSource : MonoBehaviour
 		if (!live) return;
 		life -= Time.deltaTime;
 		if (life < 0) Toggle(false);
-		src.volume = baseVolume * SFX.ins.globalVolume;
+		src.volume = baseVolume * SFX.globalVolume;
 		RecreateMapVector((Vector3)track, decayAmt);
 	}
 

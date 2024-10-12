@@ -37,7 +37,7 @@ public class SFX : MonoBehaviour
 	//string soundpath = "Sounds/";
 
 	float chatterVolume = 0.02f;
-	public float globalVolume;
+	public static float globalVolume = 1f;
 
 	float delay = 5;
 
@@ -101,7 +101,7 @@ public class SFX : MonoBehaviour
 		NewSource(newPeace, 0.1f);
 	}
 
-	AudioSource NewSource(AudioClip clip, float volume, bool loop = false) {
+	public AudioSource NewSource(AudioClip clip, float volume, bool loop = false) {
 		GameObject go = Instantiate(oneshotPrefab, transform);
 		SFX_OneShot os = go.GetComponent<SFX_OneShot>();
 		os.Play(clip, volume, loop);
