@@ -15,6 +15,7 @@ public class PlayerInput : MonoBehaviour
 	public LayerMask regularMask;
 	public LayerMask buildMask;
 	public LayerMask airMask;
+	public LayerMask tutorialMask;
 
 	public bool buildMode;
 	public bool airMode;

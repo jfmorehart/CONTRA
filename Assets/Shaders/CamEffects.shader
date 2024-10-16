@@ -4,6 +4,8 @@ Shader "Unlit/CamEffects"
     {
         _MainTex ("Texture", 2D) = "white" {}
         _uiTex ("Texture", 2D) = "black" {}
+        _texScale1 ("texScale1", Float) = 400
+        _texScale2 ("texScale2", Float) = 100
         _dist ("dist", Range(-1, 1)) = 0
         _scale ("scale", Range(-1, 1)) = 0
         _t ("time", Float) = 0
@@ -51,7 +53,8 @@ Shader "Unlit/CamEffects"
             float _fuzzAmt;
             float _sls;
             int _lines;
-
+            float _texScale1;
+            float _texScale2;         
             float3 sample(float2 uv){
                 return tex2D(_MainTex, uv).rgb;
             }
@@ -141,9 +144,9 @@ Shader "Unlit/CamEffects"
                 uv = luv * distort * _scale;
                 uv += 0.5;
 
-                float2 sUV = scale(uv, 400);
+                float2 sUV = scale(uv, _texScale1);
                 float3 col = 0; 
-                float2 uisUV = scale(i.uv, 100);
+                float2 uisUV = scale(i.uv, _texScale2);
                 col += tex2D(_uiTex, uisUV);
 
 
@@ -172,6 +175,7 @@ Shader "Unlit/CamEffects"
                 float ny = frac(lerp(i.uv.y, nUV.y, 0.0015) * _lines);
                 float sld = pow(2 * abs(round(ny) - ny), 4);
                 col *= lerp(1, max(min(1, sld * 5), 0.6), _sls);
+
 
                 return float4(col, 1);
             }

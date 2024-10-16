@@ -66,20 +66,25 @@ public class State : MonoBehaviour
 		//called ever 5 seconds
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
+		if (Simulator.tutorialOverride && team == 0) {
+			//rig the game, 2x max construction and no budget restrictions
+			ConstructionWork();
+			return;
+		}
 
-		if(assesment.percentGrowth < -1) {
+		if (assesment.percentGrowth < -1) {
 			//lower than this number cheats the game a little
 			//-1 is the max shrink rate, so we can't let them sit at -5 with a bunch of silos
-			BalanceBudget(assesment.costOverrun * 0.3f);
-			if(team == 0) {
+			BalanceBudget(assesment.costOverrun * 0.15f);
+			if (team == 0) {
 				ConsolePanel.Log("<color=\"red\"> your economy is very unstable! </color>", 5);
 			}
-			
+
 		}
 		else {
 			Research.ConductResearch(team, assesment.researchBudget);
 
-			if(assesment.percentGrowth > -0.5) {
+			if (assesment.percentGrowth > -0.5) {
 				ConstructionWork();
 			}
 		}
@@ -323,7 +328,13 @@ public class State : MonoBehaviour
 	protected virtual void ConstructionWork() {
 		//todo calc work per site
 		float workAmt = assesment.manHoursPerSite;
-		for(int i = 0; i < construction_sites.Count; i++) {
+		if (Simulator.tutorialOverride && team == 0) {
+			workAmt = Economics.maxPowerPerSite * 2;
+		}
+
+		for (int i = 0; i < construction_sites.Count; i++) {
+
+			if (team == 0) Debug.Log("worksite");
 			construction_sites[i].Work(workAmt);
 		}
     }

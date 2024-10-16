@@ -22,7 +22,6 @@ public class MoveCam : MonoBehaviour
 	public int downRes;
 	public int iterations;
 
-
 	public Material blurmat;
 	public Material crtmat;
 
@@ -34,7 +33,7 @@ public class MoveCam : MonoBehaviour
 	{
 		ins = this;
 	}
-	public void FixedUpdate()
+	public void Update()
 	{
 		if (!canMove) return;
 		Vector3 pos = transform.position - (Vector3)shake;
@@ -56,18 +55,18 @@ public class MoveCam : MonoBehaviour
 		{
 			verti = 1;
 		}
-		velo.x += horiz * accel.x * Time.fixedDeltaTime;
-		velo.y += verti * accel.y * Time.fixedDeltaTime;
+		velo.x += horiz * accel.x * Time.deltaTime;
+		velo.y += verti * accel.y * Time.deltaTime;
 		float zax = 0;
 		if (Input.GetKey(zoomIN)){
 			zax = 1;
 		} else if (Input.GetKey(zoomOut)) {
 			zax = -1;
 		}
-		sizeSpeed += zax * accel.z * Time.fixedDeltaTime;
+		sizeSpeed += zax * accel.z * Time.deltaTime;
 
-		pos += 0.01f * Camera.main.orthographicSize * Time.fixedDeltaTime * (Vector3)velo;
-		Camera.main.orthographicSize += sizeSpeed * Time.fixedDeltaTime;
+		pos += 0.01f * Camera.main.orthographicSize * Time.deltaTime * (Vector3)velo;
+		Camera.main.orthographicSize += sizeSpeed * Time.deltaTime;
 
 		if(Camera.main.orthographicSize < 15) {
 			Camera.main.orthographicSize = 15;
@@ -99,11 +98,11 @@ public class MoveCam : MonoBehaviour
 		shake = shakestr * new Vector3(shakeAmp * (Mathf.PerlinNoise1D(Time.time * shakeFreq) - 0.5f), shakeAmp * (Mathf.PerlinNoise1D(Time.time + 5 * shakeFreq) - 0.5f));
 		shake *= Camera.main.orthographicSize;
 		transform.position = pos + (Vector3)shake;
-		shakestr -= Time.fixedDeltaTime * shakeDecay;
+		shakestr -= Time.deltaTime * shakeDecay;
 		if (shakestr < 0.05f) shakestr = 0;
 
-		sizeSpeed *= 1 - Time.fixedDeltaTime * drag;
-		velo *= 1 - Time.fixedDeltaTime * drag;
+		sizeSpeed *= 1 - Time.deltaTime * drag;
+		velo *= 1 - Time.deltaTime * drag;
 
 	}
 	public void Shake(Vector2 pos, float str) {

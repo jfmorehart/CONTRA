@@ -48,7 +48,7 @@ public class Unit : MonoBehaviour
 	{
 		upkeepCost = baseUpkeepCost;
 		ren = GetComponent<Renderer>();
-		ren.material = new Material(ren.material);
+		//ren.material = new Material(ren.material);
 		Pool.ins.GetRingEffect().Spawn(transform.position);
 		Research.ResearchChange[team] += ApplyUpgrades;
 		ApplyUpgrades();

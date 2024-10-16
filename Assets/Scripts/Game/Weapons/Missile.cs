@@ -35,7 +35,7 @@ public class Missile : MonoBehaviour
 		Toggle(true);
 		yield = myield;
 		team = mteam;
-		src = SFX.ins.MissileLaunch(transform);
+		//src = SFX.ins.MissileLaunch(transform);
 
 		//will register itself as terminal
 		isTerminal = false;

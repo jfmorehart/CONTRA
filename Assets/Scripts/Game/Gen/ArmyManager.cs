@@ -33,6 +33,8 @@ public class ArmyManager : MonoBehaviour
     }
 	public GameObject[] buildPrefabs;
 
+	Inf[] inf_prealloc;
+
 	private void Awake()
 	{
         ins = this;
@@ -73,8 +75,7 @@ public class ArmyManager : MonoBehaviour
 
 			if(Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
 
-            Transform t = Instantiate(armyPrefab, wp, Quaternion.identity, transform).transform;
-            Army rm = t.GetComponent<Army>();
+            Instantiate(armyPrefab, wp, Quaternion.identity, transform);
 		}
 
 		//for(int i = 0; i < 2; i++) {
@@ -152,54 +153,33 @@ public class ArmyManager : MonoBehaviour
 	}
 
 
-    public Inf[] UpdateArmies() {
+	List<Unit> all = new List<Unit>();
+	Unit[] all_arr;
+	public Inf[] UpdateArmies() {
 
-		CleanArmies();
-
-		List<Unit> all = new List<Unit>();
+		all.Clear();
 		all.AddRange(armies);
 		all.AddRange(silos);
 		all.AddRange(airbases);
 		all.AddRange(batteries);
-		Unit[] allunits = all.ToArray();
-		Inf[] linfs = new Inf[allunits.Length];
-		for (int i = 0; i < allunits.Length; i++)
+		all_arr = all.ToArray();
+		Inf[] linfs = new Inf[all_arr.Length];
+		for (int i = 0; i < all_arr.Length; i++)
 		{
 			linfs[i] = new Inf(
-				MapUtils.PointToCoords(allunits[i].transform.position),
+				MapUtils.PointToCoords(all_arr[i].transform.position),
 				Map.ins.armyInfluenceStrength,
-				allunits[i].actingTeam,
+				all_arr[i].actingTeam,
 				1
 				);
 		}
 		return linfs;
-
-			//Silo[] tsilos = silos.ToArray();
-			//      Inf[] linfs = new Inf[tarmies.Length + tsilos.Length];
-			//      for(int i = 0; i < tarmies.Length; i++) {
-			//          linfs[i] = new Inf(
-			//              MapUtils.PointToCoords(tarmies[i].transform.position),
-			//              Map.ins.armyInfluenceStrength,
-			//              tarmies[i].team,
-			//		1
-			//              );
-			//   }
-			//for (int i = tarmies.Length; i < tarmies.Length + tsilos.Length; i++)
-			//{
-			//	linfs[i] = new Inf(
-			//		MapUtils.PointToCoords(tsilos[i - tarmies.Length].transform.position),
-			//		Map.ins.armyInfluenceStrength,
-			//		tsilos[i - tarmies.Length].team,
-			//		1
-			//		);
-			//}
-
-			//return linfs;
 	}
 
+	Inf[] infcities;
 	public Inf[] UpdateCities()
 	{
-		Inf[] infcities = new Inf[cities.Count];
+		infcities = new Inf[cities.Count];
 		for (int i = 0; i < infcities.Length; i++)
 		{
 			infcities[i] = new Inf(
@@ -222,8 +202,10 @@ public class ArmyManager : MonoBehaviour
 			}
 		}
     }
+	List<Unit> clean = new List<Unit>();
 	public List<Unit> CleanList(List<Unit> ls) {
-		List<Unit> clean = new List<Unit>();
+
+		clean.Clear();
 		for (int i = 0; i < ls.Count; i++)
 		{
 			if (ls[i] != null)
@@ -233,15 +215,6 @@ public class ArmyManager : MonoBehaviour
 		}
 		return clean;
 	}
-	public void CleanArmies() {
-		//List<Army> clean = new List<Army>();
-		//for(int i = 0; i < armies.Count; i++) {
-		//	if (armies[i] != null) {
-		//		clean.Add(armies[i]);
-		//	}
-		//}
-		//armies = clean;
-    }
 
 	Vector2 RandomPointOnMap() {
         Vector2 rn = new Vector2(Random.Range(0.01f, 0.99f), Random.Range(0.01f, 0.99f));
@@ -249,15 +222,15 @@ public class ArmyManager : MonoBehaviour
         return rn;
     }
 
+	List<Unit> sel = new List<Unit>();
 	public Unit[] BoxSearch(Vector2 w1, Vector2 w2)
 	{
-		List<Unit> sel = new List<Unit>();
+		sel.Clear();
 		float minX = Mathf.Min(w1.x, w2.x);
 		float minY = Mathf.Min(w1.y, w2.y);
 		float maxX = Mathf.Max(w1.x, w2.x);
 		float maxY = Mathf.Max(w1.y, w2.y);
 
-		CleanArmies();
 		foreach (Unit r in armies)
 		{
 			Vector2 pos = r.transform.position;

@@ -203,10 +203,8 @@ public static class MapUtils
     }
 
 	public static Vector2Int PointToCoords(Vector2 point) {
-		if (!Map.ins) return Vector2Int.zero;
-
 		Vector2 co = new Vector2(point.x / Map.localScale.x,
-	     point.y / Map.localScale.y);
+	    point.y / Map.localScale.y);
 		co.x *= Map.ins.texelDimensions.x;
 		co.y *= Map.ins.texelDimensions.y;
 		Vector2Int cor = new Vector2Int(Mathf.RoundToInt(co.x), Mathf.RoundToInt(co.y));
@@ -214,7 +212,6 @@ public static class MapUtils
 	}
 
 	public static Vector2 CoordsToPoint(Vector2Int coords) {
-		if (!Map.ins) return Vector2.zero;
 		Vector2 point = Vector2.zero;
 		point.x = coords.x / (float)Map.ins.texelDimensions.x;
 		point.y = coords.y / (float)Map.ins.texelDimensions.y;
@@ -225,8 +222,7 @@ public static class MapUtils
     }
 
 	public static int WorldPosToTeam(Vector2 point) {
-		Vector2Int coords = PointToCoords(point);
-		return Map.ins.GetPixTeam(coords);
+		return Map.ins.GetPixTeam(PointToCoords(point));
     }
 
 	public static uint TexelPopToWorldPop(float rout) {

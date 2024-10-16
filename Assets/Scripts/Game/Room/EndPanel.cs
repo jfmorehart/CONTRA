@@ -29,7 +29,7 @@ public class EndPanel : MonoBehaviour
 			}
 		}
 
-		Enable();
+		TimePanel.ins.EndGame();
 	}
 
 	public void Enable() {

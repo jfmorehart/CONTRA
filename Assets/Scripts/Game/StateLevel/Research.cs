@@ -82,7 +82,7 @@ public static class Research
 		Debug.Log(i + "completed research");
 		unlockedUpgrades[i][currentlyResearching[i].x]++;
 		unlockProgress[i] = 0;
-		currentlyResearching[i] = new Vector2Int(-1, -1);
+		currentlyResearching[i] = -Vector2Int.one;
 		ResearchChange[i]?.Invoke();
 	}
 }

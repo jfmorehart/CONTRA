@@ -48,6 +48,7 @@ public class TypingInterface : MonoBehaviour
 	int booplength = 50;
 	int bcham;
 
+	bool lockout;
 
 	private void Awake()
 	{
@@ -75,6 +76,8 @@ public class TypingInterface : MonoBehaviour
 			boopsources[i] = Instantiate(pooledSourcePrefab, transform).GetComponent<AudioSource>();
 		}
 		WriteOptions();
+		Simulator.tutorialOverride = false;
+
 	}
 
 	SFX_OneShot KeyPressSound() {
@@ -102,6 +105,7 @@ public class TypingInterface : MonoBehaviour
 		WriteOut("_________________________________________", false);
 		WriteOut("select a simulation to load", false);
 		WriteOut("");
+		WriteOut("tutorial", false);
 		WriteOut("scenario a", false);
 		WriteOut("scenario b", false);
 		WriteOut("scenario c",false);
@@ -114,6 +118,7 @@ public class TypingInterface : MonoBehaviour
 	// Update is called once per frame
 	void Update()
     {
+
 		if(Time.time - lastcharTime > typingDelay) {
 			newchar = true;
 			lastcharTime = Time.time;
@@ -173,14 +178,13 @@ public class TypingInterface : MonoBehaviour
 			}
 		}
 
-		if (Input.GetKeyDown(KeyCode.Return))
+		if (Input.GetKeyDown(KeyCode.Return) && !lockout)
 		{
 			string outString = lines[activeLine];
 			lines[activeLine] = outString.ToLower() + '\n';
 			finishedWriting[activeLine] = true;
 
 			int skiplines = Mathf.CeilToInt(lines[activeLine].Length / maxLineLength);
-			Debug.Log(lines[activeLine].Length);
 			for(int i = 0; i < skiplines; i++) {
 				Debug.Log("skip " + skiplines);
 				NewLine();
@@ -229,7 +233,6 @@ public class TypingInterface : MonoBehaviour
 	void NewLine() {
 		activeLine++;
 		if (activeLine >= numLines) {
-			Debug.Log("shift");
 			for(int i = 0; i < numLines - 1; i++) {
 				lines[i] = lines[i + 1].ToString();
 				finishedWriting[i] = finishedWriting[i + 1];
@@ -265,16 +268,19 @@ public class TypingInterface : MonoBehaviour
 		if (message.Contains("hello joshua", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("greetings professor falken");
+			return;
 		}
 		if (message.Contains("tears in rain", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("time to die");
+			return;
 		}
-		if (message == ">repeat")
+		if (message.Contains("repeat"))
 		{
 			WriteOptions();
+			return;
 		}
-		if (message == ">list games")
+		if (message.Contains(">list games"))
 		{
 			WriteOut("tic-tac-toe");
 			WriteOut("falkens maze");
@@ -294,12 +300,14 @@ public class TypingInterface : MonoBehaviour
 			WriteOut("");
 			WriteOut("global thermonuclear war");
 			WriteOut("");
+			return;
 		}
-		if (message == ">back")
+		if (message.Contains("back"))
 		{
 			WriteOut("you are already in the root menu", false);
+			return;
 		}
-		if (message == ">help")
+		if (message.Contains("help"))
 		{
 			WriteOut("_______________________________________");
 			WriteOut("");
@@ -311,8 +319,9 @@ public class TypingInterface : MonoBehaviour
 			WriteOut("'help' for commands");
 			WriteOut("");
 			WriteOut("_______________________________________");
+			return;
 		}
-		if (message == ">controls")
+		if (message.Contains("controls"))
 		{
 			WriteOut("_______________________________________");
 			WriteOut("");
@@ -325,29 +334,38 @@ public class TypingInterface : MonoBehaviour
 			WriteOut("q, e - zoom camera");
 			WriteOut("");
 			WriteOut("_______________________________________");
+			return;
 		}
 
+		if (message.Contains("tutorial", System.StringComparison.CurrentCultureIgnoreCase))
+		{
+			WriteOut("very well");
+			Simulator.activeScenario = Simulator.scenarios[0];
+			Simulator.tutorialOverride = true;
+			LoadGame();
+			return;
+		}
 		if (message.Contains("scenario a", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("very well");
 			Simulator.activeScenario = Simulator.scenarios[0];
 			LoadGame();
+			return;
 		}
 		if (message.Contains("scenario b", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("very well");
 			Simulator.activeScenario = Simulator.scenarios[1];
 			LoadGame();
+			return;
 		}
 		if (message.Contains("scenario c", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("very well");
 			Simulator.activeScenario = Simulator.scenarios[2];
 			LoadGame();
-
-
+			return;
 		}
-
 	}
 
 	string GreenText(string message) {
@@ -357,6 +375,7 @@ public class TypingInterface : MonoBehaviour
 
 	void LoadGame()
 	{
+		lockout = true;
 		InvokeRepeating(nameof(Dot), 0, 0.01f);
 		StartCoroutine(nameof(AsyncLoadScene), 1);
 	}
@@ -378,7 +397,6 @@ public class TypingInterface : MonoBehaviour
 			{
 				asyncLoad.allowSceneActivation = true;
 			}
-			Debug.Log(asyncLoad.isDone);
 			yield return null;
 		}
 

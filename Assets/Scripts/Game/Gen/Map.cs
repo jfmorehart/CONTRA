@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Unity.Profiling;
 using static MapUtils;
+using System.Threading.Tasks;
 
 public class Map : MonoBehaviour
 {
@@ -42,8 +44,17 @@ public class Map : MonoBehaviour
 	ComputeBuffer stin;
 
 	public ComputeShader GROWTH;
+	public float populationGrowthTickDelay = 0.25f;
+	float lastGrowth;
 	public bool growthDebugMode;
 	public int[] state_growth_this_tick;
+	//values used for managing growth in tutorial scene
+	[HideInInspector]
+	public bool growth_tutorialManualValues;
+	[HideInInspector]
+	public float growth_deltaOverride;
+	[HideInInspector]
+	public int growth_stateGrowthTickOverride;
 
 	public ComputeShader OCEANS;
 
@@ -74,9 +85,16 @@ public class Map : MonoBehaviour
 	public int buildExclusionDistance;
 	public int armyReadyDistance;
 
+	SColor[] state_colors_bufferable;
+
+	public static int texelLongLength;
+
+	bool prepInfluences;
+
 	private void Awake()
 	{
 		ins = this;
+		texelLongLength = texelDimensions.x * texelDimensions.y;
 		localScale = transform.localScale; //used for non-main threads
 
 		mapSeed = UnityEngine.Random.Range(-500, 500);
@@ -86,7 +104,6 @@ public class Map : MonoBehaviour
 		if (!Simulator.IsSetup) Simulator.Setup();
 		numStates = Simulator.activeScenario.numTeams;
 
-
 		Research.Setup();
 		UnitChunks.Init();
 		ArmyUtils.Init();
@@ -94,6 +111,21 @@ public class Map : MonoBehaviour
 		ROE.SetUpRoe();
 		Economics.SetupEconomics();
 		TerminalMissileRegistry.Setup();
+
+		//Prefabulate that amulite
+		state_colors_bufferable = new SColor[numStates];
+		for (int i = 0; i < numStates; i++)
+		{
+			state_colors_bufferable[i] = new SColor(state_colors[i].r, state_colors[i].g, state_colors[i].b);
+		}
+
+		popbuffer = new ComputeBuffer(texelLongLength, 4);
+		borderLengths = new int[numStates * numStates];
+		borderDataPoints = new int[texelLongLength];
+		brds = new ComputeBuffer(borderLengths.Length, 4);
+		brdPts = new ComputeBuffer(borderDataPoints.Length, 4);
+		brds.SetData(borderLengths);
+		brdPts.SetData(borderDataPoints);
 
 
 		//Create basic info
@@ -103,12 +135,12 @@ public class Map : MonoBehaviour
 		Influences.SetInt("defenseBias", 0);
 
 		//Just city borders, used for army placement
-		BuildInfluences();
+		StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
 
 		//if we're a lil nation, swap us with a bigger one
 		if (CheckSwapColors()) {
 			//complete the swap
-			BuildInfluences();
+			StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
 		}
 		originalMap = new int[pixTeam.Length];
 		Array.Copy(pixTeam, originalMap, pixTeam.Length);
@@ -117,7 +149,7 @@ public class Map : MonoBehaviour
 		//this array is used for state border detection
 		borderLengths = new int[numStates * numStates];
 		//this one is used in an intermediary step
-		borderDataPoints = new int[texelDimensions.x * texelDimensions.y];
+		borderDataPoints = new int[texelLongLength];
 
 		//and this one stores a ton of Vector2s that are points along specific borders
 		//array + list hell
@@ -130,11 +162,6 @@ public class Map : MonoBehaviour
 			}
 		}
 
-		//border compute buffer housekeeping
-		brds = new ComputeBuffer(borderLengths.Length, 4);
-		brdPts = new ComputeBuffer(borderDataPoints.Length, 4);
-
-		//Debug.Log(BitwiseTeams(33)[0] + " " + BitwiseTeams(33)[1]);
 	}
 
 	public void Start()
@@ -149,7 +176,7 @@ public class Map : MonoBehaviour
 		ArmyManager.ins.RandomArmies(80);
 
 		//Rebuild borders now with army info
-		BuildInfluences();
+		StartCoroutine(nameof(BuildInfluences), false);//BuildInfluences();
 
 		//Render
 		ConvertToTexture();
@@ -172,9 +199,12 @@ public class Map : MonoBehaviour
 			Diplomacy.score[i] = 0;
 		}
 
-		InvokeRepeating(nameof(UpdatePops), 1, 0.25f);
+		InvokeRepeating(nameof(UpdatePops), 1, 1f);
 		InvokeRepeating(nameof(SlowUpdate), 5, 1f);
 
+		if (Simulator.tutorialOverride) {
+			gameObject.AddComponent<TutorialOverride>();
+		}
 
 	}
 
@@ -183,19 +213,30 @@ public class Map : MonoBehaviour
 		Research.PerFrameResearch();
 		if(Time.time - lastDraw > reDrawDelay) {
 			lastDraw = Time.time;
-			BuildInfluences();
-			ConvertToTexture();
+			if (prepInfluences) {
+				StartCoroutine(nameof(BuildInfluences), true);
+			}
+			else {
+				ConvertToTexture();
+			}
+			prepInfluences = !prepInfluences;
+		}
+
+		if(Time.time - lastGrowth > populationGrowthTickDelay) {
+			if (!growthDebugMode)
+			{
+				state_growth_this_tick = Economics.NewGrowthTick();
+			}
+			lastGrowth = Time.time;
+			GrowPopulation();
 		}
 	}
 
 	void UpdatePops() {
 		//Called every 0.25 seconds. Sorta heavy.
-		if (!growthDebugMode) {
-			state_growth_this_tick = Economics.NewGrowthTick();
-		}
-		GrowPopulation();
+
 		CountPop();
-		CountBorders();
+		CountBorders(); //todo reduce GC allocation
 
     }
 	void SlowUpdate() {
@@ -213,8 +254,8 @@ public class Map : MonoBehaviour
 
 	public uint NukePop(Vector2 wpos, float radius) {
 		Vector2Int pos = MapUtils.PointToCoords(wpos);
-		int popSize = texelDimensions.x * texelDimensions.y;
-		popbuffer = new ComputeBuffer(popSize, 4);
+
+		//popbuffer = new ComputeBuffer(texelLongLength, 4);
 		popbuffer.SetData(pixelPop);
 		NUKE.SetBuffer(0, "pop", popbuffer);
 		NUKE.SetInts("dime", texelDimensions.x, texelDimensions.y);
@@ -231,7 +272,7 @@ public class Map : MonoBehaviour
 		popbuffer.GetData(pixelPop);
 		deadbuffer.GetData(de);
 
-		popbuffer.Release();
+		//popbuffer.Release();
 		deadbuffer.Release();
 		return TexelPopToWorldPop(de[0]);
 
@@ -244,14 +285,14 @@ public class Map : MonoBehaviour
 		// The stin array is just room for the GPU to make its calculations
 		// We never need to read this, and the GPU can reset it,
 		// so we dont actually need to update this with every Influences Dispatch.
-		stateInfluence = new float[texelDimensions.x * texelDimensions.y * numStates];
-		stin = new ComputeBuffer(texelDimensions.x * texelDimensions.y * numStates, 4);
+		stateInfluence = new float[texelLongLength * numStates];
+		stin = new ComputeBuffer(texelLongLength * numStates, 4);
 		stin.SetData(stateInfluence); //3.2 MB of 0's :)  // god bless preallocation
 		Influences.SetBuffer(0, "stin", stin); //fire and forget
 
-		pixTeam = new int[texelDimensions.x * texelDimensions.y];
-		teamOf = new ComputeBuffer(texelDimensions.x * texelDimensions.y, 4);
-		pixelPop = new float[texelDimensions.x * texelDimensions.y];
+		pixTeam = new int[texelLongLength];
+		teamOf = new ComputeBuffer(texelLongLength, 4);
+		pixelPop = new float[texelLongLength];
 
 		//Fill Oceans
 		CreateOcean();
@@ -270,12 +311,10 @@ public class Map : MonoBehaviour
 		citybuffer = new ComputeBuffer(numCities, 20);
 		citybuffer.SetData(ArmyManager.ins.UpdateCities());
 
-
 		//POPBUFFER
 		// POP is a compute shader that generates popbuffer, a per-texel float value 
 		// that represents the number of people that live in that area.
-		int popSize = texelDimensions.x * texelDimensions.y;
-		popbuffer = new ComputeBuffer(popSize, 4);
+		//popbuffer = new ComputeBuffer(texelLongLength, 4);
 		popbuffer.SetData(pixelPop);
 
 		//Prep it
@@ -290,7 +329,7 @@ public class Map : MonoBehaviour
 		//Clean up
 		citybuffer.Release();
 		popbuffer.GetData(pixelPop);
-		popbuffer.Release();
+		//popbuffer.Release();
 	}
 	void PopulateCities() {
 
@@ -316,8 +355,22 @@ public class Map : MonoBehaviour
 		}
 		numCities = cities.Count();
 
+		//Re-center state_centers
+		Vector2Int[] sumCenter = new Vector2Int[numStates];
+		int[] sumCounter = new int[numStates];
+		for (int i = 0; i < numCities; i++)
+		{
+			City c = cities[i];
+			sumCounter[c.team]++;
+			sumCenter[c.team] += c.mpos;
+		}
+		for (int i = 0; i < numStates; i++)
+		{
+			Vector2Int avgCenter = sumCenter[i] / sumCounter[i];
+			state_centers[i] = avgCenter;
+		}
+
 		if (Simulator.activeScenario.percentOfCities == null) return;
-		Debug.Log(Simulator.activeScenario.percentOfCities);
 		//reassign cities protocol is active
 
 		//calculate city deficits
@@ -332,7 +385,6 @@ public class Map : MonoBehaviour
 			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
 			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
 			if (deficit[i] < 0) surplusTeams.Add(i);
-			Debug.Log(i + " deficit " + deficit[i]);
 		}
 
 		List<int> orderbyDistance = new List<int>();
@@ -353,18 +405,15 @@ public class Map : MonoBehaviour
 		//steal cities from other teams
 		for(int i =0;i < numStates; i++) {
 			int team = orderbyDistance[i];
-			Debug.Log("checking team " + team);
 			if (citiesPerTeam[team].Count > calloc[team]) continue;
 			unlockedTeams.Remove(team);
 
-			Debug.Log("processing team " + team);
 
 			//generate a list of nearby cities from unlocked teams
 			//its as long as the deficit is
 			List<City> stolen = ArmyUtils.GetNearestCitiesOfTeams(cities, unlockedTeams, state_centers[team]);
 			foreach(City stole in stolen) {
 
-				Debug.Log("attempting to steal");
 				//we may have locked this team during this loop, so check anyhow
 				if (!unlockedTeams.Contains(stole.team)) continue;
 
@@ -376,13 +425,11 @@ public class Map : MonoBehaviour
 					
 					//if they've already gone, lock them
 					if(stole.team < team) {
-						Debug.Log("locked team" + stole.team);
 						unlockedTeams.Remove(stole.team);
 					}
 				}
 
 				//steal it
-				Debug.Log("transfered " + stole.team + " city to " + team);
 				stole.team = team;
 				citiesPerTeam[team].Add(stole);
 				if (citiesPerTeam[team].Count >= calloc[team]) {
@@ -396,60 +443,7 @@ public class Map : MonoBehaviour
 		{
 			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
 			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
-			Debug.Log(i + " deficit " + deficit[i]);
 		}
-	}
-	void BuildInfluences() {
-
-		teamOf.SetData(pixTeam);
-		Influences.SetBuffer(0, "teamOf", teamOf);
-
-		ComputeBuffer atWar = new ComputeBuffer(numStates * numStates, 4);
-		atWar.SetData(ROE.atWar);
-		Influences.SetBuffer(0, "atWar", atWar);
-
-		ComputeBuffer liveteams = new ComputeBuffer(numStates, 4);
-		liveteams.SetData(MapUtils.LiveTeamsBuffer());
-		Influences.SetBuffer(0, "liveTeams", liveteams);
-
-		if(ArmyManager.ins == null) {
-			ArmyManager.ins = FindObjectOfType<ArmyManager>();
-		}
-		//Probably unnecessary to update cities so frequently, but what the hell
-		Inf[] cities = ArmyManager.ins.UpdateCities();
-		numCities = cities.Length;
-
-		Inf[] armies = ArmyManager.ins.UpdateArmies();
-		Influences.SetInt("numInfs", numCities + armies.Length);
-		ComputeBuffer infs = new ComputeBuffer(numCities + armies.Length, 20);
-
-		Inf[] combined = new Inf[numCities + armies.Length];
-		for (int i = 0; i < numCities; i++) {
-			combined[i] = cities[i];
-		}
-		if(armies.Length > 0) {
-			for (int i = numCities; i < numCities + armies.Length; i++)
-			{
-				combined[i] = armies[i - numCities];
-			}
-
-		}
-
-		infs.SetData(combined);
-		Influences.SetBuffer(0, "infs", infs);
-
-
-		Influences.SetInts("dime", texelDimensions.x, texelDimensions.y);
-		Influences.SetInt("numStates", numStates);
-		Influences.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
-		//disp
-
-		teamOf.GetData(pixTeam);
-		//teamOf.Release();
-		atWar.Release();
-		//stin.Release(); we're gonna leave this allocated
-		infs.Release();
-		liveteams.Release();
 	}
 
 	public void CountPop()
@@ -457,8 +451,8 @@ public class Map : MonoBehaviour
 		teamOf.SetData(pixTeam);
 		COUNT.SetBuffer(0, "teamOf", teamOf);
 
-		int popSize = texelDimensions.x * texelDimensions.y;
-		popbuffer = new ComputeBuffer(popSize, 4);
+		int popSize = texelLongLength;
+		//popbuffer = new ComputeBuffer(popSize, 4);
 		popbuffer.SetData(pixelPop);
 		COUNT.SetBuffer(0, "popBuffer", popbuffer);
 
@@ -474,7 +468,7 @@ public class Map : MonoBehaviour
 
 		COUNT.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 
-		popbuffer.Release();
+		//popbuffer.Release();
 		//teamOf.Release();
 
 		popCount.GetData(state_populations);
@@ -484,10 +478,9 @@ public class Map : MonoBehaviour
 		}
 
 	}
-	public uint CountPop_City(Vector2Int mpos) {
 
-		int popSize = texelDimensions.x * texelDimensions.y;
-		popbuffer = new ComputeBuffer(popSize, 4);
+	public uint CountPop_City(Vector2Int mpos) {
+		//popbuffer = new ComputeBuffer(texelLongLength, 4);
 		popbuffer.SetData(pixelPop);
 		CITYCOUNT.SetBuffer(0, "popBuffer", popbuffer);
 		CITYCOUNT.SetBuffer(0, "teamOf", teamOf);
@@ -506,13 +499,81 @@ public class Map : MonoBehaviour
 		CITYCOUNT.Dispatch(0, 1, 1, 1);
 		popCount.GetData(cpop);
 
-		popbuffer.Release();
+		//popbuffer.Release();
 		popCount.Release();
 
 		return TexelPopToWorldPop(cpop[0]);
     }
 
-	public void ConvertToTexture() {
+	IEnumerator BuildInfluences(bool waitframe = false)
+	{
+
+		teamOf.SetData(pixTeam);
+		Influences.SetBuffer(0, "teamOf", teamOf);
+
+		ComputeBuffer atWar = new ComputeBuffer(numStates * numStates, 4);
+		atWar.SetData(ROE.atWar);
+		Influences.SetBuffer(0, "atWar", atWar);
+
+		ComputeBuffer liveteams = new ComputeBuffer(numStates, 4);
+		liveteams.SetData(MapUtils.LiveTeamsBuffer());
+		Influences.SetBuffer(0, "liveTeams", liveteams);
+
+		if (ArmyManager.ins == null)
+		{
+			ArmyManager.ins = FindObjectOfType<ArmyManager>();
+		}
+		//Probably unnecessary to update cities so frequently, but what the hell
+		Inf[] cities = ArmyManager.ins.UpdateCities();
+		numCities = cities.Length;
+
+		Inf[] armies = ArmyManager.ins.UpdateArmies();
+		Influences.SetInt("numInfs", numCities + armies.Length);
+		ComputeBuffer infs = new ComputeBuffer(numCities + armies.Length, 20);
+
+		Inf[] combined = new Inf[numCities + armies.Length];
+		for (int i = 0; i < numCities; i++)
+		{
+			combined[i] = cities[i];
+		}
+		if (armies.Length > 0)
+		{
+			for (int i = numCities; i < numCities + armies.Length; i++)
+			{
+				combined[i] = armies[i - numCities];
+			}
+
+		}
+
+		infs.SetData(combined);
+		Influences.SetBuffer(0, "infs", infs);
+
+
+		Influences.SetInts("dime", texelDimensions.x, texelDimensions.y);
+		Influences.SetInt("numStates", numStates);
+
+
+		Influences.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
+
+
+
+		teamOf.GetData(pixTeam);
+
+		if (waitframe) {
+			yield return new WaitForEndOfFrame();
+		}
+
+
+		//teamOf.Release();
+		atWar.Release();
+		//stin.Release(); we're gonna leave this allocated
+		infs.Release();
+		liveteams.Release();
+
+		yield break;
+	}
+
+	public  void ConvertToTexture() {
 
 		teamOf.SetData(pixTeam);
 		Render.SetBuffer(0, "teamOf", teamOf);
@@ -520,18 +581,14 @@ public class Map : MonoBehaviour
 		Render.SetInt("buildMode", PlayerInput.ins.buildMode ? 1 : 0);
 		Render.SetInt("airmode", PlayerInput.ins.airMode ? 1 : 0);
 		Render.SetFloat("time", Time.time);
-		SColor[] scolors = new SColor[numStates];
-		for(int i = 0; i < numStates; i++) {
-			scolors[i] = new SColor(state_colors[i].r, state_colors[i].g, state_colors[i].b);
-		}
+
 		colorBuffer = new ComputeBuffer(numStates, 12);
-		colorBuffer.SetData(scolors);
+		colorBuffer.SetData(state_colors_bufferable);
 
 		Render.SetBuffer(0, "stateColors", colorBuffer);
 		Render.SetInts("dime", texelDimensions.x, texelDimensions.y);
 
-		int popSize = texelDimensions.x * texelDimensions.y;
-		popbuffer = new ComputeBuffer(popSize, 4);
+		//ComputeBuffer popbuffer = new ComputeBuffer(pixelPop.Length, 4);
 		popbuffer.SetData(pixelPop);
 		Render.SetBuffer(0, "popBuffer", popbuffer);
 		Render.SetTexture(0, "Result", mapRT);
@@ -540,7 +597,7 @@ public class Map : MonoBehaviour
 
 		Render.SetInt("exclusionDistance", buildExclusionDistance);
 
-		ComputeBuffer exclude = null;
+		ComputeBuffer exclude;
 		if (bpos.Length > 0 && PlayerInput.ins.buildMode) {
 			exclude = new ComputeBuffer(bpos.Length, 8);
 			exclude.SetData(BuildingPositions());
@@ -555,7 +612,9 @@ public class Map : MonoBehaviour
 
 
 		Render.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
-		popbuffer.Release();
+
+
+		//popbuffer.Release();
 		colorBuffer.Release();
 		//teamOf.Release(); keep it allocated
 
@@ -564,6 +623,12 @@ public class Map : MonoBehaviour
 	}
 
 	void GrowPopulation() {
+
+		if (growth_tutorialManualValues) {
+			state_growth_this_tick[0] = growth_stateGrowthTickOverride;
+			GROWTH.SetFloat("deltaOverride", growth_deltaOverride);
+		}
+
 		teamOf.SetData(pixTeam);
 		GROWTH.SetBuffer(0, "teamOf", teamOf);
 
@@ -573,7 +638,7 @@ public class Map : MonoBehaviour
 
 		GROWTH.SetInts("dime", texelDimensions.x, texelDimensions.y);
 
-		ComputeBuffer popbuffer = new ComputeBuffer(pixelPop.Length, 4);
+		//ComputeBuffer popbuffer = new ComputeBuffer(pixelPop.Length, 4);
 		popbuffer.SetData(pixelPop);
 		GROWTH.SetBuffer(0, "popcount", popbuffer);
 
@@ -588,16 +653,13 @@ public class Map : MonoBehaviour
 		//teamOf.Release(); keep it allocated
 		growths.Release();
 		popbuffer.GetData(pixelPop);
-		popbuffer.Release();
+		//popbuffer.Release();
 		infs.Release();
 	}
+	[IgnoredByDeepProfiler]
 	void CountBorders() {
 		//this function counts the length of the border between each pair of states
-		borderLengths = new int[numStates * numStates];
-		borderDataPoints = new int[texelDimensions.x * texelDimensions.y];
 
-		brds.SetData(borderLengths);
-		brdPts.SetData(borderDataPoints);
 		BORDERS.SetBuffer(0, "borderLengths", brds);
 		BORDERS.SetBuffer(0, "otherTeam", brdPts);
 		BORDERS.SetBuffer(0, "teamOf", teamOf);
@@ -616,22 +678,22 @@ public class Map : MonoBehaviour
 				borderPoints[i][j].Clear();
 			}
 		}
-		for (int x = 0; x < texelDimensions.x * texelDimensions.y; x++)
+		int scale = 10;
+		for (int x = 0; x < (texelLongLength) / scale; x++)
 		{
-			int team = pixTeam[x];
-			int other = borderDataPoints[x];
+			int team = pixTeam[x * scale];
+			int other = borderDataPoints[x * scale];
 
 			if (team < 0) continue;
 			if (other < 0) continue;
 
-			borderPoints[team][other].Add(IndexToCoords(x));
+			borderPoints[team][other].Add(IndexToCoords(x * scale));
 			//Debug.Log(team + " borders " + other + " at " + IndexToCoords(x));
 			count[team]++;
 		}
 
 
 		//if the border is longer than one unit, we'll consider the states adjacent
-		AsyncPath.borders = new bool[numStates, numStates];
 		for (int i = 0; i < numStates; i++) {
 			for (int j = 0; j < numStates; j++)
 			{
@@ -639,6 +701,9 @@ public class Map : MonoBehaviour
 				AsyncPath.borders[i, j] = (borderLengths[index] > 5);
 			}
 		}
+
+		//brds.Release();
+		//brdPts.Release();
 	}
 	void CreateOcean() {
 		teamOf.SetData(pixTeam);

@@ -31,6 +31,7 @@ public static class ROE
 
 	//With specified player
 	public static bool AreWeAtWar(int t1, int t2) {
+		if (t1 == -1 || t2 == -1) return false;
 		int index = t1 * Map.ins.numStates + t2;
 		return (atWar[index] == 1);
     }

@@ -16,7 +16,8 @@ public class DisplayHandler : MonoBehaviour
 	public static Action resetGame;
 
 	public bool menuNotGame;
-
+	[HideInInspector]
+	public bool locked;
 	private void Awake()
 	{
 		ins = this;
@@ -45,11 +46,17 @@ public class DisplayHandler : MonoBehaviour
 
 			}
 		}
-		else {
+		else if(!Simulator.tutorialOverride){
 			MoveCam.ins.canMove = true;
 		}
 
 	}
+	public void TutorialBlack() { 
+		for(int i =1 ; i < screens.Length; i++) {
+			if (i == 4) continue;
+			screens[i].Switch(-2);
+		}
+    }
 	public void EndScreens() {
 		EndPanel.ins.Enable();
 		TallScreenCam.ins.End();
@@ -81,13 +88,14 @@ public class DisplayHandler : MonoBehaviour
 		}
 	}
 
-	void UnPause() {
+	public void UnPause() {
 		paused = false;
 		Time.timeScale = 1;
 		WideScreenCam.ins.Refresh();
 		foreach (Screen s in screens) {
 			s.Switch(-1);
 		}
+		Debug.Log("unpaused");
 		pauseCam.enabled = false;
 	}
 
@@ -103,6 +111,7 @@ public class DisplayHandler : MonoBehaviour
 
 	private void Update()
 	{
+		if (locked) return;
 		if (Input.GetKeyDown(KeyCode.Escape) && !EndPanel.over && !menuNotGame)
 		{
 			if (paused) {

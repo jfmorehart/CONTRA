@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.IO;
+using Unity.Profiling;
+using System.Xml;
+using Unity.VisualScripting;
 
 public class AsyncPath : MonoBehaviour
 {
@@ -57,26 +59,104 @@ public class AsyncPath : MonoBehaviour
 	//			//Debug.Log(i + "does" + (borders[i, j] ? "" : "n't") + " border " + j);
 	//		}
 	//	}
- //   }
+	//   }
 
-	public Vector2Int[] Path(Vector2Int start, Vector2Int end, int[] passableTeams, int downres, int maxTries = 800)
+
+	public bool IsReachableCheck(Vector2Int start, Vector2Int end, int[] passableTeams, int downres, int maxTries = 800)
 	{
-		if(Map.ins == null) {
-			Debug.LogError("messy async");
-			//async operations are messy as fuck
-			return null;
-		}
-		if(Map.ins.mapSeed != storedSeed) {
-			Debug.LogError("messy async, wrong seed");
-			return null;
-		}
-
+		List<Node> open = new List<Node>();
+		Dictionary<Vector2Int, Node> nlookup = new Dictionary<Vector2Int, Node>();
 
 		//Task<Vector2Int> tempPath = new Task<Vector2Int>()
 		Vector2Int st = start / downres;
 		Vector2Int en = end / downres;
+	
+		Node n = CreateNode(en, 0, st, st);
+		nlookup.Add(n.pos, n);
+		open.Add(n);
+		int lowf = int.MaxValue;
+		int sf = Mathf.Max(n.fcost, maxTries);
+		int tries = 0;
+
+		while (lowf > 1 && tries < sf)
+		{
+			tries++;
+			if (open.Count < 1)
+			{
+				//Debug.Log("returning null");
+				return false;
+			}
+
+			Node toeval = NextNode(open, out int r);
+			if (toeval.fcost < lowf) lowf = toeval.fcost;
+			open.RemoveAt(r);
+
+			//Update box around node
+			Vector2Int off;
+			Vector2Int pos;
+			Node c;
+			for (int i = 0; i < 9; i++)
+			{
+				off = new Vector2Int((i % 3) - 1, Mathf.FloorToInt(i / 3) - 1);
+				pos = off + toeval.pos;
+
+				//Dont create nodes for impassable terrain
+				if (!ValidHalfPos(pos, downres)) { continue; }
+				if (i == 4) continue;
+				if (!IsPassable(pos * downres, passableTeams)) continue;
+				if(nlookup.TryGetValue(pos, out Node item)) {
+					if (!item.closed)
+					{
+						c = CreateNode(en, toeval.gcost, toeval.pos, pos);
+						c.closed = true;
+						if (c.gcost < nlookup[c.pos].gcost)
+						{
+							nlookup.Remove(c.pos);
+							nlookup.Add(c.pos, c);
+						}
+					}
+				}
+				else
+				{
+					c = CreateNode(en, toeval.gcost, toeval.pos, pos);
+					open.Add(c);
+					nlookup.Add(c.pos, c);
+				}
+
+			}
+		}
+
+		//Debug.Log(tries + " tries, " + lowf + " lowf, " + sf + " start");
+
+		if (nlookup.ContainsKey(en))
+		{
+			return true;
+		}
+		return false;
+	}
+
+
+	public Vector2Int[] Path(Vector2Int start, Vector2Int end, int[] passableTeams, int downres, int maxTries = 800)
+	{
 		List<Node> open = new List<Node>();
 		Dictionary<Vector2Int, Node> nlookup = new Dictionary<Vector2Int, Node>();
+
+		if (Map.ins == null)
+		{
+			Debug.LogError("messy async");
+			//async operations are messy as fuck
+			return null;
+		}
+		if (Map.ins.mapSeed != storedSeed)
+		{
+			Debug.LogError("messy async, wrong seed");
+			return null;
+		}
+
+		//Task<Vector2Int> tempPath = new Task<Vector2Int>()
+		Vector2Int st = start / downres;
+		Vector2Int en = end / downres;
+
 
 		Node n = CreateNode(en, 0, st, st);
 		nlookup.Add(n.pos, n);
@@ -158,7 +238,9 @@ public class AsyncPath : MonoBehaviour
 			return null;
 		}
 	}
-	public Vector2Int CheapestOpenNode(Vector2Int start, Vector2Int end, int[] passableTeams, int downres)
+
+	[IgnoredByDeepProfiler]
+    public Vector2Int CheapestOpenNode(Vector2Int start, Vector2Int end, int[] passableTeams, int downres)
 	{
 		//Task<Vector2Int> tempPath = new Task<Vector2Int>()
 		Vector2Int st = start / downres;
@@ -224,7 +306,8 @@ public class AsyncPath : MonoBehaviour
 		return lownode.pos * downres;
 	}
 
-	public Node NextNode(List<Node> open, out int r)
+    [IgnoredByDeepProfiler]
+    public Node NextNode(List<Node> open, out int r)
 	{
 		int lowc = int.MaxValue;
 		Node ln = open[0];
@@ -250,7 +333,8 @@ public class AsyncPath : MonoBehaviour
 		return ln;
 	}
 
-	public Node CreateNode(Vector2Int en, int pg, Vector2Int par, Vector2Int pos)
+    [IgnoredByDeepProfiler]
+    public Node CreateNode(Vector2Int en, int pg, Vector2Int par, Vector2Int pos)
 	{
 		int dx = Mathf.Abs(en.x - pos.x);
 		int dy = Mathf.Abs(en.y - pos.y);
@@ -261,21 +345,28 @@ public class AsyncPath : MonoBehaviour
 		int g = eg + pg;
 		return new Node(pos, par, g, f);
 	}
-	public bool IsPassable(Vector2Int pos, int[] passableTeams)
+    [IgnoredByDeepProfiler]
+    public bool IsPassable(Vector2Int pos, int[] passableTeams)
 	{
 		int pteam = Map.ins.GetPixTeam(pos);
-		return passableTeams.Contains(pteam);
+		for(int i = 0; i < passableTeams.Length; i++) {
+			if (passableTeams[i] == i) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	public int CoordinateToIndex(Vector2Int coord)
+    [IgnoredByDeepProfiler]
+    public int CoordinateToIndex(Vector2Int coord)
 	{
 		int index = (coord.y * Map.ins.texelDimensions.x) + coord.x;
 		index = Mathf.Clamp(index, 0, -1 + (Map.ins.texelDimensions.x * Map.ins.texelDimensions.y));
 		return index;
 	}
-	public bool ValidHalfPos(Vector2Int pos, int downres)
+    [IgnoredByDeepProfiler]
+    public bool ValidHalfPos(Vector2Int pos, int downres)
 	{
-
 		if (pos.x < 0 || pos.x > (Map.ins.texelDimensions.x / downres) - 1)
 		{
 			return false;
@@ -285,5 +376,22 @@ public class AsyncPath : MonoBehaviour
 			return false;
 		}
 		return true;
+	}
+	[IgnoredByDeepProfiler]
+	public bool DictionaryContains(Dictionary<Vector2Int, Node> dict, Node n) {
+		foreach (KeyValuePair<Vector2Int, Node> entry in dict)
+		{
+			if (entry.Value.pos == n.pos) return true;
+		}
+		return false;
+	}
+	[IgnoredByDeepProfiler]
+	public bool DictionaryContains(Dictionary<Vector2Int, Node> dict, Vector2Int n)
+	{
+		foreach (KeyValuePair<Vector2Int, Node> entry in dict)
+		{
+			if (entry.Value.pos == n) return true;
+		}
+		return false;
 	}
 }

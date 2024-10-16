@@ -18,11 +18,23 @@ public class ThinPanel : MonoBehaviour
     int PT_index;
     public float lastLetterTime, letterDelay, letterSpeed;
 
-    // Update is called once per frame
-    void Update()
+	private void Awake()
+	{
+		if (Simulator.tutorialOverride)
+		{
+            GetComponent<TimePanel>().timer = float.MaxValue;
+			idleScreen.SetActive(false);
+			threatScreen.SetActive(false);
+			//Destroy(gameObject);
+		}
+	}
+	// Update is called once per frame
+	void Update()
     {
-        if(UI.ins.incomingMissiles > 0) {
-            sineColor = Color.red;
+		if (Simulator.tutorialOverride) return;
+
+		if (UI.ins.incomingMissiles > 0) {
+        sineColor = Color.red;
             if (!threatScreen.activeInHierarchy) {
 				idleScreen.SetActive(false);
 				threatScreen.SetActive(true);

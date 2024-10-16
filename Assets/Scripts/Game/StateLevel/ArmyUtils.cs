@@ -17,7 +17,11 @@ public static class ArmyUtils
 	public static List<Silo>[] silos;
 	public static List<Airbase>[] airbases;
 	public static List<AAA>[] batteries;
- 
+
+
+	//preallocation
+	static int[] unitChunkIndices_prealloc;
+	static int[] unitChunkValues_prealloc;
 
 	public static void Init() {
 		nuclearCount = new int[Map.ins.numStates];
@@ -39,6 +43,8 @@ public static class ArmyUtils
 			GetAAAs(i);
 		}
 
+		unitChunkIndices_prealloc = new int[UnitChunks.chunks.Length];
+		unitChunkValues_prealloc = new int[UnitChunks.chunks.Length];
 	}
 
 	public enum Tar { 
@@ -60,16 +66,19 @@ public static class ArmyUtils
 		public int hash;
     }
 
+	static List<Target> tars = new List<Target>();
 	public static Target[] GetTargets(int team) {
-		List<Target> tars = new List<Target>();
+
+		tars.Clear();
 		tars.AddRange(StrategicTargets(team));
 		tars.AddRange(ConventionalTargets(team));
 		tars.AddRange(CivilianTargets(team));
 		return TargetSort(tars.ToArray());
 	}
+
 	public static List<Target> GetTargets(int team, int saturation, bool nuclear, bool conventional, bool cities)
 	{
-		List<Target> tars = new List<Target>();
+		tars.Clear();
 		if (nuclear)
 		{
 			tars.AddRange(StrategicTargets(team));
@@ -85,8 +94,9 @@ public static class ArmyUtils
 		return tars;
 	}
 
+	static float[] keys;
 	public static Target[] TargetSort(Target[] tr) {
-		float[] keys = new float[tr.Length];
+		keys = new float[tr.Length];
 		for (int i = 0; i < keys.Length; i++)
 		{
 			keys[i] = -tr[i].value;
@@ -95,29 +105,27 @@ public static class ArmyUtils
 		return tr;
 	}
 	public static Target[] StrategicTargets(int team) {
-		List<Target> tars = new List<Target>();
+		tars.Clear();
 		tars.AddRange(AirSupremacyTargets(team));
 		tars.AddRange(NuclearTargets(team));
 		return tars.ToArray();
 	}
 	public static Target[] AirSupremacyTargets(int team) {
-		List<Target> tars = new List<Target>();
-		Airbase[] air = GetAirbases(team);
-		foreach (Airbase sl in air)
+		tars.Clear();
+
+		foreach (Airbase sl in GetAirbases(team))
 		{
 			tars.Add(new Target(sl.transform.position, 45, Tar.Nuclear));
 		}
-		AAA[] bat = GetAAAs(team);
-		foreach (AAA sl in bat)
+		foreach (AAA sl in GetAAAs(team))
 		{
 			tars.Add(new Target(sl.transform.position, 15, Tar.Conventional));
 		}
 		return tars.ToArray();
 	}
 	public static Target[] NuclearTargets(int team) {
-		List<Target> tars = new List<Target>();
-		Silo[] sls = GetSilos(team);
-		foreach (Silo sl in sls)
+		tars.Clear();
+		foreach (Silo sl in GetSilos(team))
 		{
 			tars.Add(new Target(sl.transform.position, 50, Tar.Nuclear));
 		}
@@ -128,15 +136,16 @@ public static class ArmyUtils
 	public static Target[] ConventionalTargets(int team, int numTargets = 6)
 	{
 		// no comments fio bud
-		List<Target> tars = new List<Target>();
-		int[] indexValues = new int[UnitChunks.chunks.Length];
-		int[] indexes = new int[UnitChunks.chunks.Length];
-		for(int i = 0; i < UnitChunks.chunks.Length; i++) {
-			indexes[i] = i;
-			indexValues[i] = UnitChunks.chunkValues[team][i];
+
+		tars.Clear(); //re-using preallocated list
+
+		//re-filling preallocated arrays
+		for (int i = 0; i < UnitChunks.chunks.Length; i++) {
+			unitChunkIndices_prealloc[i] = i; 
+			unitChunkValues_prealloc[i] = UnitChunks.chunkValues[team][i];
 		}
-		System.Array.Sort(indexValues, indexes);
-		System.Array.Reverse(indexes);
+		System.Array.Sort(unitChunkValues_prealloc, unitChunkIndices_prealloc);
+		System.Array.Reverse(unitChunkIndices_prealloc);
 
 		int t = 0;
 		while (tars.Count < numTargets) {
@@ -146,14 +155,14 @@ public static class ArmyUtils
 				// so we'll only look at the most promising chunks
 				break;
 			}
-			Vector2 testPos = UnitChunks.ChunkIndexToMapPos(indexes[t]);
+			Vector2 testPos = UnitChunks.ChunkIndexToMapPos(unitChunkIndices_prealloc[t]);
 			Vector2Int gpos = MapUtils.PointToCoords(testPos);
 			if(team != Map.ins.GetPixTeam(gpos)) {
 				continue;
 			}
 			Target tar = new Target(
 				testPos,
-				UnitChunks.chunkValues[team][indexes[t]],
+				UnitChunks.chunkValues[team][unitChunkIndices_prealloc[t]],
 				Tar.Conventional
 			);
 			tars.Add(tar);
@@ -163,7 +172,7 @@ public static class ArmyUtils
 	}
 	public static Target[] CivilianTargets(int team)
 	{
-		List<Target> tars = new List<Target>();
+		tars.Clear();
 		foreach (City sl in GetCities(team))
 		{
 			if (Map.ins.GetPixTeam(sl.mpos) != team) continue;
@@ -175,56 +184,20 @@ public static class ArmyUtils
 	public static Silo[] GetSilos(int team)
 	{
 		return silos[team].ToArray();
-
-		//Get info from tracker
-		List<Silo> uns = new List<Silo>();
-		ArmyManager.ins.CleanArmies();
-		Silo[] units = ArmyManager.ins.silos.ToArray();
-
-		//Pick the ones we want
-		for (int i = 0; i < units.Length; i++)
-		{
-			if (units[i].team == team) { uns.Add(units[i]); }
-		}
-		return uns.ToArray();
 	}
 	public static Airbase[] GetAirbases(int team)
 	{
 		return airbases[team].ToArray();
-		//Get info from tracker
-		List<Airbase> uns = new List<Airbase>();
-		ArmyManager.ins.CleanArmies();
-		Airbase[] units = ArmyManager.ins.airbases.ToArray();
-		//Pick the ones we want
-		for (int i = 0; i < units.Length; i++)
-		{
-			if (units[i].team == team) {
-				uns.Add(units[i]); 
-			}
-		}
-		return uns.ToArray();
+
 	}
 
 	public static AAA[] GetAAAs(int team) {
 		return batteries[team].ToArray();
-
-		//Get info from tracker
-		List<AAA> uns = new List<AAA>();
-		AAA[] units = ArmyManager.ins.batteries.ToArray();
-		//Pick the ones we want
-		for (int i = 0; i < units.Length; i++)
-		{
-			if (units[i].team == team) { 
-				uns.Add(units[i]);
-			}
-		}
-		return uns.ToArray();
 	}
 
+	static List<Unit> uns = new List<Unit>();
 	public static Unit[] AllUnitInventory(int team) {
-		List<Unit> uns = new List<Unit>();
-
-
+		uns.Clear();
 		uns.AddRange(GetArmies(team));
 		uns.AddRange(GetAirbases(team));
 		uns.AddRange(GetSilos(team));
@@ -233,39 +206,29 @@ public static class ArmyUtils
 		return uns.ToArray();
 	}
 
+	static List<Building> team_buildings = new List<Building>();
 	public static Building[] GetBuildings(int team) {
-
-		List<Building> uns = new List<Building>();
-		Building[] units = ArmyManager.ins.allbuildings.ToArray();
+		team_buildings.Clear();
 
 		//Pick the ones we want
-		for (int i = 0; i < units.Length; i++)
+		for (int i = 0; i < ArmyManager.ins.allbuildings.Count; i++)
 		{
-			if (units[i].team == team) { uns.Add(units[i]); }
+			if (ArmyManager.ins.allbuildings[i].team == team) {
+				 team_buildings.Add(ArmyManager.ins.allbuildings[i]); 
+			}
 		}
-		
-		return uns.ToArray();
+		return team_buildings.ToArray();
 	}
 
 	public static Unit[] GetAircraft(int team) {
 		return aircraft[team].ToArray();
-		List<Unit> uns = new List<Unit>();
-		Unit[] units = ArmyManager.ins.aircraft.ToArray();
-
-		//Pick the ones we want
-		for (int i = 0; i < units.Length; i++)
-		{
-			if (units[i].team == team) { uns.Add(units[i]); }
-		}
-
-		aircraft[team] = uns;
-		return uns.ToArray();
 	}
+
 	public static Unit EnemyAircraftInRange(int team, Vector2 pos, float range, List<Unit> ignore = null) {
 		int[] enemyTeams = ROE.GetEnemies(team).ToArray();
-		Unit[] units = ShuffleUnits(ArmyManager.ins.aircraft.ToArray());
 		bool ignoring = ignore != null;
-		foreach (Unit u in units) {
+		foreach (Unit u in ShuffleUnits(ArmyManager.ins.aircraft.ToArray()))
+		{
 			if (!enemyTeams.Contains(u.team)) continue;
 			if (ignoring) {
 				if (ignore.Contains(u)) continue;
@@ -281,49 +244,41 @@ public static class ArmyUtils
 	public static Unit[] GetArmies(int team)
 	{
 		return armies[team].ToArray();
-		//Get info from tracker
-		List<Unit> uns = new List<Unit>();
-		ArmyManager.ins.CleanArmies();
-		Unit[] units = ArmyManager.ins.armies.ToArray();
-
-		//Pick the ones we want
-		for(int i = 0; i < units.Length; i++){
-			if (units[i].team == team) { uns.Add(units[i]); }
-		}
-		return uns.ToArray();
 	}
+
+	static Unit[] prealloc_units;
+	static float[] di;
 	public static Unit[] GetArmies(int team, int number, Vector2 near, List<Unit> ignore)
 	{
 		//Get info from tracker
-		List<Unit> uns = new List<Unit>();
-		ArmyManager.ins.CleanArmies();
-		Unit[] units = ArmyManager.ins.armies.ToArray();
+		uns.Clear();
+		prealloc_units = ArmyManager.ins.armies.ToArray();
 		//Pick the ones we want
-		for (int i = 0; i < units.Length; i++)
+		for (int i = 0; i < prealloc_units.Length; i++)
 		{
-			if (units[i].team == team && !ignore.Contains(units[i])) {
-				uns.Add(units[i]); 
+			if (prealloc_units[i].team == team && !ignore.Contains(prealloc_units[i])) {
+				uns.Add(prealloc_units[i]); 
 			}
 		}
 		//Sort by distance
-		float[] di = new float[uns.Count];
-		Unit[] unar = uns.ToArray();
-		for(int i = 0; i < unar.Length; i++) {
-			di[i] = Vector2.Distance(unar[i].transform.position, near);
+		di = new float[uns.Count];
+		prealloc_units = uns.ToArray();
+		for(int i = 0; i < prealloc_units.Length; i++) {
+			di[i] = Vector2.Distance(prealloc_units[i].transform.position, near);
 		}
-		System.Array.Sort(di, unar);
+		System.Array.Sort(di, prealloc_units);
 
 		//Return if no trimming necessary
-		if(number >= unar.Length) {
-			return unar;
+		if(number >= prealloc_units.Length) {
+			return prealloc_units;
 		}
 
 		//Trim
-		List<Unit> trim = new List<Unit>();
+		uns.Clear();
 		for(int i = 0; i< number; i++) {
-			trim.Add(unar[i]);
+			uns.Add(prealloc_units[i]);
 		}
-		return trim.ToArray();
+		return uns.ToArray();
 	}
 
 	public static List<City> GetNearestCitiesOfTeams(List<City> cities,List<int> ofTeams, Vector2 pos) {
@@ -398,8 +353,9 @@ public static class ArmyUtils
 		return big;
 	}
 
+	static List<City> cs = new List<City>();
 	public static List<City> GetCities(int team) {
-		List<City> cs = new List<City>();
+		cs.Clear();
 		for(int i =0; i < ArmyManager.ins.cities.Count; i++) {
 			if (ArmyManager.ins.cities[i].team == team) {
 				cs.Add(ArmyManager.ins.cities[i]);
@@ -434,8 +390,9 @@ public static class ArmyUtils
 
     }
 
+	static Vector2[] enc = new Vector2[5];
 	public static Vector2[] Encircle(Vector2 pos, float radius, int numSamples) {
-		Vector2[] enc = new Vector2[numSamples];
+		enc = new Vector2[numSamples];
 		float invS = 1 / (float)numSamples;
 		for (int i = 0; i < numSamples; i++)
 		{

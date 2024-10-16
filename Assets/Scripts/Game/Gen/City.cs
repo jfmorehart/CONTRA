@@ -54,9 +54,9 @@ public class City : MonoBehaviour
 			team = TeamSurround();
 		}
 
-		if (Time.unscaledTime - lastPop > popdelay)
+		if (Time.time - lastPop > popdelay)
 		{
-			lastPop = Time.unscaledTime;
+			lastPop = Time.time + Random.Range(0, 0.3f);
 			PopCount();
 		}
 
@@ -75,11 +75,12 @@ public class City : MonoBehaviour
 		}
     }
 
-	async void CheckReachableCountries() {
+	//maybe this cant be a member if its referenced by different workers?
+	List<int> neighborlist = new List<int>();
+
+	 async void CheckReachableCountries() {
 		//return;
-
-		List<int> neighborlist = new List<int>();
-
+		neighborlist.Clear();
 		debugInfo = ""; 
 		for (int i= 0; i< Map.ins.numStates; i++) {
 			if (i == team) continue;
@@ -91,15 +92,11 @@ public class City : MonoBehaviour
 				if (checkC == null) continue;
 				List<int> pas = ROE.Passables(team).ToList();
 				pas.Add(i);
-				Vector2Int[] path = await Task.Run(() => AsyncPath.ins.Path(mpos, checkC.mpos, pas.ToArray(), 1, 3200));
-				if(path == null) {
-					//debugInfo += "nullp " + i.ToString() + ",";
-					continue;
-				}else if(path.Length > 1) {
-					//debugInfo += "add " + i.ToString() +", ";
+				bool reach = await Task.Run(() => AsyncPath.ins.IsReachableCheck(mpos, checkC.mpos, pas.ToArray(), 1, 3200));
+				//neighborPath_prealloc = await Task.Run(() => AsyncPath.ins.Path(mpos, checkC.mpos, pas.ToArray(), 1, 3200));
+				if (reach) {
 					neighborlist.Add(i);
 				}
-
 			}
 		}
 		//debugInfo += " reached end, updated + " + Time.time.ToString();
@@ -157,46 +154,14 @@ public class City : MonoBehaviour
 		}
 	}
 
-	public bool SurroundCheck(int capteam) {
-		
-        int[] sample_teams = new int[Map.ins.numStates];
-		Vector2[] sample_pos = ArmyUtils.Encircle(wpos, sample_radius, numSamples);
 
-        for(int i = 0; i < numSamples; i++) {
-			int t = MapUtils.WorldPosToTeam(sample_pos[i]);
-			if (t < 0) continue;
-			if (capteam == t) {
-				return true;
-			}
-			//sample_teams[MapUtils.WorldPosToTeam(sample_pos[i])] += 1;
-		}
-		return false;
-		//int mteam = 0;
-		//int mamt = -1;
-
-		//for(int i = 0; i < Map.ins.numStates; i++) {
-		//	if (sample_teams[i] > mamt) {
-		//		mamt = sample_teams[i];
-		//		mteam = i;
-		//	}
-		//}
-		
-		////Only convert to team we are at war with
-		//if(ROE.AreWeAtWar(team, mteam)){
-		//	if(team != mteam) {
-		//		Debug.Log("captured");
-		//	}
-
-		//	team = mteam;
-		//}
-    }
-
-
+	Vector2[] sample_pos = new Vector2[5];
+	int[] sample_teams = new int[10];
 	public int TeamSurround()
 	{
 		//returns the team with the most surrounding points
-		int[] sample_teams = new int[Map.ins.numStates];
-		Vector2[] sample_pos = ArmyUtils.Encircle(wpos, sample_radius, numSamples);
+		sample_teams = new int[Map.ins.numStates];
+		sample_pos = ArmyUtils.Encircle(wpos, sample_radius, numSamples);
 
 		for (int i = 0; i < numSamples; i++)
 		{

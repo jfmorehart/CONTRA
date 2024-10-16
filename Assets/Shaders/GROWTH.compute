@@ -17,6 +17,8 @@ struct Inf{
     int isArmy;
 };
 
+float deltOverride;
+
 int numInfs;
 StructuredBuffer<Inf> infs; 
 
@@ -76,7 +78,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     cityPower *= min(8, totPop * 0.5);
     
     //amount change per tick (second)
-    float delt = 0.0015;
+    float delt = max(0.0015, deltOverride); //used for speeding up growth for demonstration
 
     float growth_remap = pow(pow(2, growths[team]), 0.2);
     //dynamic max pop calculation based on distance from city (md)

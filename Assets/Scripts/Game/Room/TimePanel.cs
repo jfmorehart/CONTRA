@@ -14,6 +14,7 @@ public class TimePanel : MonoBehaviour
 	private void Awake()
 	{
         ins = this;
+
 	}
 
 	// Update is called once per frame

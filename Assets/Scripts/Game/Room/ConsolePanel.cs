@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 
 public class ConsolePanel : MonoBehaviour
 {
+	public static ConsolePanel ins;
 	public Transform center;
 	public TMP_Text textPrefab;
 
@@ -34,6 +35,12 @@ public class ConsolePanel : MonoBehaviour
 	public TMP_Text toolhead;
 	public TMP_Text tooltext;
 
+	public bool toolTipLockout;
+
+	private void Awake()
+	{
+		ins = this;
+	}
 	private void Start()
 	{
 		spaces = new TMP_Text[linecount];
@@ -95,6 +102,7 @@ public class ConsolePanel : MonoBehaviour
 	}
 	void RefreshTooltip()
 	{
+		if (toolTipLockout) return;
 		if (UI.ins.selected > UI.ins.currentMenu.children.Length) return;
 		if (UI.ins.currentMenu.children[UI.ins.selected] == null) return;
 		toolhead.text = UI.ins.currentMenu.children[UI.ins.selected].tooltip_headerText;
@@ -129,5 +137,12 @@ public class ConsolePanel : MonoBehaviour
 			if (lines[i].text.Contains(str)) return i;
 		}
 		return -1;
+	}
+
+	public static void Clear() {
+		for (int i = 0; i < lines.Count; i++)
+		{
+			lines.RemoveAt(0);
+		}
 	}
 }

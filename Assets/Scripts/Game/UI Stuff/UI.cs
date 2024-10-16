@@ -42,6 +42,8 @@ public class UI : MonoBehaviour
 	float sliderSoundDelay = 0.05f;
 	float lastSliderSound;
 
+	public bool locked;
+
 	private void Awake()
 	{
 		ins = this;
@@ -94,6 +96,7 @@ public class UI : MonoBehaviour
 	}
 	private void Update()
 	{
+		if (locked) return;
 		if (EndPanel.over) return;
 
 		ReconsiderStatehood();
@@ -286,6 +289,10 @@ public class UI : MonoBehaviour
 		player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList(), targetNation);
 
 		(menu_strike as UIStrikeMenu).UpdateStrikePlanScreen();
+
+		if (Simulator.tutorialOverride) {
+			TutorialOverride.hasLaunchedMissiles = true;
+		}
 
 	}
 	void ChangeSelected(int dir) {

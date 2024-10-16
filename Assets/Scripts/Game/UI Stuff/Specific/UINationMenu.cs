@@ -70,9 +70,9 @@ public class UINationMenu : UIMenu
 		sendAid?.gameObject.SetActive(false);
 		nuclearstrike?.gameObject.SetActive(false);
 		airdoctrine?.gameObject.SetActive(false);
-
+		StateEval eval = new StateEval(0);
 		if (atWar) {
-			StateEval eval = new StateEval(0);
+
 			if (eval.str_air > 0)
 			{
 				airdoctrine.gameObject.SetActive(true);
@@ -82,12 +82,22 @@ public class UINationMenu : UIMenu
 			if(eval.str_nuke > 0) {
 				nuclearstrike.gameObject.SetActive(true);
 				kiddos.Add(nuclearstrike);
+				nuclearstrike.plaintext = "[nuclear strike]";
+				nuclearstrike.text.text = "[nuclear strike]";
 			}
 
 		}
 		else {
 			sendAid.gameObject?.SetActive(true);
 			kiddos.Add(sendAid);
+
+			if (eval.str_nuke > 0)
+			{
+				nuclearstrike.gameObject.SetActive(true);
+				kiddos.Add(nuclearstrike);
+				nuclearstrike.plaintext = "[pre-emptive strike]";
+				nuclearstrike.text.text = "[pre-emptive strike]";
+			}
 		}
 
 		if (usingSatura) {

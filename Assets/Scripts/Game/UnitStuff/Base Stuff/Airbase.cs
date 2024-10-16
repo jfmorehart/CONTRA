@@ -135,8 +135,10 @@ public class Airbase : Building
 	{
 		base.Direct(order);
 	}
+
+	List<Plane> clean = new List<Plane>();
 	void CleanLaunched() {
-		List<Plane> clean = new List<Plane>();
+		clean.Clear();
 		foreach (Plane p in launched) { 
 			if(p != null) {
 				clean.Add(p);

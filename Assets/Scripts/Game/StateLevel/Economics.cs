@@ -7,7 +7,7 @@ public static class Economics
 	public static float buyingPowerPerPopulation = 1f;
 
 	public static float cost_siloUpkeep = 20f;
-	public static float cost_armyUpkeep = 2;
+	public static float cost_armyUpkeep = 1;
 	public static float cost_armySpawn = 5;
 	public static float max_research_budget = 0.25f;
 
@@ -23,6 +23,8 @@ public static class Economics
 
 	public const float tickDiff = 1 / (float)numStoredTicks;
 
+	static int[] growth_tick;
+
 	public static void SetupEconomics() {
 		state_assesments = new Assesment[Map.ins.numStates];
 		state_recent_growth = new int[numStoredTicks][];  //store 16 sets of data
@@ -32,7 +34,7 @@ public static class Economics
 		}
     }
 	public static int[] NewGrowthTick() {
-		int[] newgrowth = new int[Map.ins.numStates];
+		growth_tick = new int[Map.ins.numStates];
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			float pctg = Mathf.Pow(Mathf.Abs(state_assesments[i].percentGrowth), 0.5f);
@@ -41,20 +43,20 @@ public static class Economics
 
 			//only grow if growing would not exceed the desired avg
 			if (pctg > rta + tickDiff) { 
-				newgrowth[i] = 1;
+				growth_tick[i] = 1;
 			}
 			else if(pctg < rta - tickDiff){
 				//only shrink if growing would not subceed the desired avg
-				newgrowth[i] = -1;
+				growth_tick[i] = -1;
 			}
 			else {
 				//so pretty much just trend towards zero growth 
-				newgrowth[i] = 0;
+				growth_tick[i] = 0;
 			}
 		}
 
 		//overwrite state_growth_recent data
-		state_recent_growth[overwriteIndex] = newgrowth; //weirdly elegant
+		state_recent_growth[overwriteIndex] = growth_tick; //weirdly elegant
 		overwriteIndex++;
 		if (overwriteIndex >= numStoredTicks) overwriteIndex = 0;
 
@@ -71,7 +73,7 @@ public static class Economics
 		Debug.Log(debug);
 		*/
 
-		return newgrowth;
+		return growth_tick;
 	}
 
 	public static float RecentTickAvg(int team) {

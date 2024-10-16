@@ -10,11 +10,13 @@ public static class Simulator
 
     public static Scenario activeScenario;
 
+    public static bool tutorialOverride;
+
 	public static void Setup() {
         scenarios = new Scenario[3];
 
-        //basic tutorial, ally
-        double[] ally = new double[] {0.8, 0.2}; //need ally to win
+        //basic tutorial, overwhelm
+        double[] ally = new double[] {0.8, 0.2}; 
         int[][] teams = new int[2][];
         teams[0] = new int[]{0}; //team A is the player
 		teams[1] = new int[] {1}; //team B is the enemy
@@ -36,7 +38,7 @@ public static class Simulator
 
         activeScenario = scenarios[0];
         IsSetup = true;
-    }
+	}
 
     public static int AffiliatedCheck(int team) { 
         for(int i = 0; i < activeScenario.affiliations.Length; i++) {

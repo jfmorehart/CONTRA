@@ -97,16 +97,19 @@ public class State_Enemy : State_AI
 			}
 		}
 
-		//can support foreign adventures
-		if ((confidence > 0.6 && assesment.percentGrowth > 0f) ||invasionTarget != -1) {
-
-			ForeignAdventures();
-		}
 
 		//keep army counts reasonable
 		ConstructionAndBudgeting();
 
-		if(confidence < 0.6f) {
+		if (Simulator.tutorialOverride) return;//dont allow them to do smart things
+
+		//can support foreign adventures
+		if ((confidence > 0.6 && assesment.percentGrowth > 0f) || invasionTarget != -1)
+		{
+			ForeignAdventures();
+		}
+
+		if (confidence < 0.6f) {
 			AttemptDeescalation();
 		}
 

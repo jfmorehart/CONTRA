@@ -58,19 +58,19 @@ public class Army : Unit
 				maxHP = 5;
 				hP = Mathf.CeilToInt(hP * (maxHP / (float)shp));
 			}
-			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.1f);
+			//upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.1f);
 		}
 		if (Research.unlockedUpgrades[team][0] > 2)
 		{
 			//"mechanization"
 			speed = 12;
-			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.2f);
+			//upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.2f);
 		}
 		if (Research.unlockedUpgrades[team][0] > 3)
 		{
 			//"combined arms"
 			damage = 2;
-			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.3f);
+			//upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.3f);
 		}
 		if (Research.unlockedUpgrades[team][0] > 4)
 		{
@@ -82,7 +82,7 @@ public class Army : Unit
 				hP = Mathf.CeilToInt(hP * (maxHP / (float)shp));
 			}
 			speed = 15f;
-			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.6f);
+			upkeepCost = 2;// Mathf.CeilToInt(baseUpkeepCost * 1.6f);
 		}
 	}
 	public override void Start()
@@ -152,11 +152,16 @@ public class Army : Unit
 		{
 			currentPathNodeIndex++;
 			enroute = true;
+			if (Map.ins == null) return;
 			dest = MapUtils.CoordsToPoint(path[currentPathNodeIndex]);
 
 			//Code to slow armies when traveling through enemy territory
 			//todo update original map image;
 			int teamOfCurrentDest = Map.ins.GetOriginalMap(path[currentPathNodeIndex]);
+			if(teamOfCurrentDest == -1) {
+				Idle();
+				return;
+			}
 			bool slowdown = (teamOfCurrentDest != team) && Map.ins.state_populations[teamOfCurrentDest] > 0;
 			speedMod = (slowdown ? 1.4f : 1.5f);//hack removed significant slowdown
 
@@ -174,9 +179,9 @@ public class Army : Unit
 			{
 				ren.material.color = Color.grey;
 			}
-			int[] pas = ROE.Passables(team);
 
-			if (!pas.Contains(et))
+
+			if (!ROE.Passables(team).Contains(et))
 			{
 				Idle();
 			}
@@ -214,8 +219,7 @@ public class Army : Unit
 			case Order.Type.MoveTo:
 				pathOrder = order;
 				//Async
-				Invoke(nameof(PathFind), 0);
-
+				Invoke(nameof(PathFind), Random.Range(0, 1f));
 
 				//Synchronous solution
 				//Vector2Int[] npath = PathFind.Path(cpos, opos, ROE.Passables(team), 4);
