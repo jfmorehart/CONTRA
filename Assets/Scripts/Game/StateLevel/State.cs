@@ -29,7 +29,9 @@ public class State : MonoBehaviour
 
 	//general economic information from the last StateUpdate tick
 	public Economics.Assesment assesment;
-
+	[HideInInspector] public float[] recentPops;
+	[HideInInspector] public float[] recentGrowths;
+	[HideInInspector]public int graphCham;
 	// the Grid location of the middle of the state
 	// NOTE this is really only for generation:
 	// it is not guaranteed to even lie within the State!
@@ -52,9 +54,11 @@ public class State : MonoBehaviour
 	}
 
 	public virtual void Setup(int i, Vector2Int pos) {
-		//Called a few ms after start
+		//Called a few ms after awake
 		team = i;
 		origin = pos;
+		recentPops = new float[RightPanel.ins.arraySizes];
+		recentGrowths = new float[RightPanel.ins.arraySizes];
 		Diplomacy.RegisterState(this);
 		Invoke(nameof(StateUpdate), 0.08f);
 		InvokeRepeating(nameof(StateUpdate), i * 0.1f, stateUpdateDelay);
@@ -66,6 +70,8 @@ public class State : MonoBehaviour
 		//called ever 5 seconds
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
+		RecordEconomyData();
+
 		if (Simulator.tutorialOverride && team == 0) {
 			//rig the game, 2x max construction and no budget restrictions
 			ConstructionWork();
@@ -79,7 +85,6 @@ public class State : MonoBehaviour
 			if (team == 0) {
 				ConsolePanel.Log("<color=\"red\"> your economy is very unstable! </color>", 5);
 			}
-
 		}
 		else {
 			Research.ConductResearch(team, assesment.researchBudget);
@@ -100,6 +105,27 @@ public class State : MonoBehaviour
 			BalanceBudget(Economics.cost_armyUpkeep * (diff - 5));
 		}
     }
+
+	void RecordEconomyData() {
+
+		if (graphCham >= recentPops.Length)
+		{
+			for (int i = 0; i < recentPops.Length - 1; i++)
+			{
+				recentPops[i] = recentPops[i + 1];
+				recentGrowths[i] = recentGrowths[i + 1];
+			}
+			recentPops[^1] = Map.ins.state_populations[team];// + assesment.percentGrowth;
+			recentGrowths[^1] = assesment.percentGrowth;
+		}
+		else
+		{
+			recentPops[graphCham] = Map.ins.state_populations[team];// + assesment.percentGrowth;
+			recentGrowths[graphCham] = assesment.percentGrowth;
+		}
+		graphCham++;
+		RightPanel.ins.RecordEconomy();
+	}
 
 	protected virtual void BalanceBudget (float budgetCut) {
 
@@ -139,11 +165,11 @@ public class State : MonoBehaviour
 		{
 			if (budgetCut > 0)
 			{
-				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
-				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Airbase);
-				if(u is Construction construction) {
-					construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
-				}
+				//Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
+				//Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Airbase);
+				//if(u is Construction construction) {
+				//	construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
+				//}
 				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
 			}
@@ -160,12 +186,12 @@ public class State : MonoBehaviour
 		{
 			if (budgetCut > 0)
 			{
-				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
-				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Silo, true);
-				if (u is Construction construction)
-				{
-					construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
-				}
+				//Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
+				//Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.Silo, true);
+				//if (u is Construction construction)
+				//{
+				//	construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
+				//}
 				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
 			}
@@ -180,12 +206,12 @@ public class State : MonoBehaviour
 		{
 			if (budgetCut > 0)
 			{
-				Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
-				Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.AAA);
-				if (u is Construction construction)
-				{
-					construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
-				}
+				//Vector2Int pos = MapUtils.PointToCoords(bases[i].transform.position);
+				//Unit u = ArmyManager.ins.NewConstruction(team, pos, ArmyManager.BuildingType.AAA);
+				//if (u is Construction construction)
+				//{
+				//	construction.manHoursRemaining = Mathf.Min(budgetCut, construction.manHoursRemaining);
+				//}
 				bases[i].Kill();
 				budgetCut -= Economics.cost_siloUpkeep;
 			}
@@ -333,8 +359,6 @@ public class State : MonoBehaviour
 		}
 
 		for (int i = 0; i < construction_sites.Count; i++) {
-
-			if (team == 0) Debug.Log("worksite");
 			construction_sites[i].Work(workAmt);
 		}
     }

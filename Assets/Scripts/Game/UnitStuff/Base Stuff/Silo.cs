@@ -8,6 +8,7 @@ public class Silo : Building
 	public int numMissiles;
 
 	public float yield;
+	public float delay = 3;
 
 	public override void Start()
 	{
@@ -34,11 +35,17 @@ public class Silo : Building
 		Vector2 pos = order.pos;
 		//todo Circular Error Probable
 		Vector2 ran = Random.insideUnitCircle; //* Random.Range(0f, 100);
-		Pool.ins.GetMissile().Launch(transform.position, pos + ran, yield, team);
-		numMissiles--;
 
+		StartCoroutine(nameof(LaunchDelay), pos + ran);
+		numMissiles--;
 		UpdateIconDisplay(numMissiles);
 	}
+
+	IEnumerator LaunchDelay(Vector2 dest) {
+		yield return new WaitForSeconds(delay);
+		Pool.ins.GetMissile().Launch(transform.position, dest, yield, team);
+		yield break;
+    }
 	public override void ApplyUpgrades()
 	{
 

@@ -253,7 +253,26 @@ public static class Diplomacy
 		}
 		return -1;
     }
-
+	public static Color OpinionColor(int t1, int t2) {
+		if (states[t1] is not State_Enemy) return Color.clear;
+		State_Enemy brain = states[t1] as State_Enemy;
+		float op = brain.opinion[t2];
+		if(op < 0.4) {
+			if(op < 0.1) {
+				return Color.red;
+			}
+			return Color.yellow;
+		}
+		if (op > 0.6)
+		{
+			if (op > 0.8)
+			{
+				return Color.blue;
+			}
+			return Color.green;
+		}
+		return Color.gray;
+	}
 	public static string OpinionText(int t1, int t2) {
 		string status;
 		if (states[t1] is not State_Enemy) return "null opinion";
@@ -261,7 +280,7 @@ public static class Diplomacy
 
 		if (brain.opinion[t2] < 0.4)
 		{
-			if (brain.opinion[t2] < 0.15)
+			if (brain.opinion[t2] < 0.1)
 			{
 				status = "<color=\"red\"> hates </color>";
 			}

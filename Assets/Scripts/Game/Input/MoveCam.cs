@@ -95,7 +95,7 @@ public class MoveCam : MonoBehaviour
 			pos.y = Map.ins.transform.position.y + yM;
 		}
 
-		shake = shakestr * new Vector3(shakeAmp * (Mathf.PerlinNoise1D(Time.time * shakeFreq) - 0.5f), shakeAmp * (Mathf.PerlinNoise1D(Time.time + 5 * shakeFreq) - 0.5f));
+		shake = shakestr * new Vector3(shakeAmp * (Mathf.PerlinNoise1D(Time.time * shakeFreq) - 0.5f), shakeAmp * (Mathf.PerlinNoise1D(Time.time * shakeFreq + 1) - 0.5f));
 		shake *= Camera.main.orthographicSize;
 		transform.position = pos + (Vector3)shake;
 		shakestr -= Time.deltaTime * shakeDecay;
@@ -105,6 +105,7 @@ public class MoveCam : MonoBehaviour
 		velo *= 1 - Time.deltaTime * drag;
 
 	}
+
 	public void Shake(Vector2 pos, float str) {
 		Vector3 delta = pos - (Vector2)transform.position;
 		delta.z += Camera.main.orthographicSize * 2;

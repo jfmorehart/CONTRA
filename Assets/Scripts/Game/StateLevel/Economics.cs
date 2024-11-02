@@ -8,6 +8,7 @@ public static class Economics
 
 	public static float cost_siloUpkeep = 20f;
 	public static float cost_armyUpkeep = 1;
+	static readonly float army_multiplier = 0.15f;
 	public static float cost_armySpawn = 5;
 	public static float max_research_budget = 0.25f;
 
@@ -106,7 +107,12 @@ public static class Economics
 		float upkeep = 0;
 		Unit[] allunit = ArmyUtils.AllUnitInventory(team);
 		for(int i = 0; i < allunit.Length; i++) {
-			upkeep += allunit[i].upkeepCost;
+			if (allunit[i] is Army) {
+				upkeep += allunit[i].upkeepCost * army_multiplier;
+			}
+			else {
+				upkeep += allunit[i].upkeepCost;
+			}
 		}
 
 		//negative is military surplus, used for construction and unit aquisition

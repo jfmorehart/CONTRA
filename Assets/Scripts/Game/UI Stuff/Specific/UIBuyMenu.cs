@@ -20,7 +20,8 @@ public class UIBuyMenu : UIMenu
 
     public void Refresh() {
         List<UIOption> kiddos = new List<UIOption>();
-        for(int i = 0; i < 3; i++) {
+		children[UI.ins.selected].UnHighlight();
+		for (int i = 0; i < 3; i++) {
             if (Research.unlockedUpgrades[0][i + 1] > 0) {
                 kiddos.Add(all3[i]);
 				all3[i].gameObject.SetActive(true);

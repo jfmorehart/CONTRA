@@ -81,7 +81,7 @@ public class PlayerInput : MonoBehaviour
 			return;
 		}
 
-		ConsolePanel.Log("New Base being constructed at: " + wp.ToString());
+		//ConsolePanel.Log("New Base being constructed at:);
 
 		ArmyManager.ins.NewConstruction(0, mp, btype);
 	}
@@ -89,7 +89,7 @@ public class PlayerInput : MonoBehaviour
 	public void PlayerSendAid() {
 		if (Diplomacy.states[0].manHourDebt > Diplomacy.states[0].assesment.buyingPower * 2)
 		{
-			ConsolePanel.Log("Insufficient funds to send aid", 5);
+			ConsolePanel.Log("insufficient funds to send aid", 5);
 		}
 		else {
 

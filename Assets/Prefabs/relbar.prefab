@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7364475854928819361}
   - component: {fileID: 1185479276529731688}
   m_Layer: 0
-  m_Name: worldLine
+  m_Name: relbar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3daf85f8932e24900ab5f1b5ac11ef46, type: 2}
+  - {fileID: 2100000, guid: 2a9c85355339941cdbb15b883ca10d15, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

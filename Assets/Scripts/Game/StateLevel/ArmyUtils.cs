@@ -70,9 +70,9 @@ public static class ArmyUtils
 	public static Target[] GetTargets(int team) {
 
 		tars.Clear();
-		tars.AddRange(StrategicTargets(team));
-		tars.AddRange(ConventionalTargets(team));
-		tars.AddRange(CivilianTargets(team));
+		StrategicTargets(team, false);
+		ConventionalTargets(team, 6, false);
+		CivilianTargets(team, false);
 		return TargetSort(tars.ToArray());
 	}
 
@@ -81,15 +81,15 @@ public static class ArmyUtils
 		tars.Clear();
 		if (nuclear)
 		{
-			tars.AddRange(StrategicTargets(team));
+			StrategicTargets(team, false);
 		}
 		if (conventional)
 		{
-			tars.AddRange(ConventionalTargets(team, saturation));
+			ConventionalTargets(team, saturation, false);
 		}
 		if (cities)
 		{
-			tars.AddRange(CivilianTargets(team));
+			CivilianTargets(team, false);
 		}
 		return tars;
 	}
@@ -104,14 +104,17 @@ public static class ArmyUtils
 		System.Array.Sort(keys, tr);
 		return tr;
 	}
-	public static Target[] StrategicTargets(int team) {
-		tars.Clear();
-		tars.AddRange(AirSupremacyTargets(team));
-		tars.AddRange(NuclearTargets(team));
+	public static Target[] StrategicTargets(int team, bool clear = true) {
+		if (clear) tars.Clear(); //allows for better list re-use;
+
+		AirSupremacyTargets(team, false);
+		NuclearTargets(team, false);
+
 		return tars.ToArray();
 	}
-	public static Target[] AirSupremacyTargets(int team) {
-		tars.Clear();
+	public static Target[] AirSupremacyTargets(int team, bool clear = true) {
+
+		if(clear)tars.Clear();
 
 		foreach (Airbase sl in GetAirbases(team))
 		{
@@ -123,21 +126,23 @@ public static class ArmyUtils
 		}
 		return tars.ToArray();
 	}
-	public static Target[] NuclearTargets(int team) {
-		tars.Clear();
+	public static Target[] NuclearTargets(int team, bool clear = true) {
+		if(clear)tars.Clear(); //allows for better list re-use;
+
+		int st = tars.Count;
 		foreach (Silo sl in GetSilos(team))
 		{
 			tars.Add(new Target(sl.transform.position, 50, Tar.Nuclear));
 		}
-		nuclearCount[team] = tars.Count;
+		nuclearCount[team] = tars.Count - st;
 		return tars.ToArray();
 	}
 
-	public static Target[] ConventionalTargets(int team, int numTargets = 6)
+	public static Target[] ConventionalTargets(int team, int numTargets = 6, bool clear = true)
 	{
 		// no comments fio bud
 
-		tars.Clear(); //re-using preallocated list
+		if (clear) tars.Clear(); //allows for better list re-use;
 
 		//re-filling preallocated arrays
 		for (int i = 0; i < UnitChunks.chunks.Length; i++) {
@@ -170,9 +175,10 @@ public static class ArmyUtils
 		}
 		return tars.ToArray();
 	}
-	public static Target[] CivilianTargets(int team)
+	public static Target[] CivilianTargets(int team, bool clear = true)
 	{
-		tars.Clear();
+		if (clear) tars.Clear(); //allows for better list re-use;
+
 		foreach (City sl in GetCities(team))
 		{
 			if (Map.ins.GetPixTeam(sl.mpos) != team) continue;
@@ -188,7 +194,6 @@ public static class ArmyUtils
 	public static Airbase[] GetAirbases(int team)
 	{
 		return airbases[team].ToArray();
-
 	}
 
 	public static AAA[] GetAAAs(int team) {

@@ -37,6 +37,8 @@ public class TypingInterface : MonoBehaviour
 
 	List<string> unwritten;
 
+	int selected_scenario = -1;
+
 	//sound stuff
 	public GameObject oneshotPrefab;
 	public GameObject pooledSourcePrefab;
@@ -164,11 +166,19 @@ public class TypingInterface : MonoBehaviour
 	    }
 		if (doneWriting) { 
 			if(unwritten.Count > 0) {
-				NewLine();
 				lines[activeLine] = unwritten[0];
+				int skiplines = Mathf.CeilToInt(unwritten[0].Length / (float)maxLineLength);
+				Debug.Log(unwritten[0].Length / (float)maxLineLength);
 				lengths[activeLine] = 0;
 				finishedWriting[activeLine] = false;
 				unwritten.RemoveAt(0);
+
+				for (int i = 0; i < skiplines; i++)
+				{
+					Debug.Log("unwrittenskip " + skiplines);
+					NewLine();
+					finishedWriting[activeLine] = true;
+				}
 			}
 			else {
 				if (!lines[activeLine].Contains(">")) {
@@ -184,13 +194,13 @@ public class TypingInterface : MonoBehaviour
 			lines[activeLine] = outString.ToLower() + '\n';
 			finishedWriting[activeLine] = true;
 
-			int skiplines = Mathf.CeilToInt(lines[activeLine].Length / maxLineLength);
+			int skiplines = Mathf.CeilToInt(lines[activeLine].Length / (float)maxLineLength);
+			Debug.Log("skiplines = " + skiplines);
 			for(int i = 0; i < skiplines; i++) {
 				Debug.Log("skip " + skiplines);
 				NewLine();
 				finishedWriting[activeLine] = true;
 			}
-			NewLine();
 			finishedWriting[activeLine] = true;
 
 			ProcessText(outString);
@@ -253,14 +263,20 @@ public class TypingInterface : MonoBehaviour
 		if (instant) {
 			lines[activeLine] += message + '\n';
 			finishedWriting[activeLine] = true;
-			NewLine();
+			int skiplines = Mathf.CeilToInt(message.Length / (float)maxLineLength);
+			for (int i = 0; i < skiplines; i++)
+			{
+				Debug.Log("writeskip " + skiplines);
+				NewLine();
+				finishedWriting[activeLine] = true;
+			}
 		}
 		else {
 			unwritten.Add(message + '\n');
 		}
 	}
 	void WriteBracket(bool greenify = false) {
-		WriteOut("_________________________________________", greenify);
+		WriteOut("_______________________________________", greenify);
 	}
 	void ProcessText(string message) {
 		message = message.Replace("\u200B", "");
@@ -339,33 +355,77 @@ public class TypingInterface : MonoBehaviour
 
 		if (message.Contains("tutorial", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			WriteOut("very well");
-			Simulator.activeScenario = Simulator.scenarios[0];
-			Simulator.tutorialOverride = true;
-			LoadGame();
+			if (message.Contains("load")) {
+				Simulator.activeScenario = Simulator.scenarios[0];
+				Simulator.tutorialOverride = true;
+				LoadGame();
+			}
+			selected_scenario = 0;
+			WriteBracket();
+			WriteOut("");
+			WriteOut("the tutorial scenario introduces the player to cities, growth, countries, and pre-emptive nuclear strikes");
+			//WriteOut("");
+			WriteOut("'load' to load scenario");
+			WriteOut("");
+			WriteBracket();
 			return;
 		}
 		if (message.Contains("scenario a", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			WriteOut("very well");
-			Simulator.activeScenario = Simulator.scenarios[0];
-			LoadGame();
+			if (message.Contains("load"))
+			{
+				Simulator.activeScenario = Simulator.scenarios[1];
+				LoadGame();
+			}
+			selected_scenario = 0;
+			WriteBracket();
+			WriteOut("");
+			WriteOut("scenario a is two-nation scenario with a vast advantage to the player");
+			WriteOut("");
+			WriteOut("'load' to load scenario");
+			WriteOut("");
+			WriteBracket();
 			return;
 		}
 		if (message.Contains("scenario b", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			WriteOut("very well");
-			Simulator.activeScenario = Simulator.scenarios[1];
-			LoadGame();
+			if (message.Contains("load"))
+			{
+				Simulator.activeScenario = Simulator.scenarios[2];
+				LoadGame();
+			}
+			selected_scenario = 1;
+			WriteBracket();
+			WriteOut("");
+			WriteOut("scenario b explores alliance dynamics by giving the player both a steadfast ally and a steadfast enemy");
+			WriteOut("");
+			WriteOut("'load' to load scenario");
+			WriteOut("");
+			WriteBracket();
 			return;
 		}
 		if (message.Contains("scenario c", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			WriteOut("very well");
-			Simulator.activeScenario = Simulator.scenarios[2];
-			LoadGame();
+			if (message.Contains("load"))
+			{
+				Simulator.activeScenario = Simulator.scenarios[1];
+				LoadGame();
+			}
+			selected_scenario = 2;
+			WriteBracket();
+			WriteOut("");
+			WriteOut("scenario c represents a more complex geo-political environment");
+			WriteOut("");
+			WriteOut("'load' to load scenario");
+			WriteOut("");
+			WriteBracket();
 			return;
 		}
+		if(message.Contains("load") && selected_scenario != -1) {
+			Simulator.activeScenario = Simulator.scenarios[selected_scenario];
+			LoadGame();
+		}
+		//selected_scenario = -1;
 	}
 
 	string GreenText(string message) {

@@ -50,7 +50,7 @@ MonoBehaviour:
   hP: 3
   positionChunk: 0
   constructionCost: 0
-  baseUpkeepCost: 1
+  baseUpkeepCost: 10
   upkeepCost: 2
   id: 0
   speed: 10

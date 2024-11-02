@@ -4684,6 +4684,7 @@ MonoBehaviour:
   pauseCam: {fileID: 456468036}
   paused: 0
   menuNotGame: 1
+  locked: 0
 --- !u!1 &1020877680
 GameObject:
   m_ObjectHideFlags: 0
@@ -5222,6 +5223,12 @@ MonoBehaviour:
   blurIterations: 5
   blurMat: {fileID: 2100000, guid: f1ce0f580566c44629f7cd4e574ceaab, type: 2}
   isolateBloomMat: {fileID: 2100000, guid: c92c9b1f116c948e7b5b171f4d5f67d1, type: 2}
+  shakestr: 0
+  shakeAmp: 0
+  shakeFreq: 0
+  shakeDecay: 0
+  launchShakeMagnitude: 0
+  shake: {x: 0, y: 0}
 --- !u!1 &1244199757
 GameObject:
   m_ObjectHideFlags: 0

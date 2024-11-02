@@ -30,6 +30,7 @@ public class State_AI : State
 	//some kind of scariness evaluation used for determining how many
 	//troops to send to the border with given enemy
 	public float[] troopAllocations;
+	[SerializeField] int[] border_allotment;
 	public bool[] sharesBorder;
 
 	//list of units assigned to each border organized by enemyborder team#
@@ -58,6 +59,7 @@ public class State_AI : State
 		attacked = new List<City>();
 		targetHashList = new List<int>();
 		bombedHashList = new List<int>();
+		border_allotment = new int[Map.ins.numStates];
 
 		airdoctrine = new bool[Map.ins.numStates][];
 		for(int i = 0; i < Map.ins.numStates; i++) {
@@ -76,7 +78,7 @@ public class State_AI : State
 	}
 	public override void Setup(int i, Vector2Int pos)
 	{
-		//Called a few ms after start
+		//Called a few ms after awake
 		base.Setup(i, pos);
 		NuclearTargets(team);
 	}
@@ -91,7 +93,7 @@ public class State_AI : State
 		base.StateUpdate();
 
 		//this call updates info for nuclear threat assesment
-		ArmyUtils.GetTargets(team);
+		GetTargets(team);
 			
 		GenerateTroopAllocations();
 
@@ -157,17 +159,18 @@ public class State_AI : State
 		}
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
-			troopAllocations[i] = (tas[i])/ (tasum + 0.001f);
+			troopAllocations[i] = (tas[i]) / (tasum + 0.001f);
+			//Debug.Log("team " + team + " al" + troopAllocations[i] + " to " + i);
 		}
 	}
 
-	public void ICBMStrike(int warheads, List<Target> targets, int enemy)
+	public int ICBMStrike(int warheads, List<Target> targets, int enemy)
 	{
 		int missilesAway = 0;
 
 		//Nice little self contained function for obliterating civilization
 		Silo[] silos = ArmyUtils.GetSilos(team);
-		if (silos.Length < 1) return;
+		if (silos.Length < 1) return 0;
 		int slcham = 0;
 		int n = Mathf.Min(targets.Count, warheads);
 		for (int i = 0; i < n; i++)
@@ -179,8 +182,10 @@ public class State_AI : State
 			do
 			{
 				if (targets.Count <= i) {
-					InformLaunch(missilesAway, enemy);
-					return;
+					if(missilesAway > 0) {
+						StartCoroutine(nameof(InformLaunch), enemy);
+					}
+					return missilesAway;
 				}
 
 				target = targets[i];
@@ -202,14 +207,16 @@ public class State_AI : State
 			missilesAway += SiloFire(silos[slcham], target, 1)? 1 : 0;
 			slcham++;
 		}
-		InformLaunch(missilesAway, enemy);
-	}
-	void InformLaunch(int missilesAway, int enemy) {
-		if (missilesAway > 0)
-		{
-			//inform diplomacy
-			LaunchDetection.StrikeDetected(team, enemy);
+		if(missilesAway > 0) {
+			StartCoroutine(nameof(InformLaunch), enemy);
 		}
+		return missilesAway;
+		
+	}
+	IEnumerator InformLaunch(int enemy) {
+		yield return new WaitForSeconds(3); //todo find launch delay
+
+		LaunchDetection.StrikeDetected(team, enemy);
 	}
 
 	protected async void DistributedPositions(int borderwith, List<Unit> troops, bool teleport = false)
@@ -217,6 +224,7 @@ public class State_AI : State
 		//fucky and overcomplex function designed to spread out troops along the border
 		//with an enemy state, for defensive posturing
 
+		int[] pas = ROE.Passables(team); //which states we can pass over
 		for (int i = 0; i < troops.Count; i++)
 		{
 			Vector2 pos = (troops[i] as Army).wpos;
@@ -227,12 +235,16 @@ public class State_AI : State
 			//if (c == null) return; // alexander wept
 
 			Vector2Int dest;
-			if (ROE.AreWeAtWar(team, borderwith) && Random.Range(0, 1f) > 0.25f)
+			if (ROE.AreWeAtWar(team, borderwith) && Random.Range(0, 1f) > 0.5f)
 			{
 				//honestly stupid expensive city-oriented method
 				//capture enemy cities during wartime
 				City c = await Task.Run(() => NearestCity(pos, borderwith, null));
-				if (c == null) return; // alexander wept
+				if (c == null)
+				{
+					Debug.LogError("alexander wept");
+					return; // alexander wept
+				}
 				dest = c.mpos;
 			}
 			else
@@ -242,9 +254,8 @@ public class State_AI : State
 				int borderSize = Map.ins.borderPoints[team][borderwith].Count;
 				if (borderSize < 1) continue;
 				dest = Map.ins.borderPoints[team][borderwith][troops[i].id % borderSize];
+				
 			}
-
-			int[] pas = ROE.Passables(team); //which states we can pass over
 
 			Vector2 moveto = MapUtils.CoordsToPoint(dest);
 			Vector2 edit = moveto;
@@ -265,6 +276,7 @@ public class State_AI : State
 				troops[i].transform.position = o.pos;
 			}
 			else {
+				//if(team != 0)Debug.Log("dir");
 				troops[i].Direct(o);
 				recentlyOrdered.Add(troops[i]);
 			}
@@ -379,42 +391,45 @@ public class State_AI : State
 		}
 	}
 
+	Unit[] uns;
+	List<Unit> assigned = new List<Unit>();
 	protected void ReAssignGarrisons(bool overwriteRecentOrders) {
 		//used for cleaning up garrison system
 
 		ClearGarrisons();
-		Unit[] uns = ArmyUtils.GetArmies(team);
-		List<Unit> assigned = new List<Unit>(); 
-		if (overwriteRecentOrders) {
+		uns = ArmyUtils.GetArmies(team);
+		assigned.Clear();
+
+		if (overwriteRecentOrders)
+		{
 			recentlyOrdered.Clear();
+			assigned = new List<Unit>();
 		}
-		else {
+		else
+		{
 			assigned = new List<Unit>(recentlyOrdered);
 		}
-		
-		int[] allotment = new int[Map.ins.numStates];
 
 		//sorting this by allocation size, so that the biggest threat gets the best troops
-		int[] teamArray = new int[Map.ins.numStates]; 
-		float[] allocationArray = new float[Map.ins.numStates];
-		for(int i = 0; i < Map.ins.numStates; i++) {
-			teamArray[i] = i;
-			allocationArray[i] = troopAllocations[i];
-		}
-		System.Array.Sort(teamArray, allocationArray);
+		//int[] teamArray = new int[Map.ins.numStates]; 
+		//float[] troopAllocations = new float[Map.ins.numStates];
+		//for(int i = 0; i < Map.ins.numStates; i++) {
+		//	teamArray[i] = i;
+		//	troopAllocations[i] = troopAllocations[i];
+		//}
+		//System.Array.Sort(troopAllocations, teamArray);
 
-		for (int i = Map.ins.numStates - 1; i > -1; i--) {
-			//this loop executes from biggest to smallest threat
-			int enemyTeam = teamArray[i];
-
-			if (allocationArray[enemyTeam] < 0.01f) continue;
-			allotment[enemyTeam] = Mathf.FloorToInt(uns.Length * allocationArray[enemyTeam]);
-			if (allotment[enemyTeam] < 1) continue; //no troops assigned
+		for (int i = 0; i < Map.ins.numStates; i++) {
+			int enemyTeam = i;// teamArray[i];
+			if (enemyTeam == team) continue;
+			if (troopAllocations[enemyTeam] < 0.01f) continue;
+			border_allotment[enemyTeam] = Mathf.FloorToInt(uns.Length * troopAllocations[enemyTeam]);
+			if (border_allotment[enemyTeam] < 1) continue; //no troops assigned
 
 			//grab units closest to arbitrary enemy city
 			City c = NearestCity(transform.position, enemyTeam, null);
-			if(c == null) return;
-			Unit[] alo = GetArmies(team, allotment[enemyTeam], c.wpos, assigned);
+			if(c == null) continue;
+			Unit[] alo = GetArmies(team, border_allotment[enemyTeam], c.wpos, assigned);
 			for (int u = 0; u < alo.Length; u++)
 			{
 				Unit un = alo[u];
@@ -439,7 +454,7 @@ public class State_AI : State
 		if(ArmyUtils.Salvo(sl, or, warheads)) {
 			//todo only add to hashlist if a missile really was fired
 			targetHashList.Add(t.hash);
-			StartCoroutine(RemoveFromHash(t.hash, MapUtils.Tau(sl.transform.position, t.wpos)));
+			StartCoroutine(RemoveFromHash(t.hash, 3 + MapUtils.Tau(sl.transform.position, t.wpos)));
 			return true;
 		}
 		return false;

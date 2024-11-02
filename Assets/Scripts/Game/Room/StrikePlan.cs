@@ -73,9 +73,11 @@ public class StrikePlan : MonoBehaviour
 			warning.text = "All Silos Empty";
 			return;
 		}
+		
 		int n = Mathf.Min(targets.Count, warheads);
 		n = Mathf.Min(n, numMissiles);
-		if(n == 0) {
+		Debug.Log("targets: " + targets.Count + " n: " + n);
+		if (n == 0) {
 			warning.text = "No Valid Targets Selected";
 			return;
 		}
@@ -99,7 +101,7 @@ public class StrikePlan : MonoBehaviour
 			do
 			{
 				targetindex++; // weirdly makes sense here as long as its -1 to start
-				if (targets.Count - 1 < targetindex) {
+				if (targets.Count <= targetindex) {
 					if(validTargetsDrawn == 0) {
 						warning.text = "All selected targets have been fired at";
 					}

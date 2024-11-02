@@ -226,6 +226,10 @@ public class UI : MonoBehaviour
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
 		PlayerInput.ins.ToggleAirMode(end == menu_airdoctrine);
+		if (start == menu_feelings) Relationships.ins.Clear();
+		if (start == menu_diplo) Relationships.ins.Clear();
+		if (end == menu_feelings) Relationships.ins.Draw();
+		if (end == menu_diplo) Relationships.ins.Draw();
 		if (end == menu_diplo) targetNation = 0;
 
 		if(start.children.Length > 0) {
@@ -276,7 +280,7 @@ public class UI : MonoBehaviour
 		}
 	}
 	public void LaunchMissiles() {
-		ROE.DeclareWar(0, targetNation);
+		//ROE.DeclareWar(0, targetNation);
 		float sat = (menu_strike as UIStrikeMenu).saturationSlider.value * 20;
 		int sati = Mathf.CeilToInt(Mathf.Max(1, sat));
 
@@ -286,10 +290,13 @@ public class UI : MonoBehaviour
 		menu_strike.children[2].value == 1);
 
 		State_AI player = Diplomacy.states[0] as State_AI;
-		player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList(), targetNation);
-
+		int missilesAway = player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList(), targetNation);
+		if(missilesAway < 1) {
+			return;
+		}
+		SFX.ins.NewSource(SFX.ins.countdown, 0.05f);
 		(menu_strike as UIStrikeMenu).UpdateStrikePlanScreen();
-
+		FinalCam.ins.MissileLaunch();
 		if (Simulator.tutorialOverride) {
 			TutorialOverride.hasLaunchedMissiles = true;
 		}

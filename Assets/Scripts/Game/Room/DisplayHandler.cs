@@ -95,7 +95,6 @@ public class DisplayHandler : MonoBehaviour
 		foreach (Screen s in screens) {
 			s.Switch(-1);
 		}
-		Debug.Log("unpaused");
 		pauseCam.enabled = false;
 	}
 

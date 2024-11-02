@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: crt
-  m_Shader: {fileID: 4800000, guid: 311c1b2a3b91b4304871c8e4b1d2b2dd, type: 3}
+  m_Name: RelationshipBar
+  m_Shader: {fileID: 4800000, guid: 7a9dad40f5834473cbe13b6d3b8d6251, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -59,12 +59,7 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _uiTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints:
-    - _lines: 90
+    m_Ints: []
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
@@ -82,15 +77,11 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _dist: 0.58
-    - _fuzzAmt: 0.82
-    - _noiseAmt: 0.5
-    - _scale: 0.72
-    - _sls: 1
-    - _t: 2222.4849
-    - _texScale1: 400
-    - _texScale2: 100
+    - maxWidth: 10
+    - minWidth: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _col1: {r: 1, g: 0, b: 0, a: 1}
+    - _col2: {r: 0, g: 1, b: 0, a: 1}
   m_BuildTextureStacks: []

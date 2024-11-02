@@ -6,6 +6,7 @@ using System.IO;
 using Unity.Profiling;
 using System.Xml;
 using Unity.VisualScripting;
+using System.Linq;
 
 public class AsyncPath : MonoBehaviour
 {
@@ -187,9 +188,9 @@ public class AsyncPath : MonoBehaviour
 				if (!ValidHalfPos(pos, downres)) { continue; }
 				if (i == 4) continue;
 				if (!IsPassable(pos * downres, passableTeams)) continue;
-				if (nlookup.ContainsKey(pos))
+				if (nlookup.TryGetValue(pos, out Node item))
 				{
-					if (!nlookup[pos].closed)
+					if (!item.closed)
 					{
 						Node c = CreateNode(en, toeval.gcost, toeval.pos, pos);
 						c.closed = true;
@@ -208,7 +209,10 @@ public class AsyncPath : MonoBehaviour
 				}
 			}
 		}
-		//Debug.Log(tries + " tries, " + lowf + " lowf, " + sf + " start");
+		//if (!passableTeams.Contains(0)) {
+		//	Debug.Log(tries + " tries, " + lowf + " lowf, " + sf + " start");
+		//}
+	
 
 		if (nlookup.ContainsKey(en))
 		{
@@ -260,7 +264,7 @@ public class AsyncPath : MonoBehaviour
 			tries++;
 			if (open.Count < 1)
 			{
-				//Debug.Log("closed all nodes: " + tries);
+				Debug.Log("closed all nodes: " + tries);
 				return lownode.pos * downres;
 			}
 
@@ -350,7 +354,7 @@ public class AsyncPath : MonoBehaviour
 	{
 		int pteam = Map.ins.GetPixTeam(pos);
 		for(int i = 0; i < passableTeams.Length; i++) {
-			if (passableTeams[i] == i) {
+			if (passableTeams[i] == pteam) {
 				return true;
 			}
 		}

@@ -28,7 +28,6 @@ public class UIOption : MonoBehaviour
 	private void Awake()
 	{
 
-
 		if (text == null) {
 			text = GetComponent<TMP_Text>();
 		}

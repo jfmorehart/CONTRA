@@ -52,7 +52,8 @@ public class EconUIPanel : MonoBehaviour
     }
 
 	string Rounded(float input, int decimals) {
-		float output = Mathf.Round(input * (10 ^ decimals)) / (10 ^ decimals);
+		float scale = Mathf.Pow(10, decimals);
+		float output = Mathf.Round(input * scale) / scale;
 		return output.ToString();
 	}
 

@@ -6,6 +6,7 @@ using UnityEngine;
 using Unity.Profiling;
 using static MapUtils;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 
 public class Map : MonoBehaviour
 {
@@ -20,9 +21,13 @@ public class Map : MonoBehaviour
 	public float armyInfluenceStrength;
 
 	
-	[HideInInspector]
+	//[HideInInspector]
 	public Vector2Int[] state_centers;
 	public Color[] state_colors;
+
+	[HideInInspector]
+	public Material[] state_mats;
+	public Material state_mat_example;
 
 	//Texel Buffers
 	float[] stateInfluence;
@@ -114,10 +119,14 @@ public class Map : MonoBehaviour
 
 		//Prefabulate that amulite
 		state_colors_bufferable = new SColor[numStates];
+		state_mats = new Material[numStates];
 		for (int i = 0; i < numStates; i++)
 		{
 			state_colors_bufferable[i] = new SColor(state_colors[i].r, state_colors[i].g, state_colors[i].b);
+			state_mats[i] = new Material(state_mat_example);
+			state_mats[i].color = state_colors[i];
 		}
+
 
 		popbuffer = new ComputeBuffer(texelLongLength, 4);
 		borderLengths = new int[numStates * numStates];
@@ -138,10 +147,11 @@ public class Map : MonoBehaviour
 		StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
 
 		//if we're a lil nation, swap us with a bigger one
-		if (CheckSwapColors()) {
-			//complete the swap
-			StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
-		}
+		//removed 
+		//if (CheckSwapColors()) {
+		//	//complete the swap
+		//	StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
+		//}
 		originalMap = new int[pixTeam.Length];
 		Array.Copy(pixTeam, originalMap, pixTeam.Length);
 		state_populations = new uint[numStates];
@@ -366,6 +376,11 @@ public class Map : MonoBehaviour
 		}
 		for (int i = 0; i < numStates; i++)
 		{
+			if (sumCounter[i] == 0) {
+				state_centers[i] = Vector2Int.zero;
+				Debug.LogError("no cities on team " + i);
+				continue;
+			}
 			Vector2Int avgCenter = sumCenter[i] / sumCounter[i];
 			state_centers[i] = avgCenter;
 		}
@@ -436,13 +451,27 @@ public class Map : MonoBehaviour
 					break;
 				}
 			}
-
 		}
 
 		for (int i = 0; i < numStates; i++)
 		{
 			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
 			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
+		}
+
+		//Re-center state_centers
+		sumCenter = new Vector2Int[numStates];
+		sumCounter = new int[numStates];
+		for (int x = 0; x < cities.Count; x++)
+		{
+			City c = cities[x];
+			sumCounter[c.team]++;
+			sumCenter[c.team] += c.mpos;
+		}
+		for (int x = 0; x < numStates; x++)
+		{
+			Vector2Int avgCenter = sumCenter[x] / sumCounter[x];
+			state_centers[x] = avgCenter;
 		}
 	}
 
@@ -451,7 +480,6 @@ public class Map : MonoBehaviour
 		teamOf.SetData(pixTeam);
 		COUNT.SetBuffer(0, "teamOf", teamOf);
 
-		int popSize = texelLongLength;
 		//popbuffer = new ComputeBuffer(popSize, 4);
 		popbuffer.SetData(pixelPop);
 		COUNT.SetBuffer(0, "popBuffer", popbuffer);
@@ -678,16 +706,16 @@ public class Map : MonoBehaviour
 				borderPoints[i][j].Clear();
 			}
 		}
-		int scale = 10;
-		for (int x = 0; x < (texelLongLength) / scale; x++)
+		//int scale = 1;
+		for (int x = 0; x < (texelLongLength); x++)
 		{
-			int team = pixTeam[x * scale];
-			int other = borderDataPoints[x * scale];
+			int team = pixTeam[x];
+			int other = borderDataPoints[x];
 
 			if (team < 0) continue;
 			if (other < 0) continue;
 
-			borderPoints[team][other].Add(IndexToCoords(x * scale));
+			borderPoints[team][other].Add(IndexToCoords(x));
 			//Debug.Log(team + " borders " + other + " at " + IndexToCoords(x));
 			count[team]++;
 		}
@@ -698,6 +726,7 @@ public class Map : MonoBehaviour
 			for (int j = 0; j < numStates; j++)
 			{
 				int index = numStates * j + i;
+				//Debug.Log(i + " " + j + " " + borderLengths[index]);
 				AsyncPath.borders[i, j] = (borderLengths[index] > 5);
 			}
 		}

@@ -58,19 +58,20 @@ public class Army : Unit
 				maxHP = 5;
 				hP = Mathf.CeilToInt(hP * (maxHP / (float)shp));
 			}
-			//upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.1f);
+			upkeepCost = 12;
 		}
 		if (Research.unlockedUpgrades[team][0] > 2)
 		{
 			//"mechanization"
 			speed = 12;
 			//upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.2f);
+			upkeepCost = 14;
 		}
 		if (Research.unlockedUpgrades[team][0] > 3)
 		{
 			//"combined arms"
 			damage = 2;
-			//upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.3f);
+			upkeepCost = 16;
 		}
 		if (Research.unlockedUpgrades[team][0] > 4)
 		{
@@ -82,7 +83,7 @@ public class Army : Unit
 				hP = Mathf.CeilToInt(hP * (maxHP / (float)shp));
 			}
 			speed = 15f;
-			upkeepCost = 2;// Mathf.CeilToInt(baseUpkeepCost * 1.6f);
+			upkeepCost = 19;
 		}
 	}
 	public override void Start()
@@ -219,7 +220,8 @@ public class Army : Unit
 			case Order.Type.MoveTo:
 				pathOrder = order;
 				//Async
-				Invoke(nameof(PathFind), Random.Range(0, 1f));
+				Invoke(nameof(PathFind), 0);
+				//Invoke(nameof(PathFind), Random.Range(0, 1f));
 
 				//Synchronous solution
 				//Vector2Int[] npath = PathFind.Path(cpos, opos, ROE.Passables(team), 4);
@@ -236,9 +238,12 @@ public class Army : Unit
 	public async void PathFind() {
 		Vector2Int cpos = MapUtils.PointToCoords(transform.position);
 		Vector2Int opos = MapUtils.PointToCoords(pathOrder.pos);
-		int[] pas = ROE.Passables(team);
+		List<int> pas = ROE.ListPassables(team);
+		pas.Add(Map.ins.GetPixTeam(opos));
+
 		path = await Task.Run(() => AsyncPath.ins.Path(cpos, opos, pas.ToArray(), 2, 3200));
 		PathIsSet();
+		//Debug.Log(team + " " + path.Length);
 	}
 
 	public void PathIsSet() {

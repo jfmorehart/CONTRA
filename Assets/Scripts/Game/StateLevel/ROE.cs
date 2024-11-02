@@ -137,8 +137,9 @@ public static class ROE
 		}
     }
 
+	static List<int> pas = new ();
 	public static int[] Passables(int team, bool includeOcean = false) {
-		List<int> pas = new();
+		pas.Clear();
 		// Return countries that we are at war with or have open borders with
 		if (Diplomacy.HasAllies(team)) {
 			pas.AddRange(Diplomacy.AlliesOf(team));
@@ -154,4 +155,26 @@ public static class ROE
 		}
 		return pas.ToArray();
     }
+	public static List<int> ListPassables(int team, bool includeOcean = false)
+	{
+		List<int> pas = new();
+		// Return countries that we are at war with or have open borders with
+		if (Diplomacy.HasAllies(team))
+		{
+			pas.AddRange(Diplomacy.AlliesOf(team));
+		}
+
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (AreWeAtWar(team, i))
+			{
+				pas.Add(i);
+			}
+		}
+		if (includeOcean)
+		{
+			pas.Add(-1);
+		}
+		return pas;
+	}
 }

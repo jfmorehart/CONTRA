@@ -36,7 +36,7 @@ public static class Simulator
 		teams[1] = new int[] { }; //team B is the enemy
 		scenarios[2] = new Scenario(0, 5, tsizes, teams);
 
-        activeScenario = scenarios[0];
+        activeScenario = scenarios[2];
         IsSetup = true;
 	}
 

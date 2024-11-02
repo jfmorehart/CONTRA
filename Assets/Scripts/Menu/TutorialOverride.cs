@@ -76,7 +76,7 @@ public class TutorialOverride : MonoBehaviour
 		Time.timeScale = 1;
 		Map.ins.populationGrowthTickDelay = 0f;
 		Map.ins.growth_tutorialManualValues = true;
-		Map.ins.growth_deltaOverride = 0.015f;
+		Map.ins.growth_deltaOverride = 0.0015f;
 		Map.ins.growth_stateGrowthTickOverride = 1;
 		yield return new WaitForSecondsRealtime(5);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -179,7 +179,7 @@ public class TutorialOverride : MonoBehaviour
 			if (UI.ins.currentMenu == UI.ins.menu_build_confirm)
 			{
 				if (UI.ins.selected == 0) {
-					ConsolePanel.ins.toolhead.text = "designate construction sites";
+					ConsolePanel.ins.toolhead.text = "designate three construction sites";
 					ConsolePanel.ins.tooltext.text = "move the cursor with w, a, s, and d keys. q and e to zoom";
 				}
 				else {

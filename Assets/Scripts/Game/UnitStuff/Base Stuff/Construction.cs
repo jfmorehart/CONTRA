@@ -42,7 +42,7 @@ public class Construction : Unit
     void Complete() {
         Instantiate(ArmyManager.ins.buildPrefabs[(int)btype], transform.position, transform.rotation, ArmyManager.ins.transform);
         if(team == 0) {
-            ConsolePanel.Log("ICBM Silo finished construction, awaiting orders");
+            //ConsolePanel.Log("ICBM Silo finished construction, awaiting orders");
 	    }
         Kill();
     }

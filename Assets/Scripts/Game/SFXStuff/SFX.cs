@@ -25,6 +25,8 @@ public class SFX : MonoBehaviour
 	public AudioClip ambient;
 	public AudioClip nukeSound;
 	public AudioClip missileSound;
+	public AudioClip countdown;
+
 	public AudioClip sidewinderSound;
 	public AudioClip launchSound;
 	public AudioClip geiger;

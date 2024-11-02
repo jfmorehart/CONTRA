@@ -26,7 +26,7 @@ public class State_Enemy : State_AI
 	float confidence_air;
 
 	float airThreat; //defensive airforce strength we should have
-	float groundThreat; //army strength we should have
+	public float groundThreat; //army strength we should have
 
 	protected override void Awake()
 	{
@@ -122,7 +122,7 @@ public class State_Enemy : State_AI
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
 			if (!Diplomacy.states[i].alive) continue;
-			troopAllocations[i] *= 1 - opinion[i];
+			troopAllocations[i] *= (1 - opinion[i]) + 0.001f;
 			if (!ROE.AreWeAtWar(team) && invasionTarget == i) {
 				troopAllocations[i] *= 10f;
 			}
@@ -246,7 +246,7 @@ public class State_Enemy : State_AI
 
 				if(prepareInvasion)
 				{
-					float armyThreshold = Mathf.Max(Map.ins.state_populations[i] * 0.4f, armies[i].Count * 0.6f);
+					float armyThreshold = Mathf.Min(armies[team].Count * 0.6f, Map.ins.state_populations[i] * 0.6f);//Mathf.Max(Map.ins.state_populations[i] * 0.4f, armies[i].Count * 0.5f);
 
 					//are we ready to attack?
 					//Debug.Log(team + " vs " + i + " with= " + ArmiesReadyOnFront(i) + " requires " + armyThreshold);
@@ -265,7 +265,7 @@ public class State_Enemy : State_AI
 							SpawnTroops(15);
 						}
 						invasionTarget = i;
-						ReAssignGarrisons(true);
+						//ReAssignGarrisons(true);
 					}
 	
 				}
@@ -320,6 +320,7 @@ public class State_Enemy : State_AI
 		}
 	}
 	void WartimeEconomics() {
+		Debug.Log(team + " " + groundThreat);
 		if (armies[team].Count < groundThreat * 2f) {
 			int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * confidence_ground));
 			spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - armies[team].Count) - 1);
@@ -567,8 +568,8 @@ public class State_Enemy : State_AI
 
 	public override void StrikeDetect(int perp, int victim, bool provoked)
 	{
-		if (victim == -1) return;
-
+		if (victim == -1 || perp == -1) return;
+		Debug.Log("strdtc " + perp + " " + victim);
 		base.StrikeDetect(perp, victim, provoked);
 		if (victim == team)
 		{
@@ -619,6 +620,7 @@ public class State_Enemy : State_AI
 
 	public override void ReceiveNews(Diplomacy.NewsItem news, int t1, int t2)
 	{
+		if (t1 < 0 || t2 < 0) return;
 		base.ReceiveNews(news, t1, t2);
 		if (team == t1 || team == t2) return;//i should already know
 
