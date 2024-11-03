@@ -39,7 +39,7 @@ public class StrikePlan : MonoBehaviour
 	}
 	private void Start()
 	{
-		player = (Diplomacy.states[0] as State_AI);
+		player = (Diplomacy.states[Map.localTeam] as State_AI);
 	}
 	private void Update()
 	{

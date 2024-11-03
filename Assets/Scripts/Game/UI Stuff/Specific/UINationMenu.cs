@@ -101,7 +101,7 @@ public class UINationMenu : UIMenu
 		}
 
 		if (usingSatura) {
-			if ((Diplomacy.states[0] as State_AI).sharesBorder[UI.ins.targetNation]) {
+			if ((Diplomacy.states[Map.localTeam] as State_AI).sharesBorder[UI.ins.targetNation]) {
 				troopSlider.gameObject.SetActive(true);
 				kiddos.Add(troopSlider);
 			}

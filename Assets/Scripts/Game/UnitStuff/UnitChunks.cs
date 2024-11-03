@@ -26,6 +26,7 @@ public static class UnitChunks
 		for (int x = 0; x < Map.ins.numStates; x++)
 		{
 			chunkValues[x] = new int[dime.x * dime.y];
+			Debug.Log(chunkValues[x].Length);
 		}
 		for (int i = 0; i < chunks.Length; i++) {
             chunks[i] = new List<Unit>();
@@ -40,6 +41,7 @@ public static class UnitChunks
         chunkValues[me.team][index]--;
     }
     public static void AddToChunk(int index, Unit me) {
+        Debug.Log(me + "   t= " + me.team + "g= " + index);
         chunks[index].Add(me);
 		chunkValues[me.team][index]++;
 	}

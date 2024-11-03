@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ public class ArmyManager : MonoBehaviour
     public GameObject armyPrefab;
 	public GameObject cityPrefab;
 	public GameObject statePrefab;
+	public GameObject state_onlinePrefab;
 	public GameObject playerPrefab;
 	public GameObject siloPrefab;
 	public GameObject airbasePrefab;
@@ -50,18 +52,29 @@ public class ArmyManager : MonoBehaviour
 	}
 
 	public State NewState(int index, Vector2Int pos) {
+		Debug.Log("placing state " + index);
 		Vector3 p = MapUtils.CoordsToPoint(pos);
 		GameObject go;
-		
-		//go = Instantiate(statePrefab, p, Quaternion.identity, transform);
-		if (index == 0)
-		{
-			go = Instantiate(playerPrefab, p, Quaternion.identity, transform);
+
+		if (Map.multi) {
+			if (MultiplayerVariables.ins.clientIDs[index] == NetworkManager.Singleton.LocalClientId) {
+				go = Instantiate(playerPrefab, p, Quaternion.identity, transform);
+			}
+			else {
+				go = Instantiate(state_onlinePrefab, p, Quaternion.identity, transform);
+			}
 		}
-		else
-		{
-			go = Instantiate(statePrefab, p, Quaternion.identity, transform);
+		else {
+			if (index == 0)
+			{
+				go = Instantiate(playerPrefab, p, Quaternion.identity, transform);
+			}
+			else
+			{
+				go = Instantiate(statePrefab, p, Quaternion.identity, transform);
+			}
 		}
+
 		State s = go.GetComponent<State>();
 		s.Setup(index, pos);
 		return s;
@@ -75,7 +88,10 @@ public class ArmyManager : MonoBehaviour
 
 			if(Map.ins.GetPixTeam(MapUtils.PointToCoords(wp)) < 0) continue;
 
-            Instantiate(armyPrefab, wp, Quaternion.identity, transform);
+			GameObject go = Instantiate(armyPrefab, wp, Quaternion.identity, transform);
+			if (Map.multi) {
+				go.GetComponent<NetworkObject>().Spawn();
+			}
 		}
 
 		//for(int i = 0; i < 2; i++) {
@@ -102,12 +118,26 @@ public class ArmyManager : MonoBehaviour
 		//	Transform t = Instantiate(aaaPrefab, wp, Quaternion.identity, transform).transform;
 		//}
 	}
-	public Army PlaceArmy(Vector2 worldPos)
+	public void PlaceArmy(Vector2 worldPos)
 	{
-		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(worldPos)) < 0) return null;
+		if (Map.ins.GetPixTeam(MapUtils.PointToCoords(worldPos)) < 0) return;
 
-		Army ar = Instantiate(armyPrefab, worldPos, Quaternion.identity, transform).GetComponent<Army>();
-		return ar;
+		if (Map.multi) {
+			if (Map.host) {
+				Army ar = Instantiate(armyPrefab, worldPos, Quaternion.identity, transform).GetComponent<Army>();
+				if (Map.multi)
+				{
+					ar.GetComponent<NetworkObject>().Spawn();
+				}
+			}
+			else {
+				//Request spawn from server
+				MultiplayerVariables.ins.SpawnArmyServerRPC(worldPos);
+			}
+		}
+		else {
+			Instantiate(armyPrefab, worldPos, Quaternion.identity, transform).GetComponent<Army>();
+		}
 	}
 
 	public Unit NewConstruction(int team, Vector2Int mapPos, ArmyManager.BuildingType btype, bool grandfathered = false) {

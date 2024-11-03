@@ -67,12 +67,12 @@ public class State : MonoBehaviour
 	protected virtual void StateUpdate() {
 		if (!alive) return;
 
-		//called ever 5 seconds
+		//called ever few seconds
 		assesment = Economics.RunAssesment(team);
 		Economics.state_assesments[team] = assesment;
 		RecordEconomyData();
 
-		if (Simulator.tutorialOverride && team == 0) {
+		if (Simulator.tutorialOverride && team == Map.localTeam) {
 			//rig the game, 2x max construction and no budget restrictions
 			ConstructionWork();
 			return;
@@ -82,7 +82,7 @@ public class State : MonoBehaviour
 			//lower than this number cheats the game a little
 			//-1 is the max shrink rate, so we can't let them sit at -5 with a bunch of silos
 			BalanceBudget(assesment.costOverrun * 0.15f);
-			if (team == 0) {
+			if (team == Map.localTeam) {
 				ConsolePanel.Log("<color=\"red\"> your economy is very unstable! </color>", 5);
 			}
 		}
@@ -106,8 +106,7 @@ public class State : MonoBehaviour
 		}
     }
 
-	void RecordEconomyData() {
-
+	protected void RecordEconomyData() {
 		if (graphCham >= recentPops.Length)
 		{
 			for (int i = 0; i < recentPops.Length - 1; i++)
@@ -295,21 +294,21 @@ public class State : MonoBehaviour
 			}
 
 			if (toSpawn == 0) {
-				if(team == 0)ConsolePanel.Log("conscripting additional men", 5);
+				if(team == Map.localTeam)ConsolePanel.Log("conscripting additional men", 5);
 				return;
 			}
 
 			toSpawn--;
 			if(manHourDebt > assesment.buyingPower * 2) {
 				//Debug.Log("we dont have the funds to train more troops right now");
-				if(team == 0) {
+				if(team == Map.localTeam) {
 					ConsolePanel.Log("insufficient funding to train new troops", 5);
 				}
 				return; //do not let us get too far into debt
 			}
 			if (armies[team].Count > Map.ins.state_populations[team])
 			{
-				if (team == 0)
+				if (team == Map.localTeam)
 				{
 					ConsolePanel.Log("insufficient population to conscript new troops");
 				}
@@ -354,7 +353,7 @@ public class State : MonoBehaviour
 	protected virtual void ConstructionWork() {
 		//todo calc work per site
 		float workAmt = assesment.manHoursPerSite;
-		if (Simulator.tutorialOverride && team == 0) {
+		if (Simulator.tutorialOverride && team == Map.localTeam) {
 			workAmt = Economics.maxPowerPerSite * 2;
 		}
 
@@ -386,7 +385,7 @@ public class State : MonoBehaviour
 
 		alive = false;
 
-		if(team == 0) {
+		if(team == Map.localTeam) {
 			TimePanel.ins.EndGame();
 		}
 		//wait for buildinfluences
@@ -394,7 +393,7 @@ public class State : MonoBehaviour
 
 		if (Time.timeSinceLevelLoad < 1f) return;
 
-		if (team == 0)
+		if (team == Map.localTeam)
 		{
 			ConsolePanel.Log(ConsolePanel.ColoredName(team) + " have collapsed");
 		}

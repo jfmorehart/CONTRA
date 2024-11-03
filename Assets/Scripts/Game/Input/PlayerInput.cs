@@ -87,13 +87,13 @@ public class PlayerInput : MonoBehaviour
 	}
 
 	public void PlayerSendAid() {
-		if (Diplomacy.states[0].manHourDebt > Diplomacy.states[0].assesment.buyingPower * 2)
+		if (Diplomacy.states[Map.localTeam].manHourDebt > Diplomacy.states[Map.localTeam].assesment.buyingPower * 2)
 		{
 			ConsolePanel.Log("insufficient funds to send aid", 5);
 		}
 		else {
 
-			Diplomacy.states[0].SendAid(UI.ins.targetNation);
+			Diplomacy.states[Map.localTeam].SendAid(UI.ins.targetNation);
 		}
 	
     }
@@ -104,11 +104,11 @@ public class PlayerInput : MonoBehaviour
 
 	public void ConscriptTroops()
 	{
-		Diplomacy.states[0].SpawnTroops(5);
+		Diplomacy.states[Map.localTeam].SpawnTroops(5);
 	}
 	public void DisbandTroops()
 	{
 		ConsolePanel.Log("placing men on leave", 5);
-		Diplomacy.states[0].DisbandTroops(5);
+		Diplomacy.states[Map.localTeam].DisbandTroops(5);
 	}
 }

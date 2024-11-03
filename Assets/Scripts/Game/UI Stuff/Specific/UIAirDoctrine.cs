@@ -9,7 +9,7 @@ public class UIAirDoctrine : UIMenu
 
 	private void Start()
 	{
-		state = Diplomacy.states[0] as State_AI;
+		state = Diplomacy.states[Map.localTeam] as State_AI;
 		UpdateFromArray();
 	}
 

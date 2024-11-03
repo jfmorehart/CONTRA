@@ -7,9 +7,17 @@ public static class MapUtils
 	static readonly int ICBMspeed = 50;
 
 	public static Inf PlaceCity(int index) {
-		Vector2Int posI = new Vector2Int(
-			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
-			Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+
+		Vector2Int posI;
+
+		if (Map.multi) {
+			posI = MultiplayerCityPosition(index);
+		}
+		else {
+			posI = new Vector2Int(
+				Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
+				Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+		}
 
 		int mteam = 0;
 		float cdist = 9000;
@@ -29,6 +37,19 @@ public static class MapUtils
 		float popU = Random.Range(1, 10); //todo replace with popcount
 		return new Inf(posI, popU, mteam, 0);
     }
+
+	public static Vector2Int MultiplayerCityPosition(int i)
+	{
+		float x = MultiplayerVariables.Ran(new Vector2(i + Map.ins.mapSeed, i - Map.ins.mapSeed));
+		float y = MultiplayerVariables.Ran(new Vector2(i - Map.ins.mapSeed, i + Map.ins.mapSeed));
+
+		Vector2Int posI = new Vector2Int(
+
+			Mathf.RoundToInt(Mathf.Lerp(1, Map.ins.texelDimensions.x, x)),
+			Mathf.RoundToInt(Mathf.Lerp(1, Map.ins.texelDimensions.y, y)));
+
+		return posI;
+	}
 
 	public static void NukeObjs(Vector2 wpos, float radius, bool hitsAir = false) {
 		float dist = Mathf.Pow(radius, 0.4f) * 25;
@@ -87,9 +108,7 @@ public static class MapUtils
 	public static Vector2Int PlaceState(int index)
 	{
 		bool valid = false;
-		Vector2Int posI = new Vector2Int(
-					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
-					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+		Vector2Int posI = Vector2Int.zero;
 
 		int it = 0;
 		while (!valid) {
@@ -98,9 +117,16 @@ public static class MapUtils
 				Debug.LogError("no valid point found to place state");
 				return Vector2Int.zero;
 			}
-			posI = new Vector2Int(
-					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
-					Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+			if (Map.multi) {
+				posI = MultiplayerCityPosition((index * 11003) + 1 * it);
+				Debug.Log("input " + ((index * 11003) + 1 * it) + " output = " + posI);
+			}
+			else {
+				posI = new Vector2Int(
+				Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.x)),
+				Mathf.RoundToInt(Random.Range(1, Map.ins.texelDimensions.y)));
+			}
+
 			//state may not be centered in water
 			valid = Map.ins.GetPixTeam(posI) != -1;
 		}

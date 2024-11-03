@@ -146,9 +146,9 @@ Shader "Unlit/CamEffects"
 
                 float2 sUV = scale(uv, _texScale1);
                 float3 col = 0; 
-                float2 uisUV = scale(i.uv, _texScale2);
-                col += tex2D(_uiTex, uisUV);
-
+                //float2 uisUV = scale(i.uv, _texScale2);
+                //col += tex2D(_uiTex, uisUV);
+                //col += 0.1 * float3(0.7, 0.5, 0.1);
 
                 //pow(fractal_noise(scale(i.uv.yy, 200) * 40 + scale(_t * 2, 5)), 4) * 0.2;
                 float crtnoise = frac(uv.y * 20 + frac(_t * 0.2)) * 0.05;
@@ -176,7 +176,8 @@ Shader "Unlit/CamEffects"
                 float sld = pow(2 * abs(round(ny) - ny), 4);
                 col *= lerp(1, max(min(1, sld * 5), 0.6), _sls);
 
-
+      
+                //col = pow(col, 1.3);
                 return float4(col, 1);
             }
             ENDCG

@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Unit : MonoBehaviour
+public class Unit : NetworkBehaviour
 {
 	//Base Selectable class
 	// Inherited by anything on the map that takes orders
@@ -31,21 +32,28 @@ public class Unit : MonoBehaviour
 
 	public virtual void Awake() {
 		maxHP = hP;
+		id = Random.Range(0, 10000);
+	}
+
+	public virtual void Start()
+	{
 		Vector2Int pt = MapUtils.PointToCoords(transform.position);
 		team = Map.ins.GetPixTeam(pt);
-		id = Random.Range(0, 10000);
 		gameObject.name = team.ToString() + id.ToString();
 		actingTeam = team;
-		if (useChunkSystem) {
+		if (useChunkSystem)
+		{
 			positionChunk = UnitChunks.ChunkLookup(transform.position);
 			UnitChunks.AddToChunk(positionChunk, this);
 		}
 
 		ArmyManager.ins.RegisterUnit(this);
-	}
 
-	public virtual void Start()
-	{
+		if (Map.multi && Map.host)
+		{
+			GetComponent<NetworkObject>().ChangeOwnership(MultiplayerVariables.ins.clientIDs[team]);
+		}
+
 		upkeepCost = baseUpkeepCost;
 		ren = GetComponent<Renderer>();
 		//ren.material = new Material(ren.material);
@@ -95,7 +103,21 @@ public class Unit : MonoBehaviour
 		if (useChunkSystem) {
 			UnitChunks.RemoveFromChunk(positionChunk, this);
 		}
-		Destroy(gameObject);
+
+		if (Map.multi) {
+			NetworkObject obj = GetComponent<NetworkObject>();
+			if (Map.host)
+			{
+				MultiplayerVariables.ins.KillObjClientRPC(NetworkManager.Singleton.LocalClientId, obj.NetworkObjectId);
+				obj.Despawn(true);
+			}
+			else {
+				MultiplayerVariables.ins.KillObjServerRPC(NetworkManager.Singleton.LocalClientId, obj.NetworkObjectId);
+			}
+		}
+		else {
+			Destroy(gameObject);
+		}
 	}
 
 	//only for use in sensitive units like buildings

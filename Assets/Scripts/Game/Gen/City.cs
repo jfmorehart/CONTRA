@@ -84,7 +84,7 @@ public class City : MonoBehaviour
 		debugInfo = ""; 
 		for (int i= 0; i< Map.ins.numStates; i++) {
 			if (i == team) continue;
-			if ((Diplomacy.states[team] as State_AI).sharesBorder[i]) {
+			if (AsyncPath.ins.SharesBorder(team, i)) {
 				//possibly a neighbor
 				debugInfo += i.ToString() + "mb, ";
 				//loop thru cities until we can make it to one

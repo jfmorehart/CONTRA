@@ -62,7 +62,13 @@ public class UI : MonoBehaviour
 			menu_diplo.children[i] = g.GetComponent<UIOption>();
 			UIOption op = menu_diplo.children[i];
 			op.onSelect.AddListener(SelectNation);
-			op.value = i + 1; //skip 0 (player state)
+			op.value = i;
+			if (i >= Map.localTeam)
+			{
+				op.value += 1; //skip player state
+			}
+
+
 			op.text.color = Map.ins.state_colors[(int)op.value];
 			op.defaultColor = Map.ins.state_colors[(int)op.value];
 			op.plaintext = Diplomacy.state_names[(int)op.value];
@@ -289,7 +295,7 @@ public class UI : MonoBehaviour
 		menu_strike.children[1].value == 1,
 		menu_strike.children[2].value == 1);
 
-		State_AI player = Diplomacy.states[0] as State_AI;
+		State_AI player = Diplomacy.states[Map.localTeam] as State_AI;
 		int missilesAway = player.ICBMStrike(sati, TargetSort(tars.ToArray()).ToList(), targetNation);
 		if(missilesAway < 1) {
 			return;

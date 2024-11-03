@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 public class TypingInterface : MonoBehaviour
 {
+	public static TypingInterface ins;
     public TMP_Text dialogue;
 
     string pstring = "";
@@ -54,6 +56,7 @@ public class TypingInterface : MonoBehaviour
 
 	private void Awake()
 	{
+		ins = this;
 		Cursor.lockState = CursorLockMode.Locked;
 		if (!Simulator.IsSetup) Simulator.Setup();
 		Time.timeScale = 1;
@@ -104,13 +107,15 @@ public class TypingInterface : MonoBehaviour
 
 	void WriteOptions() {
 		Debug.Log("write options " + Time.time);
-		WriteOut("_________________________________________", false);
+		WriteOut("_______________________________________", false);
 		WriteOut("select a simulation to load", false);
 		WriteOut("");
 		WriteOut("tutorial", false);
 		WriteOut("scenario a", false);
 		WriteOut("scenario b", false);
 		WriteOut("scenario c",false);
+
+		WriteOut("multiplayer");
 		WriteOut("");
 		WriteOut("type 'help' for more info",false);
 		WriteOut("_______________________________________", false);
@@ -168,14 +173,12 @@ public class TypingInterface : MonoBehaviour
 			if(unwritten.Count > 0) {
 				lines[activeLine] = unwritten[0];
 				int skiplines = Mathf.CeilToInt(unwritten[0].Length / (float)maxLineLength);
-				Debug.Log(unwritten[0].Length / (float)maxLineLength);
 				lengths[activeLine] = 0;
 				finishedWriting[activeLine] = false;
 				unwritten.RemoveAt(0);
 
 				for (int i = 0; i < skiplines; i++)
 				{
-					Debug.Log("unwrittenskip " + skiplines);
 					NewLine();
 					finishedWriting[activeLine] = true;
 				}
@@ -195,9 +198,7 @@ public class TypingInterface : MonoBehaviour
 			finishedWriting[activeLine] = true;
 
 			int skiplines = Mathf.CeilToInt(lines[activeLine].Length / (float)maxLineLength);
-			Debug.Log("skiplines = " + skiplines);
 			for(int i = 0; i < skiplines; i++) {
-				Debug.Log("skip " + skiplines);
 				NewLine();
 				finishedWriting[activeLine] = true;
 			}
@@ -255,7 +256,7 @@ public class TypingInterface : MonoBehaviour
 		finishedWriting[activeLine] = false;
 
 	}
-	void WriteOut(string message, bool greenify = false, bool instant = false) {
+	public void WriteOut(string message, bool greenify = false, bool instant = false) {
 
 		if (greenify) {
 			message = GreenText(message);
@@ -266,7 +267,6 @@ public class TypingInterface : MonoBehaviour
 			int skiplines = Mathf.CeilToInt(message.Length / (float)maxLineLength);
 			for (int i = 0; i < skiplines; i++)
 			{
-				Debug.Log("writeskip " + skiplines);
 				NewLine();
 				finishedWriting[activeLine] = true;
 			}
@@ -281,6 +281,37 @@ public class TypingInterface : MonoBehaviour
 	void ProcessText(string message) {
 		message = message.Replace("\u200B", "");
 
+		if (message.Contains("multiplayer", System.StringComparison.CurrentCultureIgnoreCase)) {
+			WriteBracket();
+			WriteOut("");
+			WriteOut("launching multiplayer");
+			WriteOut("");
+			WriteOut("'host' to start a new game");
+			WriteOut("'join joincode' to join a friends lobby");
+			WriteOut("no public lobbies yet");
+			WriteOut("");
+			WriteBracket();
+			RelayDude.ins.StartMultiplayer();
+			return;
+		}
+		if (message.Contains("host", System.StringComparison.CurrentCultureIgnoreCase))
+		{
+			WriteOut("hosting");
+			RelayDude.ins.StartGame();
+			return;
+		}
+		if(message.Contains("start", System.StringComparison.CurrentCultureIgnoreCase) && RelayDude.ins.hosting) {
+			LoadGame(true);
+		}
+		if (message.Contains("join", System.StringComparison.CurrentCultureIgnoreCase))
+		{
+			int f = message.IndexOf(' ') + 1;
+			string joincode = message[f..];
+			Debug.Log("parsed this joincode = " + joincode);
+			WriteOut("joining");
+			RelayDude.ins.JoinGame(joincode);
+			return;
+		}
 		if (message.Contains("hello joshua", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("greetings professor falken");
@@ -364,7 +395,7 @@ public class TypingInterface : MonoBehaviour
 			WriteBracket();
 			WriteOut("");
 			WriteOut("the tutorial scenario introduces the player to cities, growth, countries, and pre-emptive nuclear strikes");
-			//WriteOut("");
+			WriteOut("");
 			WriteOut("'load' to load scenario");
 			WriteOut("");
 			WriteBracket();
@@ -433,8 +464,15 @@ public class TypingInterface : MonoBehaviour
 	}
 
 
-	void LoadGame()
+	void LoadGame(bool online = false)
 	{
+		if (online) {
+
+			NetworkManager.Singleton.SceneManager.LoadScene("Game", LoadSceneMode.Single);
+			return;
+		}
+		Destroy(NetworkManager.Singleton.gameObject);
+		Destroy(MultiplayerVariables.ins);
 		lockout = true;
 		InvokeRepeating(nameof(Dot), 0, 0.01f);
 		StartCoroutine(nameof(AsyncLoadScene), 1);

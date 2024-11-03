@@ -4594,6 +4594,7 @@ MonoBehaviour:
   armyPrefab: {fileID: 4099564695111634173, guid: 27a68f6249a6b43c29a41a369adb180a, type: 3}
   cityPrefab: {fileID: 646953543532652379, guid: 2d7abd246c05f47c49a20dedc305d47f, type: 3}
   statePrefab: {fileID: 32672990943258135, guid: a276eed25db044cb1ba96be477df6b5e, type: 3}
+  state_onlinePrefab: {fileID: 3119257323832219090, guid: 61022a20f7ff1463a9910dd31f928551, type: 3}
   playerPrefab: {fileID: 3119257323832219090, guid: 48ac8680b9f474500b22f32a3f650c74, type: 3}
   siloPrefab: {fileID: 7504379603494038120, guid: 2fda401aaf5e34e31a034d58aef96c7b, type: 3}
   airbasePrefab: {fileID: 7504379603494038120, guid: 9d600d89d11934591ac520979c70239a, type: 3}

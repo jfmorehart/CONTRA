@@ -7,11 +7,16 @@ using Unity.Profiling;
 using static MapUtils;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using Unity.Netcode;
 
 public class Map : MonoBehaviour
 {
 	[HideInInspector]
 	public static Map ins;
+	public static bool multi;
+	public static bool host;
+	public static int localTeam = 0;
+
 	public static Vector3 localScale;
 
 	[Header("General Settings")]
@@ -96,18 +101,51 @@ public class Map : MonoBehaviour
 
 	bool prepInfluences;
 
-	private void Awake()
-	{
+	private void Awake() {
+		mapSeed = UnityEngine.Random.Range(-500, 500);
+		if (MultiplayerVariables.ins != null)
+		{
+			multi = true;
+			Debug.Log("live game");
+			if (NetworkManager.Singleton.IsHost)
+			{
+				host = true;
+				MultiplayerVariables.ins.MapSeed = mapSeed;
+				int numPlayers = NetworkManager.Singleton.ConnectedClientsList.Count;
+				MultiplayerVariables.ins.NumPlayers = numPlayers;
+				MultiplayerVariables.ins.clientIDs = new ulong[numPlayers];
+				numStates = numPlayers; //todo add bots back in
+
+				Debug.Log("logging clients to teams.");
+				for (int i = 0; i < numPlayers; i++)
+				{
+					MultiplayerVariables.ins.clientIDs[i] = NetworkManager.Singleton.ConnectedClientsIds[i];
+					Debug.Log("team " + i + " is client " + MultiplayerVariables.ins.clientIDs[i]);
+				}
+				MultiplayerVariables.ins.ShareClientIDsClientRPC(MultiplayerVariables.ins.clientIDs);
+			}
+			else
+			{
+				mapSeed = MultiplayerVariables.ins.MapSeed;
+				numStates = MultiplayerVariables.ins.NumPlayers;
+			}
+		}
+		else
+		{
+			if (!Simulator.IsSetup) Simulator.Setup();
+			numStates = Simulator.activeScenario.numTeams;
+		}
+
+		StartPrep();
+	}
+
+	private void StartPrep()
+	{ 
 		ins = this;
 		texelLongLength = texelDimensions.x * texelDimensions.y;
 		localScale = transform.localScale; //used for non-main threads
 
-		mapSeed = UnityEngine.Random.Range(-500, 500);
 		Debug.Log(mapSeed);
-
-
-		if (!Simulator.IsSetup) Simulator.Setup();
-		numStates = Simulator.activeScenario.numTeams;
 
 		Research.Setup();
 		UnitChunks.Init();
@@ -182,11 +220,13 @@ public class Map : MonoBehaviour
 		mapRT.filterMode = FilterMode.Point;
 		mapRT.Create();
 
-		//spawn in some starting armies and silos randomly
-		ArmyManager.ins.RandomArmies(80);
+		if (!multi) {
+			//spawn in some starting armies and silos randomly
+			ArmyManager.ins.RandomArmies(80);
 
-		//Rebuild borders now with army info
-		StartCoroutine(nameof(BuildInfluences), false);//BuildInfluences();
+			//Rebuild borders now with army info
+			StartCoroutine(nameof(BuildInfluences), false);//BuildInfluences();
+		}
 
 		//Render
 		ConvertToTexture();
@@ -361,6 +401,7 @@ public class Map : MonoBehaviour
 				cities.Add(c);
 				citiesPerTeam[c.team].Add(c);
 				distancesFromCorner.Add(c.transform.position.magnitude);
+				Debug.Log("adding a " + c.team + " city");
 			}
 		}
 		numCities = cities.Count();
@@ -377,8 +418,8 @@ public class Map : MonoBehaviour
 		for (int i = 0; i < numStates; i++)
 		{
 			if (sumCounter[i] == 0) {
+				Debug.LogError("no cities on team " + i + " state center = " + state_centers[i]);
 				state_centers[i] = Vector2Int.zero;
-				Debug.LogError("no cities on team " + i);
 				continue;
 			}
 			Vector2Int avgCenter = sumCenter[i] / sumCounter[i];

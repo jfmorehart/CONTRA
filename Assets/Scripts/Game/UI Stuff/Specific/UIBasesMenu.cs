@@ -30,8 +30,8 @@ public class UIBasesMenu : UIMenu
     void Refresh() {
         Clear();
         binfo.Clear();
-		binfo.AddRange(ArmyUtils.GetBuildings(0));
-		binfo.AddRange(Diplomacy.states[0].construction_sites);
+		binfo.AddRange(ArmyUtils.GetBuildings(Map.localTeam));
+		binfo.AddRange(Diplomacy.states[Map.localTeam].construction_sites);
 		if (bsel < 0) bsel = binfo.Count - 1;
 		if (bsel > binfo.Count - 1) bsel = 0;
 	}
