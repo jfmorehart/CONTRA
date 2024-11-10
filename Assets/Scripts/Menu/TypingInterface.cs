@@ -451,7 +451,7 @@ public class TypingInterface : MonoBehaviour
 		}
 		if (message.Contains("scenario c", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			Simulator.tutorialOverride = true;
+			Simulator.tutorialOverride = false;
 			if (message.Contains("load"))
 			{
 				Simulator.activeScenario = Simulator.scenarios[2];

@@ -70,7 +70,7 @@ public class RelayDude : MonoBehaviour
     {
         try
         {
-			Allocation alloc = await RelayService.Instance.CreateAllocationAsync(1);
+			Allocation alloc = await RelayService.Instance.CreateAllocationAsync(8);
 
             joinCode = await RelayService.Instance.GetJoinCodeAsync(alloc.AllocationId);
             Debug.Log("joingcode = " + joinCode);

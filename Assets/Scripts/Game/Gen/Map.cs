@@ -778,7 +778,7 @@ public class Map : MonoBehaviour
 	void CreateOcean() {
 		teamOf.SetData(pixTeam);
 		OCEANS.SetBuffer(0, "teamOf", teamOf);
-		OCEANS.SetFloat("seed", mapSeed);
+		OCEANS.SetFloat("seed", 10);// mapSeed);
 		OCEANS.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		OCEANS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		teamOf.GetData(pixTeam);

@@ -84,6 +84,8 @@ public static class Research
 		unlockProgress[i] = 0;
 		currentlyResearching[i] = -Vector2Int.one;
 		ResearchChange[i]?.Invoke();
-		MultiplayerVariables.ins.ResearchUpdateServerRPC(MultiplayerVariables.ins.clientIDs[i], unlockedUpgrades[i]);
+		if (Map.multi) { 
+			MultiplayerVariables.ins.ResearchUpdateServerRPC(MultiplayerVariables.ins.clientIDs[i], unlockedUpgrades[i]);
+		}
 	}
 }
