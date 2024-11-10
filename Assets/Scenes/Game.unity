@@ -9446,6 +9446,7 @@ MonoBehaviour:
   BORDERS: {fileID: 7200000, guid: 4addec614f9104f6e9fe9fa489bc50aa, type: 3}
   buildExclusionDistance: 15
   armyReadyDistance: 8
+  oceanSync: 0
 --- !u!1 &1121444272
 GameObject:
   m_ObjectHideFlags: 0
