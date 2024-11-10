@@ -673,7 +673,7 @@ public class Map : MonoBehaviour
 			Render.SetInt("exclusionLength", bpos.Length);
 		}
 		else {
-			exclude = new ComputeBuffer(1, 1);
+			exclude = new ComputeBuffer(1, 4);
 			Render.SetInt("exclusionLength", 0);
 		}
 
@@ -778,7 +778,7 @@ public class Map : MonoBehaviour
 	void CreateOcean() {
 		teamOf.SetData(pixTeam);
 		OCEANS.SetBuffer(0, "teamOf", teamOf);
-		OCEANS.SetFloat("seed", 10);// mapSeed);
+		OCEANS.SetFloat("seed", mapSeed);
 		OCEANS.SetInts("dime", texelDimensions.x, texelDimensions.y);
 		OCEANS.Dispatch(0, texelDimensions.x / 32, texelDimensions.y / 32, 1);
 		teamOf.GetData(pixTeam);
