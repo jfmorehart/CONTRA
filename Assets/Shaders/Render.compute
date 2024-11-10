@@ -189,5 +189,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     int redFlip = 1 - step(0, teamOf[index] - excluded);
     col *= redFlip * (step(2, flip) * redFlip + float3(10, 0, 0)) + (1 - redFlip);
     //float dude = rand(uv);
+    //Result[id.xy] = dude;//float4(col, 0);  
     Result[id.xy] = float4(col, 0);  
 }
