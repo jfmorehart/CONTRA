@@ -26,12 +26,45 @@ int buildMode;
 int playerTeam;
 int airmode = 1;
 
-float rand (float2 uv) { 
-    return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
+//thanks chatgpt
+// A simple cross-platform hash function
+uint Hash(uint value)
+{
+    value ^= value >> 16;  // Mix the high and low bits of value
+    value *= 0x45d9f3b;    // A large prime multiplier for further mixing
+    value ^= value >> 16;
+    value *= 0x45d9f3b;
+    value ^= value >> 16;
+    
+    return value;
+}
+// A simple and consistent pseudorandom function in HLSL
+uint Xorshift32(uint seed)
+{
+    // Xorshift 32-bit pseudorandom number generator
+    seed ^= seed >> 21;  // XOR the seed with its shifted value
+    seed ^= seed << 35;  // XOR again with a different shift
+    seed ^= seed >> 4;   // XOR with another shift
+    seed *= 2685821657736338717u; // A large prime multiplier for further mixing
+    seed ^= seed >> 15;  // Final XOR mix 
+    return seed;
+}
+// Generate a pseudorandom float between 0.0 and 1.0
+float RandomFloat(uint seed)
+{
+    uint r = Hash(seed);  // Get a random 32-bit integer
+    return (float)(r & 0x7FFFFFFF) / 0x7FFFFFFF; // Normalize to [0, 1)
 }
 
+float rand (float2 uv) { 
+    uint seed = (uint)(uv.x * 10000.0);
+    uint seed2 = (uint)(uv.y * 10000.0);
+    return RandomFloat(seed + Hash(seed2));
+    //return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
+} 
+
 float noise (float2 uv) {
-    float2 ipos = floor(uv);
+    float2 ipos = floor(uv); 
     float2 fpos = frac(uv); 
                 
     float o  = rand(ipos);
@@ -155,5 +188,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     int redFlip = 1 - step(0, teamOf[index] - excluded);
     col *= redFlip * (step(2, flip) * redFlip + float3(10, 0, 0)) + (1 - redFlip);
+    //float dude = rand(uv);
     Result[id.xy] = float4(col, 0);  
 }

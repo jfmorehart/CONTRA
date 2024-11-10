@@ -26,7 +26,6 @@ public static class UnitChunks
 		for (int x = 0; x < Map.ins.numStates; x++)
 		{
 			chunkValues[x] = new int[dime.x * dime.y];
-			Debug.Log(chunkValues[x].Length);
 		}
 		for (int i = 0; i < chunks.Length; i++) {
             chunks[i] = new List<Unit>();

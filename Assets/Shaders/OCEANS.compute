@@ -4,15 +4,15 @@
 
 //thanks chatgpt
 // A simple cross-platform hash function
-float Hash(float fl)
+uint Hash(uint value)
 {
-	uint value = (uint)((fl + 1) * 2147483647);
-	value ^= value >> 16;  // Mix the high and low bits of value
-	value *= 0x45d9f3b;    // A large prime multiplier for further mixing
-	value ^= value >> 16;
-	value *= 0x45d9f3b;
-	value ^= value >> 16;
-	return value;
+    value ^= value >> 16;  // Mix the high and low bits of value
+    value *= 0x45d9f3b;    // A large prime multiplier for further mixing
+    value ^= value >> 16;
+    value *= 0x45d9f3b;
+    value ^= value >> 16;
+    
+    return value;
 }
 // A simple and consistent pseudorandom function in HLSL
 uint Xorshift32(uint seed)
@@ -28,14 +28,15 @@ uint Xorshift32(uint seed)
 // Generate a pseudorandom float between 0.0 and 1.0
 float RandomFloat(uint seed)
 {
-    uint r = Xorshift32(seed);  // Get a random 32-bit integer
+    uint r = Hash(seed);  // Get a random 32-bit integer
     return (float)(r & 0x7FFFFFFF) / 0x7FFFFFFF; // Normalize to [0, 1)
 }
 
 float rand (float2 uv) { 
-    uint seed =  (uint)(uv.x * 10000.0) + (uint)(uv.y * 10000.0);
-    return RandomFloat(seed);
-   // return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
+    uint seed = (uint)(uv.x * 10000.0);
+    uint seed2 = (uint)(uv.y * 10000.0);
+    return RandomFloat(seed + Hash(seed2));
+    //return frac(sin(dot(uv.xy, float2(12.9898, 78.233))) * 43758.5453123);
 } 
 
 float noise (float2 uv) {
