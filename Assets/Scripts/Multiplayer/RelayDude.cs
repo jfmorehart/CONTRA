@@ -63,6 +63,7 @@ public class RelayDude : MonoBehaviour
 		CreateRelay();
         nm = GetComponent<NetworkManager>();
         nm.OnClientConnectedCallback += ClientConnected;
+        nm.OnClientDisconnectCallback += ClientDisconnected;
     }
     private async void CreateRelay()
     {
@@ -94,6 +95,7 @@ public class RelayDude : MonoBehaviour
     
     private async void JoinRelay(string joinCode)
     {
+        joinCode = joinCode[..6];
         try
         {
             JoinAllocation jalloc = await RelayService.Instance.JoinAllocationAsync(joinCode);
@@ -112,13 +114,27 @@ public class RelayDude : MonoBehaviour
     }
 
     public void ClientConnected(ulong id) {
+        Debug.Log("cc " + id);
         if (clients.Contains(id)) return;
+        Debug.Log("new id");
         if (id == NetworkManager.ServerClientId) return;
         clients.Add(id);
         Debug.Log("client connected!");
         TypingInterface.ins.WriteOut("new client connected.");
 		TypingInterface.ins.WriteOut("players = " + nm.ConnectedClientsList.Count);
 		TypingInterface.ins.WriteOut("type 'start' when ready");
+	}
+
+    public void ClientDisconnected(ulong id) {
+        if (clients.Contains(id)) {
+            clients.Remove(id);
+			TypingInterface.ins.WriteOut("client disconnected");
+			TypingInterface.ins.WriteOut("players = " + (nm.ConnectedClientsList.Count - 1));
+			if (nm.ConnectedClientsList.Count < 2)
+			{
+				TypingInterface.ins.WriteOut("waiting for players...");
+			}
+		}
 	}
 
     //public void
