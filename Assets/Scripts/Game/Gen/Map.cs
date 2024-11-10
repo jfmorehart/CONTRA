@@ -114,9 +114,7 @@ public class Map : MonoBehaviour
 	}
 	private void Awake() {
 
-		Hash(-0.3f);
-		Hash(0);
-		Hash(0.932f);
+		Hash(Hash(0.31f) + Hash(0.311f));
 		mapSeed = UnityEngine.Random.Range(-500, 500);
 		if (MultiplayerVariables.ins != null)
 		{
