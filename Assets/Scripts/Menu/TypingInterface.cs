@@ -296,7 +296,7 @@ public class TypingInterface : MonoBehaviour
 			WriteOut("no public lobbies yet");
 			WriteOut("");
 			WriteBracket();
-			RelayDude.ins.StartMultiplayer();
+			//RelayDude.ins.StartMultiplayer();
 			return;
 		}
 		if (message.Contains("host", System.StringComparison.CurrentCultureIgnoreCase))
