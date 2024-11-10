@@ -100,8 +100,23 @@ public class Map : MonoBehaviour
 	public static int texelLongLength;
 
 	bool prepInfluences;
-
+	float Hash(float fl)
+	{
+		uint value = (uint)((fl + 1) * 2147483647);
+		value ^= value >> 16;  // Mix the high and low bits of value
+		value *= 0x45d9f3b;    // A large prime multiplier for further mixing
+		value ^= value >> 16;
+		value *= 0x45d9f3b;
+		value ^= value >> 16;
+		float v = value / (float)4294967295;
+		Debug.Log(v);
+		return v;
+	}
 	private void Awake() {
+
+		Hash(-0.3f);
+		Hash(0);
+		Hash(0.932f);
 		mapSeed = UnityEngine.Random.Range(-500, 500);
 		if (MultiplayerVariables.ins != null)
 		{
