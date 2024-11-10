@@ -22,28 +22,28 @@ public class UIResearch : UIMenu
 
 	private void Start()
 	{
-        Research.currentlyResearching[0] = new Vector2Int(-1, -1);
+        Research.currentlyResearching[Map.localTeam] = new Vector2Int(-1, -1);
         HideBar();
 	}
 
 	// Update is called once per frame
 	void Update()
     {
-        if (displayActive && Research.currentlyResearching[0].x < 0)
+        if (displayActive && Research.currentlyResearching[Map.localTeam].x < 0)
         {
             HideBar();
         }
-        if (!displayActive && Research.currentlyResearching[0].x > -1)
+        if (!displayActive && Research.currentlyResearching[Map.localTeam].x > -1)
         {
             ShowBar();
         }
 
         if (displayActive) {
 			subtitle.text =
-Research.headers[Research.currentlyResearching[0].x] + " :" +
-Research.names[Research.currentlyResearching[0].x][Research.currentlyResearching[0].y];
+Research.headers[Research.currentlyResearching[Map.localTeam].x] + " :" +
+Research.names[Research.currentlyResearching[Map.localTeam].x][Research.currentlyResearching[Map.localTeam].y];
 
-            Research.budget[0] = k2[0].value;
+            Research.budget[Map.localTeam] = k2[0].value;
 		}
 
 	}
@@ -84,13 +84,13 @@ Research.names[Research.currentlyResearching[0].x][Research.currentlyResearching
         children = k2;
         k2[0].Highlight();
 
-        prevBranch = (Research.Branch)Research.currentlyResearching[0].x;
+        prevBranch = (Research.Branch)Research.currentlyResearching[Map.localTeam].x;
 	}
 
     public void CancelResearch() {
-        UI.ins.selected = Research.currentlyResearching[0].x;
-        Research.unlockProgress[0] = 0;
-        Research.currentlyResearching[0] = new Vector2Int(-1, -1);
+        UI.ins.selected = Research.currentlyResearching[Map.localTeam].x;
+        Research.unlockProgress[Map.localTeam] = 0;
+        Research.currentlyResearching[Map.localTeam] = new Vector2Int(-1, -1);
         HideBar();
     }
 }

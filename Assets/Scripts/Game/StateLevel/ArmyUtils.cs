@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Unity.Netcode;
 using UnityEngine;
 
 public static class ArmyUtils
@@ -416,7 +417,26 @@ public static class ArmyUtils
 		for (int i = 0; i < n; i++) {
 			sl.Direct(or);
 		}
-		return n > 0; //return true if we fired
+		if(n > 0) {
+			if (Map.multi)
+			{
+				if (Map.host)
+				{
+					NetworkObject no = sl.GetComponent<NetworkObject>();
+					MultiplayerVariables.ins.SalvoClientRPC(no.NetworkObjectId, or.pos, n, NetworkManager.Singleton.LocalClientId);
+				}
+				else
+				{
+					NetworkObject no = sl.GetComponent<NetworkObject>();
+					MultiplayerVariables.ins.SalvoServerRPC(no.NetworkObjectId, or.pos, n, NetworkManager.Singleton.LocalClientId);
+				}
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+		
     }
 
 	public static Unit[] ShuffleUnits(Unit[] toshuffle) {

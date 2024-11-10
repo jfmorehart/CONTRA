@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
 using static ArmyUtils;
+using Unity.Netcode;
 
 public class State_AI : State
 {
@@ -217,6 +218,7 @@ public class State_AI : State
 		yield return new WaitForSeconds(3); //todo find launch delay
 
 		LaunchDetection.StrikeDetected(team, enemy);
+
 	}
 
 	protected async void DistributedPositions(int borderwith, List<Unit> troops, bool teleport = false)
@@ -446,6 +448,7 @@ public class State_AI : State
 		base.ReadyForOrders(un);
 		recentlyOrdered.Remove(un);
 	}
+
 
 	protected bool SiloFire(Silo sl, Target t, int warheads)
 	{

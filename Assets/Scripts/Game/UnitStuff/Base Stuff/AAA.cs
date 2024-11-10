@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.XR;
 using static UnityEngine.UI.GridLayoutGroup;
@@ -80,6 +81,9 @@ public class AAA : Building
 
 	public override void Update()
 	{
+		if (Map.multi) {
+			if (!NetworkManager.Singleton.IsHost) return;
+		}
 		base.Update();
 
 		if (numMissiles < 1) return;
@@ -94,7 +98,6 @@ public class AAA : Building
 		}
 
 	}
-
 	Unit RadarCheck() {
 
 		lastRadarCheck = Time.time;
@@ -123,36 +126,163 @@ public class AAA : Building
 		return null;
     }
 
+	[ServerRpc(RequireOwnership = false)]
+	public void LaunchAAAServerRPC(ulong bogey_id)
+	{
+		if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(bogey_id, out NetworkObject no_bogey))
+		{
+			lastShotTime = Time.time;
+			Vector2 ivel;
+			Unit bogey = no_bogey.GetComponent<Unit>();
+			ivel = (bogey.transform.position - transform.position).normalized * 40f;
+			GameObject m = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
+			ATAM mis = m.GetComponent<ATAM>();
+			mis.Launch(transform.position, ivel, bogey, team, 4.2f);
+			numMissiles--;
+
+			StartCoroutine(ScrubBogey(bogey));
+			UpdateIconDisplay(numMissiles);
+			//SFX.ins.MissileLaunch(mis.transform, 0.3f);
+
+			NetworkObject no_atam = mis.GetComponent<NetworkObject>();
+			no_atam.SpawnWithOwnership(0);
+			InformLaunchClientRPC(no_atam.NetworkObjectId, no_bogey.NetworkObjectId);
+			//Fox3ClientRPC(no_atam.NetworkObjectId);
+		}
+	}
+	[ClientRpc]
+	public void InformLaunchClientRPC(ulong atam, ulong bogey = 999) {
+		Debug.Log("recieved AAA clientrpc");
+		if(!no.IsOwner)numMissiles--;
+		UpdateIconDisplay(numMissiles);
+		if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(atam, out NetworkObject no_atam))
+		{
+			Debug.Log("toggled aaa live");
+			no_atam.GetComponent<ATAM>().Toggle(true);
+			SFX.ins.ATAMLaunch(no_atam.transform).GetComponent<AudioSource>();
+		}
+		if (bogey == 999) {
+			//fireball
+ 
+			return;
+		}
+		else { 
+			
+		}
+		if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(bogey, out NetworkObject no_bogey))
+		{
+			no_bogey.GetComponent<Plane>().SmokeInTheAir(no_atam.GetComponent<ATAM>());
+		}
+	}
+
 	void Launch(Unit bogey)
 	{
+		if (Map.multi) {
+			if (Map.host) {
+				//
+			}
+			else {
+				numMissiles--;
+				LaunchAAAServerRPC(bogey.no.NetworkObjectId);
+				StartCoroutine(ScrubBogey(bogey));
+				UpdateIconDisplay(numMissiles);
+				return;
+			}
+		}
 		// ANTI AIRCRAFT MODE
 
 		lastShotTime = Time.time;
 		Vector2 ivel = Vector2.zero;
 		ivel = (bogey.transform.position - transform.position).normalized * 40f;
-		ATAM mis = Pool.ins.GetATAM();
+		GameObject m = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
+		ATAM mis = m.GetComponent<ATAM>();
 		mis.Launch(transform.position, ivel, bogey, team, 4.2f);
 		numMissiles--;
 
 		StartCoroutine(ScrubBogey(bogey));
 		UpdateIconDisplay(numMissiles);
 		//SFX.ins.MissileLaunch(mis.transform, 0.3f);
+		if (Map.multi) {
+			NetworkObject no_atam = mis.GetComponent<NetworkObject>();
+			no_atam.SpawnWithOwnership(0);
+			InformLaunchClientRPC(no_atam.NetworkObjectId, bogey.no.NetworkObjectId);
+		}
 	}
 
-	void Launch(Missile fireball)
+	[ServerRpc(RequireOwnership = false)]
+	public void LaunchABMServerRPC(Vector2 dest)
 	{
-		// ANTI BALLISTIC MISSLE MODE
-
+		Debug.Log("ABM rpc recieved, checking validity...");
+		Missile fireball = null;
+		foreach (Missile m in TerminalMissileRegistry.registry[team]) {
+			if (Vector3.Distance(m.en, dest) < 10) {
+				fireball = m;
+				break;
+			}
+		}
+		if (fireball == null) {
+			Debug.LogError("no fireball found");
+			return;
+		}
+		Debug.Log("valid ABM rpc recieved, firing");
 		lastShotTime = Time.time;
 		Vector2 ivel = Vector2.zero;
 		ivel = (fireball.transform.position - transform.position).normalized * 40f;
-		ATAM mis = Pool.ins.GetATAM();
+		GameObject mob = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
+		ATAM mis = mob.GetComponent<ATAM>();
 		mis.Launch(transform.position, ivel, fireball, team, 4.2f);
 		numMissiles--;
 
 		StartCoroutine(ScrubFireball(fireball));
 		UpdateIconDisplay(numMissiles);
 		//SFX.ins.MissileLaunch(mis.transform, 0.3f);
+
+		NetworkObject no_atam = mis.GetComponent<NetworkObject>();
+		no_atam.SpawnWithOwnership(0);
+		InformLaunchClientRPC(no_atam.NetworkObjectId);
+		//Fox3ClientRPC(no_atam.NetworkObjectId);
+	}
+	void Launch(Missile fireball)
+	{
+		if (Map.multi)
+		{
+			if (!Map.host)
+			{
+				Debug.Log("client sending abm rpc");
+				LaunchABMServerRPC(fireball.en);
+				StartCoroutine(ScrubFireball(fireball));
+				numMissiles--;
+				UpdateIconDisplay(numMissiles);
+				return;
+			}
+		}
+		// ANTI BALLISTIC MISSLE MODE
+
+		lastShotTime = Time.time;
+		Vector2 ivel = Vector2.zero;
+		ivel = (fireball.transform.position - transform.position).normalized * 40f;
+
+		ATAM mis = null;
+		if (Map.multi) {
+			GameObject mob = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
+			mis = mob.GetComponent<ATAM>();
+		}
+		else {
+			mis = Pool.ins.GetATAM();
+		}
+
+		mis.Launch(transform.position, ivel, fireball, team, 4.2f);
+		numMissiles--;
+
+		StartCoroutine(ScrubFireball(fireball));
+		UpdateIconDisplay(numMissiles);
+		//SFX.ins.MissileLaunch(mis.transform, 0.3f);
+
+		if (Map.multi) {
+			NetworkObject no_abm = mis.GetComponent<NetworkObject>();
+			no_abm.SpawnWithOwnership(0);
+			InformLaunchClientRPC(no_abm.NetworkObjectId);
+		}
 	}
 
 	IEnumerator ScrubBogey(Unit bogey) {

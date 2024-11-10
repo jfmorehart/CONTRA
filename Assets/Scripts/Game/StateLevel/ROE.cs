@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using static ConsolePanel;
 
@@ -61,14 +62,26 @@ public static class ROE
 	//More readable interfaces
 	public static void DeclareWar(int t1, int t2) {
 		if (AreWeAtWar(t1, t2)) return;
+
 		Diplomacy.RemovePeaceOffer(t1, t2);
 		Diplomacy.AnnounceNews(Diplomacy.NewsItem.War, t1, t2);
 
 		SetState(t1, t2, 1);
 		if (t1 == t2) return;
 		if (!Diplomacy.states[t1].alive) return;
-
-		if (t1 == 0 || t2 == 0)
+		if (Map.multi) {
+			if (Map.host) {
+				ulong team1 = MultiplayerVariables.ins.clientIDs[t1];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[t2];
+				MultiplayerVariables.ins.DeclareWarClientRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+			else {
+				ulong team1 = MultiplayerVariables.ins.clientIDs[t1];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[t2];
+				MultiplayerVariables.ins.DeclareWarServerRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+		}
+		if (t1 == Map.localTeam || t2 == Map.localTeam)
 		{
 			SFX.ins.DeclareWarAlarm();
 		}

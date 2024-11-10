@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class Construction : Unit
@@ -27,6 +28,7 @@ public class Construction : Unit
 		transform.localScale = toBuild.transform.localScale;
 		GetComponent<SpriteRenderer>().sprite = toBuild.GetComponent<SpriteRenderer>().sprite;
 		manHoursRemaining = toBuild.constructionCost;
+		Debug.Log("preparing build");
 	}
 
 	public void Work(float workAmt)
@@ -40,10 +42,19 @@ public class Construction : Unit
     }
 
     void Complete() {
-        Instantiate(ArmyManager.ins.buildPrefabs[(int)btype], transform.position, transform.rotation, ArmyManager.ins.transform);
-        if(team == Map.localTeam) {
-            //ConsolePanel.Log("ICBM Silo finished construction, awaiting orders");
-	    }
+		if (Map.multi) {
+			if (Map.host) {
+				GameObject go = Instantiate(ArmyManager.ins.buildPrefabs[(int)btype], transform.position, transform.rotation, ArmyManager.ins.transform);
+				go.GetComponent<NetworkObject>().SpawnWithOwnership(0);
+			}
+			else {
+				MultiplayerVariables.ins.PlaceBuildingServerRPC(transform.position, (int)btype);
+			}
+		}
+		else {
+			Instantiate(ArmyManager.ins.buildPrefabs[(int)btype], transform.position, transform.rotation, ArmyManager.ins.transform);
+		}
+
         Kill();
     }
 }

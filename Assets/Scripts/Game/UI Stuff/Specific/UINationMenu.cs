@@ -30,7 +30,7 @@ public class UINationMenu : UIMenu
 		RefreshOptions();
 
 		if (usingSatura) {
-			if ((Diplomacy.states[UI.ins.targetNation] as State_Enemy).sharesBorder[0])
+			if (AsyncPath.borders[UI.ins.targetNation, Map.localTeam])
 			{
 				if (!troopSlider.gameObject.activeInHierarchy)
 				{
@@ -62,15 +62,24 @@ public class UINationMenu : UIMenu
 		}
 
 		List<UIOption> kiddos = new List<UIOption>();
-		bool atWar = ROE.AreWeAtWar(0, UI.ins.targetNation);
+		bool atWar = ROE.AreWeAtWar(Map.localTeam, UI.ins.targetNation);
 
-		if(relationships != null) kiddos.Add(relationships);
+		if(relationships != null){
+			if (Diplomacy.states[UI.ins.targetNation] is State_Enemy) {
+				relationships.gameObject.SetActive(true);
+				kiddos.Add(relationships);
+			}
+			else {
+				relationships.gameObject.SetActive(false);
+			}
+		}
+
 		if (declarewar != null) kiddos.Add(declarewar);
 
 		sendAid?.gameObject.SetActive(false);
 		nuclearstrike?.gameObject.SetActive(false);
 		airdoctrine?.gameObject.SetActive(false);
-		StateEval eval = new StateEval(0);
+		StateEval eval = new StateEval(Map.localTeam);
 		if (atWar) {
 
 			if (eval.str_air > 0)
@@ -101,7 +110,7 @@ public class UINationMenu : UIMenu
 		}
 
 		if (usingSatura) {
-			if ((Diplomacy.states[Map.localTeam] as State_AI).sharesBorder[UI.ins.targetNation]) {
+			if (AsyncPath.borders[UI.ins.targetNation, Map.localTeam]) {
 				troopSlider.gameObject.SetActive(true);
 				kiddos.Add(troopSlider);
 			}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public static class LaunchDetection
@@ -22,5 +23,21 @@ public static class LaunchDetection
 	{
 		bool provoked = Diplomacy.relationships[victim, perp] == Diplomacy.Relationship.NuclearWar;
 		strikeDetectedAction.Invoke(perp, victim, provoked);
+
+		if (Map.multi)
+		{
+			if (Map.host)
+			{
+				ulong team1 = MultiplayerVariables.ins.clientIDs[perp];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[victim];
+				MultiplayerVariables.ins.StrikeDetectClientRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+			else
+			{
+				ulong team1 = MultiplayerVariables.ins.clientIDs[perp];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[victim];
+				MultiplayerVariables.ins.StrikeDetectServerRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+		}
 	}
 }

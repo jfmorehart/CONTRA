@@ -126,15 +126,16 @@ MonoBehaviour:
   baseUpkeepCost: 10
   upkeepCost: 1
   id: 0
+  no: {fileID: 0}
   btype: 1
   manHoursRemaining: -1
   iconPrefab: {fileID: 39995123657460185, guid: caa3ad8c04aae4024a3d6d88d27894b6, type: 3}
   icons: []
   offset: {x: 0, y: -30}
-  reloadTime: 30
+  reloadTime: 10
   mapPos: {x: 0, y: 0}
   maxPlanes: 5
-  numPlanes: 1
+  numPlanes: 2
   planePrefab: {fileID: 5915865346166684192, guid: 9ce0321c8d611402fa803bb5f03c0363, type: 3}
   patrolPoints:
   - {x: 0, y: 0}

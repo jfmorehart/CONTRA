@@ -57,7 +57,7 @@ public class StrikePlan : MonoBehaviour
 	public void DrawPlan(int warheads, List<Target> targets) {
 		ErasePlan();
 		
-		Silo[] silos = ArmyUtils.GetSilos(0);
+		Silo[] silos = ArmyUtils.GetSilos(Map.localTeam);
 		//putting this before the target count check is much slower, 
 		// but its important to explain to the player
 		if (silos.Length < 1)

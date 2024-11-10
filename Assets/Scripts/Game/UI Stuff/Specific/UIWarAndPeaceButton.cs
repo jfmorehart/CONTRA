@@ -13,13 +13,13 @@ public class UIWarAndPeaceButton : MonoBehaviour
 	void Update()
     {
 		int t2 = UI.ins.targetNation;
-		if (ROE.AreWeAtWar(0,t2)) { 
-			if(Diplomacy.peaceOffers[0, t2]) {
+		if (ROE.AreWeAtWar(Map.localTeam, t2)) { 
+			if(Diplomacy.peaceOffers[Map.localTeam, t2]) {
 				SetText("cancel peace offer");
 				button.tooltip_headerText = "cancel peace offer button";
 				button.tooltip_bodyText = "revoke your offer of peace";
 			}
-			else if(Diplomacy.peaceOffers[t2, 0]){
+			else if(Diplomacy.peaceOffers[t2, Map.localTeam]){
 				SetText("accept peace offer");
 				button.tooltip_headerText = "accept peace offer button ";
 				button.tooltip_bodyText = "this nation has offered you peace, do you accept?";

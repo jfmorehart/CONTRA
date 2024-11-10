@@ -22,7 +22,7 @@ public class UIBuyMenu : UIMenu
         List<UIOption> kiddos = new List<UIOption>();
 		children[UI.ins.selected].UnHighlight();
 		for (int i = 0; i < 3; i++) {
-            if (Research.unlockedUpgrades[0][i + 1] > 0) {
+            if (Research.unlockedUpgrades[Map.localTeam][i + 1] > 0) {
                 kiddos.Add(all3[i]);
 				all3[i].gameObject.SetActive(true);
 			}

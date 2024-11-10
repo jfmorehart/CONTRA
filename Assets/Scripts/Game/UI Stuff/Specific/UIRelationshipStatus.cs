@@ -11,9 +11,16 @@ public class UIRelationshipStatus : MonoBehaviour
 	void Update()
 	{
 		int team = UI.ins.targetNation;
-		statusText.text = Diplomacy.OpinionText(team, 0);
-		if(statusText.text != "neutral") {
-			statusText.text += ConsolePanel.you;
+		if (Diplomacy.states[team] is State_Enemy) {
+			statusText.text = Diplomacy.OpinionText(team, 0);
+			if (statusText.text != "neutral")
+			{
+				statusText.text += ConsolePanel.you;
+			}
 		}
+		else {
+			statusText.text = "";
+		}
+
 	}
 }

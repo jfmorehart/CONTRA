@@ -74,7 +74,7 @@ public class PlayerInput : MonoBehaviour
 
 		Vector2 wp = transform.GetChild(0).transform.position;
 		Vector2Int mp = MapUtils.PointToCoords(wp);
-		if (!ArmyManager.ValidMapPlacement(0, mp))
+		if (!ArmyManager.ValidMapPlacement(Map.localTeam, mp))
 		{
 
 			ConsolePanel.Log("unsuitable construction location", 5);
@@ -83,7 +83,7 @@ public class PlayerInput : MonoBehaviour
 
 		//ConsolePanel.Log("New Base being constructed at:);
 
-		ArmyManager.ins.NewConstruction(0, mp, btype);
+		ArmyManager.ins.NewConstruction(Map.localTeam, mp, btype);
 	}
 
 	public void PlayerSendAid() {

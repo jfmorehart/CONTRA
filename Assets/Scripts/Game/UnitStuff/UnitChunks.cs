@@ -41,7 +41,6 @@ public static class UnitChunks
         chunkValues[me.team][index]--;
     }
     public static void AddToChunk(int index, Unit me) {
-        Debug.Log(me + "   t= " + me.team + "g= " + index);
         chunks[index].Add(me);
 		chunkValues[me.team][index]++;
 	}

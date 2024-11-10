@@ -141,8 +141,15 @@ public class ArmyManager : MonoBehaviour
 	}
 
 	public Unit NewConstruction(int team, Vector2Int mapPos, ArmyManager.BuildingType btype, bool grandfathered = false) {
+
 		if (mapPos == Vector2Int.zero) return null; //no spot found
 		if (!ValidMapPlacement(team , mapPos) && !grandfathered) return null;
+
+		if (Map.multi && !Map.host)
+		{
+			MultiplayerVariables.ins.NewConstructionServerRPC(mapPos, (int)btype);
+			return null;
+		}
 
 		Transform t = Instantiate(ArmyManager.ins.constructionPrefab,
 			MapUtils.CoordsToPoint(mapPos), Quaternion.identity, ArmyManager.ins.transform).transform;
@@ -150,6 +157,13 @@ public class ArmyManager : MonoBehaviour
 		Construction co = t.GetComponent<Construction>();
 		co.team = team;
 		co.PrepareBuild(btype);
+
+		if (Map.multi) {
+			//host
+			NetworkObject no = co.GetComponent<NetworkObject>();
+			no.SpawnWithOwnership(MultiplayerVariables.ins.clientIDs[team]);
+			MultiplayerVariables.ins.NewConstructionClientRPC(no.NetworkObjectId, (int)btype);
+		}
 		return co as Unit;
 	}
 	public static bool ValidMapPlacement(int team, Vector2Int mapPos) {

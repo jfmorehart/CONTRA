@@ -55,6 +55,7 @@ public class Pool : MonoBehaviour
 			rpool[i] = Instantiate(rPrefab, transform).transform.GetComponent<AppearEffect>();
 		}
 
+		if (Map.multi) return; //we're not pooling them in multiplayer
 		atampool = new ATAM[atamsize];
 		for (int i = 0; i < rsize; i++)
 		{

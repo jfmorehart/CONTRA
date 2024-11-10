@@ -401,7 +401,6 @@ public class Map : MonoBehaviour
 				cities.Add(c);
 				citiesPerTeam[c.team].Add(c);
 				distancesFromCorner.Add(c.transform.position.magnitude);
-				Debug.Log("adding a " + c.team + " city");
 			}
 		}
 		numCities = cities.Count();
@@ -648,6 +647,7 @@ public class Map : MonoBehaviour
 		Render.SetBuffer(0, "teamOf", teamOf);
 		Render.SetFloat("seed", mapSeed);
 		Render.SetInt("buildMode", PlayerInput.ins.buildMode ? 1 : 0);
+		Render.SetInt("playerTeam", Map.localTeam);
 		Render.SetInt("airmode", PlayerInput.ins.airMode ? 1 : 0);
 		Render.SetFloat("time", Time.time);
 

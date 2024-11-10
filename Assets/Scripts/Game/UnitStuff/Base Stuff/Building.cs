@@ -18,14 +18,21 @@ public class Building : Construction
 		base.Awake();
 		mapPos = MapUtils.PointToCoords(transform.position);
 		manHoursRemaining = 0;
+		lastReload = Time.time;
 	}
 
 	public override void Update()
 	{
-		if (CanReload() && Time.time - lastReload > reloadTime)
+		if (Time.time - lastReload > reloadTime)
 		{
-			lastReload = Time.time;
-			Reload();
+			if (CanReload()) {
+				lastReload = Time.time;
+				Debug.Log("reloading! " + Time.time);
+				Reload();
+			}
+			else {
+				lastReload = Time.time - reloadTime * 0.75f;
+			}
 		}
 	}
 	protected virtual void Reload() { 
@@ -51,7 +58,7 @@ public class Building : Construction
 		}
 	}
 
-	public override void Kill()
+	public override void Kill(bool multiplayerOverride = true)
 	{
 		for (int i = 0; i < icons.Count; i++)
 		{

@@ -292,7 +292,7 @@ public class Army : Unit
     }
 
 	
-	public override void Kill()
+	public override void Kill(bool multiplayerOverride = true)
 	{
 		base.Kill();
 		ROE.roeChange -= StaggerPathTargetCheck;

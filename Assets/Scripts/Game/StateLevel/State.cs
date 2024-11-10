@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using static ArmyUtils;
 
@@ -436,6 +437,22 @@ public class State : MonoBehaviour
 		Diplomacy.states[to].RecieveAid(team);
 
 		Diplomacy.AnnounceNews(Diplomacy.NewsItem.Aid, team, to);
+
+		if (Map.multi)
+		{
+			if (Map.host)
+			{
+				ulong team1 = MultiplayerVariables.ins.clientIDs[team];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[to];
+				MultiplayerVariables.ins.SendAidClientRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+			else
+			{
+				ulong team1 = MultiplayerVariables.ins.clientIDs[team];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[to];
+				MultiplayerVariables.ins.SendAidServerRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+		}
 	}
 
 	public virtual void RecieveAid(int from) { 

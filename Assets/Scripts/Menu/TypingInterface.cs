@@ -209,6 +209,11 @@ public class TypingInterface : MonoBehaviour
 
 		for(int i = 0; i < numLines; i++) {
 
+			if (Input.GetKey(KeyCode.LeftShift)) {
+				lineObjs[i].text = lines[i];
+				lengths[i] = lines[i].Length;
+				finishedWriting[i] = true;
+			}
 			string s = lines[i];
 			if (!finishedWriting[i] && lines[i].Length > 0) {
 
@@ -301,7 +306,12 @@ public class TypingInterface : MonoBehaviour
 			return;
 		}
 		if(message.Contains("start", System.StringComparison.CurrentCultureIgnoreCase) && RelayDude.ins.hosting) {
-			LoadGame(true);
+			if(NetworkManager.Singleton.ConnectedClientsList.Count > 1) {
+				LoadGame(true);
+			}
+			else {
+				WriteOut("no opposing players, cannot start yet");
+			}
 		}
 		if (message.Contains("join", System.StringComparison.CurrentCultureIgnoreCase))
 		{
@@ -391,6 +401,8 @@ public class TypingInterface : MonoBehaviour
 				Simulator.tutorialOverride = true;
 				LoadGame();
 			}
+			Simulator.activeScenario = Simulator.scenarios[0];
+			Simulator.tutorialOverride = true;
 			selected_scenario = 0;
 			WriteBracket();
 			WriteOut("");
@@ -403,9 +415,10 @@ public class TypingInterface : MonoBehaviour
 		}
 		if (message.Contains("scenario a", System.StringComparison.CurrentCultureIgnoreCase))
 		{
+			Simulator.tutorialOverride = false;
 			if (message.Contains("load"))
 			{
-				Simulator.activeScenario = Simulator.scenarios[1];
+				Simulator.activeScenario = Simulator.scenarios[0];
 				LoadGame();
 			}
 			selected_scenario = 0;
@@ -420,9 +433,10 @@ public class TypingInterface : MonoBehaviour
 		}
 		if (message.Contains("scenario b", System.StringComparison.CurrentCultureIgnoreCase))
 		{
+			Simulator.tutorialOverride = false;
 			if (message.Contains("load"))
 			{
-				Simulator.activeScenario = Simulator.scenarios[2];
+				Simulator.activeScenario = Simulator.scenarios[1];
 				LoadGame();
 			}
 			selected_scenario = 1;
@@ -437,9 +451,10 @@ public class TypingInterface : MonoBehaviour
 		}
 		if (message.Contains("scenario c", System.StringComparison.CurrentCultureIgnoreCase))
 		{
+			Simulator.tutorialOverride = true;
 			if (message.Contains("load"))
 			{
-				Simulator.activeScenario = Simulator.scenarios[1];
+				Simulator.activeScenario = Simulator.scenarios[2];
 				LoadGame();
 			}
 			selected_scenario = 2;

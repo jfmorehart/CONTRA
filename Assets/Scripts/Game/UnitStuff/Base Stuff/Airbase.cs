@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
 public class Airbase : Building
@@ -14,18 +15,33 @@ public class Airbase : Building
 	float lastLaunch;
 	float launchDelay = 1.5f;
 
-	List<Plane> launched;
+	public List<Plane> launched = new List<Plane>();
 
 	public override void Start()
 	{
 		base.Start();
+		if (Map.multi) {
+			//wait for onnetworkspawn
+			return;
+		}
+		else {
+			Initialize();
+		}
+	}
+	public override void OnNetworkSpawn()
+	{
+		base.OnNetworkSpawn();
+		Initialize();
+	}
+	public void Initialize() {
 		launched = new List<Plane>();
 		UpdateIconDisplay(numPlanes);
 		Vector2Int pos = MapUtils.PointToCoords(transform.position);
 		int points = 16;
 		patrolPoints = new Vector2[points];
 		float angle = 0;
-		for(int i = 0; i < points; i++) {
+		for (int i = 0; i < points; i++)
+		{
 			Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
 
 			(bool hit, Vector2Int hitpos) = MapUtils.TexelRayCast(pos, dir, 200, false);
@@ -42,8 +58,6 @@ public class Airbase : Building
 
 			angle += Mathf.Deg2Rad * (360 / (float)points);
 		}
-
-		LaunchAircraft();
 		ApplyUpgrades();
 	}
 
@@ -81,21 +95,37 @@ public class Airbase : Building
 
 	public override void Update()
 	{
+		if (Map.multi) {
+			if (!no.IsOwner) return;
+		}
 		base.Update();
 		if (ROE.AreWeAtWar(team)) {
 			if(numPlanes > 0 && Time.time - lastLaunch > launchDelay) {
 				LaunchAircraft();
 			}
 		}
-		else if(numPlanes > 0){ 
-			if(launched.Count < 1) {
+		else if(numPlanes > 0){
+			//gotta throw the delay in for RPC stuff
+			if (launched.Count < 1 && Time.time - lastLaunch > launchDelay) {
 				LaunchAircraft();
 			}
 		}
 	}
 
-	public void LaunchAircraft() {
-		if (numPlanes < 1) return;
+	public Plane LaunchAircraft() {
+		Debug.Log("calling launch " + numPlanes);
+		if (numPlanes < 1) return null;
+		if (Map.multi) {
+			if (!IsOwner) return null; //not owner, no valid reason
+
+			if (!Map.host) { //owner, valid
+				numPlanes--;
+				lastLaunch = Time.time;
+				LaunchPlaneServerRPC(no.NetworkObjectId);
+				Debug.Log("sending plane launch server rpc");
+				return null;
+			}
+		}
 		lastLaunch = Time.time;
 		Vector3 pos = transform.position - 3 * Vector3.forward;
 		GameObject p = Instantiate(planePrefab, pos, transform.rotation, Pool.ins.transform);
@@ -105,6 +135,49 @@ public class Airbase : Building
 		launched.Add(pl);
 		numPlanes--;
 		UpdateIconDisplay(numPlanes);
+
+		if (Map.multi && Map.host) { //this could be for ourselves or invoked by RPC
+			NetworkObject plno = pl.GetComponent<NetworkObject>();
+			plno.SpawnWithOwnership(no.OwnerClientId);
+			InformPlaneLaunchClientRPC(no.NetworkObjectId, plno.NetworkObjectId);
+		}
+		return pl;
+	}
+	[ServerRpc(RequireOwnership = false)]
+	public void LaunchPlaneServerRPC(ulong airbase_id)
+	{
+		if (airbase_id == no.NetworkObjectId)
+		{
+			lastLaunch = Time.time;
+			Vector3 pos = transform.position - 3 * Vector3.forward;
+			GameObject p = Instantiate(planePrefab, pos, transform.rotation, Pool.ins.transform);
+			Plane pl = p.GetComponent<Plane>();
+			pl.homeBase = this;
+			launched.Add(pl);
+			if (!no.IsOwner) numPlanes--;
+			UpdateIconDisplay(numPlanes);
+			NetworkObject no_plane = pl.GetComponent<NetworkObject>();
+			no_plane.SpawnWithOwnership(no.OwnerClientId);
+			InformPlaneLaunchClientRPC(no.NetworkObjectId, no_plane.NetworkObjectId);
+		}
+	}
+	[ClientRpc]
+	public void InformPlaneLaunchClientRPC(ulong airbase_id, ulong plane_id)
+	{
+		if (NetworkManager.Singleton.IsHost) return;
+		if(airbase_id == no.NetworkObjectId) {
+			NetworkObject pl_id = NetworkManager.Singleton.SpawnManager.SpawnedObjects[plane_id];
+			Plane pl = pl_id.GetComponent<Plane>();
+			pl.homeBase = this;
+
+			launched.Add(pl);
+			if (!no.IsOwner) { //already took their plane
+				numPlanes--;
+			}
+			UpdateIconDisplay(numPlanes);
+			Debug.Log("plane is launched");
+		}
+
 	}
 	public void LandAircraft(Plane plane) {
 
@@ -117,6 +190,7 @@ public class Airbase : Building
 	IEnumerator Recover() {
 		yield return new WaitForSeconds(5);
 		if(launched.Count + numPlanes < maxPlanes) {
+			Debug.Log("recovering! " + Time.time);
 			numPlanes++;
 			UpdateIconDisplay(numPlanes);
 		}
@@ -129,6 +203,7 @@ public class Airbase : Building
 	{
 		ApplyUpgrades();
 		CleanLaunched();
+		Debug.Log("canreload says " + launched.Count + " + " + numPlanes + " ");
 		return (launched.Count + numPlanes) < maxPlanes;
 	}
 	public override void Direct(Order order)
@@ -136,8 +211,9 @@ public class Airbase : Building
 		base.Direct(order);
 	}
 
-	List<Plane> clean = new List<Plane>();
+
 	void CleanLaunched() {
+		List<Plane> clean = new List<Plane>();
 		clean.Clear();
 		foreach (Plane p in launched) { 
 			if(p != null) {

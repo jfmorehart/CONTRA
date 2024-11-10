@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class ATAM : MonoBehaviour
+public class ATAM : NetworkBehaviour
 {
     bool flying;
 
@@ -32,15 +33,42 @@ public class ATAM : MonoBehaviour
 
 	bool airLaunched;
 
+	NetworkObject no;
+
 	private void Awake()
 	{
         ren = GetComponent<Renderer>();
         tren = GetComponent<TrailRenderer>();
-        Toggle(false);
+		if (Map.multi) {
+			Toggle(true);
+		}
+		else {
+			Toggle(false);
+		}
+
         swaySeed = Random.Range(-5, 5f);
+		no = GetComponent<NetworkObject>();
 	}
 
+	[ServerRpc(RequireOwnership = false)]
+	public void ATAMLiveServerRPC(ulong obj_id) { 
+		if(no.NetworkObjectId == obj_id) {
+			src = SFX.ins.ATAMLaunch(transform).GetComponent<AudioSource>();
+			Toggle(true);
+			ATAMLiveClientRPC(obj_id);
+		}
+    }
+	[ClientRpc]
+	public void ATAMLiveClientRPC(ulong obj_id)
+	{
+		if (no.NetworkObjectId == obj_id)
+		{
+			src = SFX.ins.ATAMLaunch(transform).GetComponent<AudioSource>();
+			Toggle(true);
+		}
+	}
 	public void Launch(Vector2 ipos, Vector2 ivel, Unit target, int mteam, float boostlen = 5, bool airLaunch = true) {
+		Debug.Log("atam launch");
 		//ANTI AIRCRAFT MODE
         transform.position = ipos;
         transform.up = ivel;
@@ -55,7 +83,18 @@ public class ATAM : MonoBehaviour
         Toggle(true);
 		src = SFX.ins.ATAMLaunch(transform).GetComponent<AudioSource>();
 		ApplyUpgrades();
-    }
+		//if (Map.multi)
+		//{
+		//	if (Map.host)
+		//	{
+		//		ATAMLiveClientRPC(no.NetworkObjectId);
+		//	}
+		//	else
+		//	{
+		//		ATAMLiveServerRPC(no.NetworkObjectId);
+		//	}
+		//}
+	}
 	public void Launch(Vector2 ipos, Vector2 ivel, Missile target, int mteam, float boostlen = 5, bool airLaunch = true)
 	{
 		//ANTI BALLISTIC MISSILE MODE
@@ -74,6 +113,17 @@ public class ATAM : MonoBehaviour
 		Toggle(true);
 		src = SFX.ins.ATAMLaunch(transform).GetComponent<AudioSource>();
 		ApplyUpgrades();
+		//if (Map.multi)
+		//{
+		//	if (Map.host)
+		//	{
+		//		ATAMLiveClientRPC(no.NetworkObjectId);
+		//	}
+		//	else
+		//	{
+		//		ATAMLiveServerRPC(no.NetworkObjectId);
+		//	}
+		//}
 	}
 	void ApplyUpgrades()
 	{
@@ -105,6 +155,10 @@ public class ATAM : MonoBehaviour
 	private void Update()
 	{
         if (!flying) return;
+		if (Map.multi && !NetworkManager.Singleton.IsHost) { 
+			if(!no.SynchronizeTransform) Toggle(false);
+			return;
+		}
         lifeTime -= Time.deltaTime;
         if (lifeTime < 0) Toggle(false);
 
@@ -151,6 +205,9 @@ public class ATAM : MonoBehaviour
 			{
 				//kill both missiles
 				Map.ins.Detonate(transform.position, 0.5f, team, true);
+				if (Map.multi) MultiplayerVariables.ins.ATAMDetonateClientRPC(transform.position, team);
+				ulong networkteam = MultiplayerVariables.ins.clientIDs[team];
+				if (Map.multi) MultiplayerVariables.ins.FireballDownClientRPC(networkteam, fireball.en);
 				fireball.Toggle(false);
 				Toggle(false);
 			}
@@ -161,7 +218,9 @@ public class ATAM : MonoBehaviour
 			if (delta.magnitude < explosionDist)
 			{
 				Map.ins.Detonate(transform.position, 0.5f, team, true);
+				if (Map.multi) MultiplayerVariables.ins.ATAMDetonateClientRPC(transform.position, team);
 				Toggle(false);
+
 			}
 		}
 
@@ -184,9 +243,14 @@ public class ATAM : MonoBehaviour
 		}
 	}
 
-	void Toggle(bool on) {
+	public void Toggle(bool on) {
         flying = on;
         ren.enabled = on;
+		if (Map.multi) {
+			if (no == null) no = GetComponent<NetworkObject>();
+			no.SynchronizeTransform = on;
+		}
+
 		if(src != null) {
 			Destroy(src.gameObject);
 		}
@@ -194,6 +258,5 @@ public class ATAM : MonoBehaviour
 			tren.enabled = on;
 			tren.Clear();
 		}
-
     }
 }

@@ -34,7 +34,7 @@ public static class MapUtils
 		//dont spawn a city in the ocean
 		if (Map.ins.GetPixTeam(posI) == -1) mteam = -1;
 
-		float popU = Random.Range(1, 10); //todo replace with popcount
+		float popU = MultiplayerVariables.Ran((Vector2)posI) * 10;
 		return new Inf(posI, popU, mteam, 0);
     }
 
@@ -119,7 +119,7 @@ public static class MapUtils
 			}
 			if (Map.multi) {
 				posI = MultiplayerCityPosition((index * 11003) + 1 * it);
-				Debug.Log("input " + ((index * 11003) + 1 * it) + " output = " + posI);
+				//Debug.Log("input " + ((index * 11003) + 1 * it) + " output = " + posI);
 			}
 			else {
 				posI = new Vector2Int(

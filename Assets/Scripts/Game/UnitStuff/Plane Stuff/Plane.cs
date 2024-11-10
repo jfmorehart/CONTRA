@@ -243,10 +243,6 @@ public class Plane : Unit
 		bingo = true;
 		return false;
 	}
-	public override void Kill()
-	{
-		base.Kill();
-	}
 
 	public virtual void Land() {
 		if(homeBase != null) {

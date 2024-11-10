@@ -11,7 +11,6 @@ using static ArmyUtils;
 public class UI : MonoBehaviour
 {
 	public static UI ins;
-	int playerTeam = 0;
 
 	[HideInInspector]
 	public int incomingMissiles;
@@ -50,6 +49,7 @@ public class UI : MonoBehaviour
 	}
 	public void Start()
 	{
+		targetNation = Map.localTeam;
 		LaunchDetection.launchDetectedAction += LaunchDetect;
 		DisplayHandler.resetGame += Reset;
 		menu_diplo.gameObject.SetActive(true);
@@ -236,7 +236,7 @@ public class UI : MonoBehaviour
 		if (start == menu_diplo) Relationships.ins.Clear();
 		if (end == menu_feelings) Relationships.ins.Draw();
 		if (end == menu_diplo) Relationships.ins.Draw();
-		if (end == menu_diplo) targetNation = 0;
+		if (end == menu_diplo) targetNation = Map.localTeam;
 
 		if(start.children.Length > 0) {
 			start.children[selected].UnHighlight();
@@ -272,17 +272,17 @@ public class UI : MonoBehaviour
 	}
 
 	public void WarToggle() {
-		if(ROE.AreWeAtWar(0, targetNation)) {
-			if (Diplomacy.peaceOffers[0, targetNation]) {
+		if(ROE.AreWeAtWar(Map.localTeam, targetNation)) {
+			if (Diplomacy.peaceOffers[Map.localTeam, targetNation]) {
 				//withdraw peace offer
-				Diplomacy.peaceOffers[0, targetNation] = false;
+				Diplomacy.peaceOffers[Map.localTeam, targetNation] = false;
 			}
 			else { 
-				Diplomacy.OfferPeace(0, targetNation);
+				Diplomacy.OfferPeace(Map.localTeam, targetNation);
 			}
 		}
 		else {
-			ROE.DeclareWar(0, targetNation);
+			ROE.DeclareWar(Map.localTeam, targetNation);
 		}
 	}
 	public void LaunchMissiles() {
@@ -354,7 +354,7 @@ public class UI : MonoBehaviour
 
 	void LaunchDetect(Vector2 launchPos, Vector2 targetPos, int perp, int victim)
 	{
-		if (victim == playerTeam)
+		if (victim == Map.localTeam)
 		{
 			//osc = true;
 			//PromptNuclear();

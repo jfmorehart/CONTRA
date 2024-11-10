@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using Unity.Netcode;
 using UnityEngine;
 
 public class Fighter : Plane
@@ -45,12 +46,10 @@ public class Fighter : Plane
 		firingRange += Random.Range(-30, 30);
 		turnRate += Random.Range(-10, 10);
 		speed += Random.Range(-10, 10);
-
 		state = Diplomacy.states[team] as State_AI;
 	}
 	public override void ApplyUpgrades()
 	{
-		Debug.Log("apply");
 		if (Research.unlockedUpgrades[team][2] > 2)
 		{
 			// "missiles i"
@@ -61,7 +60,6 @@ public class Fighter : Plane
 			//bombs
 			yield = 1.5f;
 			bombCapacity = 4;
-			Debug.Log("a");
 		}
 		if (Research.unlockedUpgrades[team][2] > 3)
 		{
@@ -74,7 +72,6 @@ public class Fighter : Plane
 			firingRange = 500;
 			firingRange += Random.Range(-30, 30);
 			trackingRange = 600;
-			Debug.Log("b");
 		}
 		if (Research.unlockedUpgrades[team][2] > 4)
 		{
@@ -84,11 +81,12 @@ public class Fighter : Plane
 			//bombs
 			yield = 3f;
 			bombCapacity = 3;
-			Debug.Log("c");
 		}
 	}
 	public override void Update()
 	{
+		if (Map.multi && !IsOwner) return;
+
 		CheckRadar();
 
 		if (bogey != null)
@@ -101,11 +99,7 @@ public class Fighter : Plane
 			{
 				if (Time.time - lastShot > reloadTime)
 				{
-					Vector2 vel = speed * Time.deltaTime * transform.up;
-					ATAM missile = Pool.ins.GetATAM();
-					missile.Launch(transform.position, vel, bogey, team);
-					lastShot = Time.time;
-					bogey = null;
+					FireMissile();
 				}
 			}
 		}
@@ -128,6 +122,57 @@ public class Fighter : Plane
 		base.Update();
 
 	}
+	public void FireMissile() {
+		Vector2 vel = speed * Time.deltaTime * transform.up;
+		//ATAM missile = Pool.ins.GetATAM();
+		//missile.Launch(transform.position, vel, bogey, team);
+		lastShot = Time.time;
+
+		if (Map.multi) {
+			if (Map.host) {
+				GameObject m = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
+				m.GetComponent<ATAM>().Launch(transform.position, vel, bogey, team);
+				NetworkObject no_atam = m.GetComponent<NetworkObject>();
+				no_atam.SpawnWithOwnership(0);
+				Fox3ClientRPC(no_atam.NetworkObjectId);
+				Debug.Log("server fox3");
+			}
+			else {
+				Fox3ServerRPC(no.NetworkObjectId, bogey.no.NetworkObjectId);
+				Debug.Log("client fox3");
+			}
+		}
+
+		bogey = null;
+	}
+	[ServerRpc(RequireOwnership = false)]
+	public void Fox3ServerRPC(ulong fighter, ulong mbogey) {
+		Debug.Log("recieved fox3 serverrpc");
+		if(fighter == no.NetworkObjectId) {
+			Debug.Log(" id match");
+			if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(mbogey, out NetworkObject no_bogey))
+			{
+				Unit bogey = no_bogey.GetComponent<Unit>();
+				Vector2 vel = speed * Time.deltaTime * transform.up;
+				GameObject m = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
+				m.GetComponent<ATAM>().Launch(transform.position, vel, bogey, team);
+				NetworkObject no_atam = m.GetComponent<NetworkObject>();
+				no_atam.SpawnWithOwnership(0); //host owner anyhow
+				Fox3ClientRPC(no_atam.NetworkObjectId);
+				Debug.Log("spawned atam, called clientrpc");
+			}
+		}
+	}
+	[ClientRpc]
+	public void Fox3ClientRPC(ulong atam)
+	{
+		Debug.Log("recieved atamlaunch clientrpc");
+		if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(atam, out NetworkObject no_atam))
+		{
+			Debug.Log("toggled live");
+			no_atam.GetComponent<ATAM>().Toggle(true);
+		}
+	}
 	protected override void ArrivedOverTarget() {
 		if(target.distance == AcceptableDistance.Bombtarget && hasBombs) {
 			StartCoroutine(BombingRun(bombCapacity));
@@ -145,6 +190,10 @@ public class Fighter : Plane
 		hasBombs = false;
 		yield return new WaitForSeconds(0.1f * (3 - count));
 
+		if (Map.multi && !IsOwner)
+		{
+			yield break;
+		}
 
 		for (int i = 0; i < count; i++)
 		{
@@ -194,6 +243,7 @@ public class Fighter : Plane
 		if (bogey != null) return;
 
 		if (hasBombs) {
+			if(state == null) state = Diplomacy.states[team] as State_AI;
 			target = state.RequestBombingTargets(this);
 			if (speaker == null)
 			{

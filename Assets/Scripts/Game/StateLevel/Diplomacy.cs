@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using static ConsolePanel;
 
@@ -114,7 +115,22 @@ public static class Diplomacy
 	public static void OfferPeace(int t1, int t2) {
 		if (peaceOffers[t1, t2]) return; //already true;
 
-			peaceOffers[t1, t2] = true;
+		if (Map.multi)
+		{
+			if (Map.host)
+			{
+				ulong team1 = MultiplayerVariables.ins.clientIDs[t1];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[t2];
+				MultiplayerVariables.ins.OfferPeaceClientRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+			else
+			{
+				ulong team1 = MultiplayerVariables.ins.clientIDs[t1];
+				ulong team2 = MultiplayerVariables.ins.clientIDs[t2];
+				MultiplayerVariables.ins.OfferPeaceServerRPC(team1, team2, NetworkManager.Singleton.LocalClientId);
+			}
+		}
+		peaceOffers[t1, t2] = true;
 
 		if (peaceOffers[t2, t1])
 		{
@@ -132,7 +148,6 @@ public static class Diplomacy
 			else {
 				Log(ColoredName(t1) + " has offered " + (ColoredName(t2) + " peace"), 30);
 			}
-		
 		}
 	}
 	public static void RemovePeaceOffer(int t1, int t2)

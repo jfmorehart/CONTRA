@@ -24,7 +24,7 @@ public class RTopicMenu : UIMenu
 		{
 			children[i].plaintext = Research.names[(int)branch][i];
 			children[i].text.text = Research.names[(int)branch][i];
-			if (Research.unlockedUpgrades[0][(int)branch] == i) {
+			if (Research.unlockedUpgrades[Map.localTeam][(int)branch] == i) {
 				//unlocked
 
 				//select unlocked
@@ -42,7 +42,7 @@ public class RTopicMenu : UIMenu
 			else {
 				//locked
 				children[i].locked = true;
-				if(Research.unlockedUpgrades[0][(int)branch] > i) {
+				if(Research.unlockedUpgrades[Map.localTeam][(int)branch] > i) {
 					children[i].text.fontStyle = FontStyles.Italic;
 					children[i].text.color = Color.grey;
 					children[i].text.fontSize = 20;
@@ -62,8 +62,8 @@ public class RTopicMenu : UIMenu
 	public void BeginNewResearch()
 	{
 		if (children[UI.ins.selected].locked) return;
-		Research.unlockProgress[0] = 0;
-		Research.currentlyResearching[0] = new Vector2Int((int)branch, UI.ins.selected);
+		Research.unlockProgress[Map.localTeam] = 0;
+		Research.currentlyResearching[Map.localTeam] = new Vector2Int((int)branch, UI.ins.selected);
 		UI.ins.Cancel();
 	}
 }

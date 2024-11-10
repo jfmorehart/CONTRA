@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 public class BombManager : MonoBehaviour
@@ -15,6 +16,21 @@ public class BombManager : MonoBehaviour
 		Vector2 apos = wpos + CEP * Random.insideUnitCircle;
 		float ryield = Mathf.Max(0.3f, myield + dyield * Random.Range(-1, 1));
 		Debug.Log("myield = " + myield + " ryield " + ryield);
+
+		if (Map.multi)
+		{
+			if (Map.host)
+			{
+				Debug.Log("sent bomb client rpc");
+				MultiplayerVariables.ins.DropBombClientRPC(0, mteam, apos, ryield);
+			}
+			else
+			{
+				Debug.Log("sent bomb server rpc");
+				MultiplayerVariables.ins.DropBombServerRPC(mteam, apos, ryield);
+			}
+		}
+
 		StartCoroutine(Fall(new Bomb(mteam, apos, ryield)));
     }
 

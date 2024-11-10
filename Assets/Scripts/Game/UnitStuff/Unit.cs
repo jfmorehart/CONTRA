@@ -28,12 +28,19 @@ public class Unit : NetworkBehaviour
 	[HideInInspector]
 	public int id;
 
+	public NetworkObject no;
+
 	protected bool useChunkSystem = true;
 
 	public virtual void Awake() {
 		maxHP = hP;
 		id = Random.Range(0, 10000);
 	}
+	
+	public override void OnNetworkSpawn() {
+		base.OnNetworkSpawn();
+		no = GetComponent<NetworkObject>();
+    }
 
 	public virtual void Start()
 	{
@@ -49,9 +56,12 @@ public class Unit : NetworkBehaviour
 
 		ArmyManager.ins.RegisterUnit(this);
 
-		if (Map.multi && Map.host)
+		if (Map.multi && Map.host && IsOwner)
 		{
-			GetComponent<NetworkObject>().ChangeOwnership(MultiplayerVariables.ins.clientIDs[team]);
+			NetworkObject no = GetComponent<NetworkObject>();
+			if(no.OwnerClientId != MultiplayerVariables.ins.clientIDs[team]) {
+				no.ChangeOwnership(MultiplayerVariables.ins.clientIDs[team]);
+			}
 		}
 
 		upkeepCost = baseUpkeepCost;
@@ -96,7 +106,7 @@ public class Unit : NetworkBehaviour
 		Invoke(nameof(Hit), after);
     }
 
-	public virtual void Kill() {
+	public virtual void Kill(bool multiplayerOverride = false) {
 		ArmyManager.ins.DeregisterUnit(this);
 		Research.ResearchChange[team] -= ApplyUpgrades;
 
@@ -104,15 +114,17 @@ public class Unit : NetworkBehaviour
 			UnitChunks.RemoveFromChunk(positionChunk, this);
 		}
 
-		if (Map.multi) {
-			NetworkObject obj = GetComponent<NetworkObject>();
+		if (Map.multi && !multiplayerOverride) {
 			if (Map.host)
 			{
-				MultiplayerVariables.ins.KillObjClientRPC(NetworkManager.Singleton.LocalClientId, obj.NetworkObjectId);
-				obj.Despawn(true);
+				MultiplayerVariables.ins.KillObjClientRPC(NetworkManager.Singleton.LocalClientId, no.NetworkObjectId);
+				no.Despawn(true);
 			}
 			else {
-				MultiplayerVariables.ins.KillObjServerRPC(NetworkManager.Singleton.LocalClientId, obj.NetworkObjectId);
+				if (!IsOwner) {
+					Debug.Log("killing something that doesn't belong to me");
+				}
+				MultiplayerVariables.ins.KillObjServerRPC(NetworkManager.Singleton.LocalClientId, no.NetworkObjectId);
 			}
 		}
 		else {

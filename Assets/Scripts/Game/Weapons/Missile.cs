@@ -9,7 +9,7 @@ public class Missile : MonoBehaviour
 	Renderer ren;
 	bool flying;
 	Vector2 st;
-	Vector2 en;
+	public Vector2 en;
 	float yield;
 	float speed = 50;
 	float hmult = 1.5f;
