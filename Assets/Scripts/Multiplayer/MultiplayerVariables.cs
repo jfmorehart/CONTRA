@@ -13,14 +13,26 @@ public class MultiplayerVariables : NetworkBehaviour
 	private NetworkVariable<int> _numPlayers = new NetworkVariable<int>();
 	public int NumPlayers { get => _numPlayers.Value; set => _numPlayers.Value = value; }
 	public ulong[] clientIDs;
+	public Dictionary<ulong, string> playerNames;
+	public string localName;
 
 	public override void OnNetworkSpawn()
 	{
 		ins = this;
 		DontDestroyOnLoad(gameObject);
 
+		string name = PlayerPrefs.GetString("defaultName");
+		if (name == "")
+		{
+			TypingInterface.ins.WriteOut("name = ");
+			TypingInterface.ins.WriteOut("for a custom name, write 'name = [yourname]'");
+		}
+		else
+		{
+			TypingInterface.ins.WriteOut("name = " + name);
+		}
 		if (!NetworkManager.IsHost) return;
-		_mapSeed.Value = UnityEngine.Random.Range(-5000, 5000);
+		_mapSeed.Value = UnityEngine.Random.Range(1, 5000);
 	}
 
 
@@ -54,6 +66,37 @@ public class MultiplayerVariables : NetworkBehaviour
 			}
 		}
     }
+	public void UpdatePlayerNames() {
+		playerNames = new Dictionary<ulong, string>();
+		RetrieveNamesClientRPC();
+    }
+	[ClientRpc]
+    public void RetrieveNamesClientRPC() {
+		if(localName == "") {
+			localName = PlayerPrefs.GetString("defaultName");
+		}
+		if (localName == "") return;
+		UpdateStateNameServerRPC(NetworkManager.Singleton.LocalClientId, localName);
+    }
+	[ServerRpc(RequireOwnership = false)]
+	public void UpdateStateNameServerRPC(ulong clientID, string name) {
+		if(playerNames == null) playerNames = new Dictionary<ulong, string>();
+		if (playerNames.ContainsKey(clientID)) {
+			playerNames.Remove(clientID);
+		}
+		playerNames.Add(clientID, name);
+		ShareNameClientRPC(clientID, name);
+    }
+	[ClientRpc]
+	public void ShareNameClientRPC(ulong clientID, string name) {
+		if (clientID == NetworkManager.LocalClientId) return;
+		if (playerNames == null) playerNames = new Dictionary<ulong, string>();
+		if (playerNames.ContainsKey(clientID))
+		{
+			playerNames.Remove(clientID);
+		}
+		playerNames.Add(clientID, name);
+	}
 
 	// Spawning and Destroying
 	#region SpawningRPCS
@@ -111,6 +154,7 @@ public class MultiplayerVariables : NetworkBehaviour
 		if (NetworkManager.LocalClientId == owner) return; //already killed it locally
 
 		NetworkObject kill = NetworkManager.Singleton.SpawnManager.SpawnedObjects[obj_id];
+		if (kill == null) return;
 		if (kill.TryGetComponent(out Unit un))
 		{
 			un.Kill(true);
@@ -280,7 +324,16 @@ public class MultiplayerVariables : NetworkBehaviour
 	[ServerRpc(RequireOwnership = false)]
 	public void ResearchUpdateServerRPC(ulong networkteam, int[] research)
 	{
-		Debug.Log("research updated");
+		Debug.Log("server research updated");
+		int team = TeamFromUlong(networkteam);
+		Research.unlockedUpgrades[team] = research;
+		Research.ResearchChange[team]?.Invoke();
+		ResearchUpdateClientRPC(networkteam, research);
+	}
+	[ClientRpc]
+	public void ResearchUpdateClientRPC(ulong networkteam, int[] research) {
+		if (networkteam == NetworkManager.LocalClientId) return;
+		Debug.Log("client research updated");
 		int team = TeamFromUlong(networkteam);
 		Research.unlockedUpgrades[team] = research;
 		Research.ResearchChange[team]?.Invoke();

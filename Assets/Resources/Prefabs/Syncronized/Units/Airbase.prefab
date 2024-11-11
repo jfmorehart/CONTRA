@@ -132,7 +132,7 @@ MonoBehaviour:
   iconPrefab: {fileID: 39995123657460185, guid: caa3ad8c04aae4024a3d6d88d27894b6, type: 3}
   icons: []
   offset: {x: 0, y: -30}
-  reloadTime: 10
+  reloadTime: 15
   mapPos: {x: 0, y: 0}
   maxPlanes: 5
   numPlanes: 2
@@ -146,3 +146,4 @@ MonoBehaviour:
   - {x: 0, y: 0}
   - {x: 0, y: 0}
   - {x: 0, y: 0}
+  launched: []

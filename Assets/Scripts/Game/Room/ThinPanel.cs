@@ -33,6 +33,12 @@ public class ThinPanel : MonoBehaviour
     {
 		if (Simulator.tutorialOverride) return;
 
+		if(Time.timeScale == 0) {
+			idleScreen.SetActive(false);
+			threatScreen.SetActive(false);
+			background.color = Color.black;
+			return;
+		}
 		if (UI.ins.incomingMissiles > 0) {
         sineColor = Color.red;
             if (!threatScreen.activeInHierarchy) {

@@ -21,6 +21,7 @@ public class RelayDude : MonoBehaviour
     public TMP_InputField input;
 
     public bool hosting;
+    public bool connected;
     public string joinCode;
 
     NetworkManager nm;
@@ -96,13 +97,17 @@ public class RelayDude : MonoBehaviour
     //Trying out vim!
 
     
-    private async void JoinRelay(string joinCode)
+    private async void JoinRelay(string inputJoin)
     {
-        joinCode = joinCode[..6];
+        if(inputJoin.Length < 6) {
+			TypingInterface.ins.WriteOut("invalid join code");
+            return;
+		}
+        inputJoin = inputJoin[..6];
         try
         {
-            JoinAllocation jalloc = await RelayService.Instance.JoinAllocationAsync(joinCode);
-
+            JoinAllocation jalloc = await RelayService.Instance.JoinAllocationAsync(inputJoin);
+			joinCode = inputJoin;
 			RelayServerData relayServerData = new RelayServerData(jalloc, "dtls");
 			NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
 
@@ -127,6 +132,7 @@ public class RelayDude : MonoBehaviour
         TypingInterface.ins.WriteOut("new client connected.");
 		TypingInterface.ins.WriteOut("players = " + nm.ConnectedClientsList.Count);
 		TypingInterface.ins.WriteOut("type 'start' when ready");
+        MultiplayerVariables.ins.UpdatePlayerNames();
 	}
 
     public void ClientDisconnected(ulong id) {

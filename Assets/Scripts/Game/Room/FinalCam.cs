@@ -15,7 +15,7 @@ public class FinalCam : MonoBehaviour
 	public Material blurMat;
 	public Material isolateBloomMat;
 
-	public float shakestr, shakeAmp, shakeFreq, shakeDecay, launchShakeMagnitude;
+	public float shakestr, shakeAmp, shakeFreq, shakeDecay, launchShakeMagnitude, shakeMax;
 	public Vector2 shake;
 	private void Start()
 	{
@@ -34,6 +34,7 @@ public class FinalCam : MonoBehaviour
 		transform.position = pos + (Vector3)shake;
 		shakestr -= Time.deltaTime * shakeDecay;
 		if (shakestr < 0.05f) shakestr = 0;
+		if (shakestr > shakeMax) shakestr = shakeMax;
 	}
 	public void MissileLaunch()
 	{

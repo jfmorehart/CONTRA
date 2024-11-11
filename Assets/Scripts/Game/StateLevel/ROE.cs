@@ -32,7 +32,9 @@ public static class ROE
 
 	//With specified player
 	public static bool AreWeAtWar(int t1, int t2) {
-		if (t1 == -1 || t2 == -1) return false;
+		if (t1 < 0 || t2 < 0) return false;
+		if (t1 >= Map.ins.numStates) return false;
+		if (t2 >= Map.ins.numStates) return false;
 		int index = t1 * Map.ins.numStates + t2;
 		return (atWar[index] == 1);
     }
@@ -93,22 +95,23 @@ public static class ROE
 		Diplomacy.states[t1].WarStarted(t2);
 
 
-		if (t1 == 0)
-		{
-			Log(you + " declared war on " + ColoredName(t2), 30);
-		}
-		else if(t2 == 0) { 
-			Log(ColoredName(t1) + " has declared war on " + you, 30);
-		}
-		else { 
-			if(t1 == 0) {
-				Log(ColoredName(t1) + " have declared war on " + ColoredName(t2), 30);
-			}
-			else {
-				Log(ColoredName(t1) + " has declared war on " + ColoredName(t2), 30);
-			}
+		Log(ColoredName(t1) + " declared war on " + ColoredName(t2), 30);
+		//if (t1 == 0)
+		//{
+		//	Log(ColoredName(t1) + " declared war on " + ColoredName(t2), 30);
+		//}
+		//else if(t2 == 0) { 
+		//	Log(ColoredName(t1) + " declared war on " + ColoredName(t2), 30);
+		//}
+		//else { 
+		//	if(t1 == 0) {
+		//		Log(ColoredName(t1) + " have declared war on " + ColoredName(t2), 30);
+		//	}
+		//	else {
+		//		Log(ColoredName(t1) + " has declared war on " + ColoredName(t2), 30);
+		//	}
 
-		}
+		//}
 	}
 	public static void MakePeace(int t1, int t2)
 	{

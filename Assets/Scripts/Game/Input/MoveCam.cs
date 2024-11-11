@@ -14,7 +14,7 @@ public class MoveCam : MonoBehaviour
 	public Vector3 accel;
 	public Vector2 shake;
 	public float shakestr, shakeFreq, shakeAmp, shakeDecay;
-	public float exp, mult, mult2;
+	public float exp, mult, mult2, sizeDecay;
 
 	public float drag;
 
@@ -32,6 +32,13 @@ public class MoveCam : MonoBehaviour
 	private void Awake()
 	{
 		ins = this;
+	}
+	float resetTime;
+	private void Start()
+	{
+		Debug.Log("setting to max" + Time.timeSinceLevelLoad);
+		GetComponent<Camera>().orthographicSize = 2000;
+		resetTime = Time.timeSinceLevelLoad;
 	}
 	public void Update()
 	{
@@ -72,9 +79,11 @@ public class MoveCam : MonoBehaviour
 			Camera.main.orthographicSize = 15;
 		}
 
-		if (Camera.main.orthographicSize > 600)
+		if (Camera.main.orthographicSize > 600 && Time.timeSinceLevelLoad - resetTime> 0.1f)
 		{
-			Camera.main.orthographicSize = 600;
+			Debug.Log("resetting " + Time.timeSinceLevelLoad);
+			float multval = Camera.main.orthographicSize * (1 - Time.deltaTime * sizeDecay * Camera.main.orthographicSize);
+			Camera.main.orthographicSize = Mathf.Max(600, multval);
 		}
 		float xM = Map.ins.transform.localScale.x * 0.5f;
 		float yM = Map.ins.transform.localScale.y * 0.5f;

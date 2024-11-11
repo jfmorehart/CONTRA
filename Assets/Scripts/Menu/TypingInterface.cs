@@ -80,7 +80,16 @@ public class TypingInterface : MonoBehaviour
 		for(int i = 0; i < booplength; i++) {
 			boopsources[i] = Instantiate(pooledSourcePrefab, transform).GetComponent<AudioSource>();
 		}
-		WriteOptions();
+		string name = PlayerPrefs.GetString("defaultName");
+		if (name == "falken"|| name == "joshua") {
+			WriteOut("greetings professor falken");
+
+		}
+		else
+		{
+			WriteOptions();
+		}
+
 		Simulator.tutorialOverride = false;
 
 	}
@@ -312,19 +321,41 @@ public class TypingInterface : MonoBehaviour
 			else {
 				WriteOut("no opposing players, cannot start yet");
 			}
+			return;
 		}
 		if (message.Contains("join", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			int f = message.IndexOf(' ') + 1;
 			string joincode = message[f..];
 			Debug.Log("parsed this joincode = " + joincode);
-			WriteOut("joining");
+			WriteOut("trying code..." + joincode.ToLower());
 			RelayDude.ins.JoinGame(joincode);
 			return;
 		}
 		if (message.Contains("hello joshua", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("greetings professor falken");
+			WriteOut("how about a nice game of chess");
+			return;
+		}
+		if (message.Contains("name =", System.StringComparison.CurrentCultureIgnoreCase)
+	    || message.Contains("name=", System.StringComparison.CurrentCultureIgnoreCase))
+		{
+			int f = message.IndexOf('=') + 1;
+			string name = message[f..];
+			name = name.Replace(" ", "");
+			if(MultiplayerVariables.ins != null) {
+				MultiplayerVariables.ins.localName = name;
+				ulong c = NetworkManager.Singleton.LocalClientId;
+				MultiplayerVariables.ins.UpdateStateNameServerRPC(c, name);
+			}
+			PlayerPrefs.SetString("defaultName", name);
+			WriteOut("name set to " + name);
+			WriteOut("");
+			if (name == "falken" || name == "joshua") {
+				WriteOut("greetings professor falken");
+				WriteOut("how about a nice game of chess");
+			}
 			return;
 		}
 		if (message.Contains("tears in rain", System.StringComparison.CurrentCultureIgnoreCase))
@@ -334,7 +365,22 @@ public class TypingInterface : MonoBehaviour
 		}
 		if (message.Contains("repeat"))
 		{
-			WriteOptions();
+			if (RelayDude.ins.hosting) {
+				WriteBracket();
+				WriteOut("currently hosting a game");
+				WriteOut("joincode = " + RelayDude.ins.joinCode.ToLower());
+				WriteOut("number of players = " + NetworkManager.Singleton.ConnectedClientsList.Count);
+				WriteOut("type 'start' to start game");
+			}
+			else if (NetworkManager.Singleton.IsConnectedClient) {
+				WriteBracket();
+				WriteOut("currently connected to a server");
+				WriteOut("joincode = " + RelayDude.ins.joinCode.ToLower());
+				WriteOut("waiting for host to begin...");
+			}
+			else {
+				WriteOptions();
+			}
 			return;
 		}
 		if (message.Contains(">list games"))
@@ -470,7 +516,9 @@ public class TypingInterface : MonoBehaviour
 		if(message.Contains("load") && selected_scenario != -1) {
 			Simulator.activeScenario = Simulator.scenarios[selected_scenario];
 			LoadGame();
+			return;
 		}
+		WriteOut("unknown command");
 		//selected_scenario = -1;
 	}
 

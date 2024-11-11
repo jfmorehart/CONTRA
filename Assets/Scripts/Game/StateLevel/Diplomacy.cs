@@ -180,7 +180,23 @@ public static class Diplomacy
 
 	public static void RegisterState(State st) {
 		states[st.team] = st;
-		state_names[st.team] = RandomName();
+		if (Map.multi)
+		{
+			ulong cid = MultiplayerVariables.ins.clientIDs[st.team];
+			if (MultiplayerVariables.ins.playerNames.ContainsKey(cid))
+			{
+				state_names[st.team] = MultiplayerVariables.ins.playerNames[cid];
+			}
+			else
+			{
+				state_names[st.team] = RandomName();
+			}
+		}
+		else
+		{
+			state_names[st.team] = RandomName();
+		}
+
 		numreg++;
 		if(numreg == Map.ins.numStates) {
 			StatesReady?.Invoke();

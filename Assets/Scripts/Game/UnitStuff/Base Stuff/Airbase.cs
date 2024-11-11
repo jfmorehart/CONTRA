@@ -71,7 +71,7 @@ public class Airbase : Building
 		if (Research.unlockedUpgrades[team][1] > 1)
 		{
 			//"production i"
-			reloadTime = 20;
+			reloadTime = 10;
 			maxPlanes = 8;
 			upkeepCost = Mathf.CeilToInt(baseUpkeepCost * 1.1f);
 		}
