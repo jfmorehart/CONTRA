@@ -298,7 +298,7 @@ public static class Diplomacy
 		{
 			if (op > 0.8)
 			{
-				return Color.blue;
+				return new Color(0f, 0.2f, 1f, 1f);
 			}
 			return Color.green;
 		}

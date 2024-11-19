@@ -6423,6 +6423,7 @@ MonoBehaviour:
   oneshotPrefab: {fileID: 6726727101188241934, guid: 36c681e417ae547b1a2d318680c02a33, type: 3}
   pooledSourcePrefab: {fileID: 9171367100995716691, guid: 61554fd84c19c45cca090b78e4fc85d9, type: 3}
   poolSize: 180
+  chatterVolume: 0.005
   testPitch: 10
 --- !u!4 &704741298
 Transform:

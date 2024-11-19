@@ -100,21 +100,9 @@ public class Map : MonoBehaviour
 	public static int texelLongLength;
 
 	bool prepInfluences;
-	float Hash(float fl)
-	{
-		uint value = (uint)((fl + 1) * 2147483647);
-		value ^= value >> 16;  // Mix the high and low bits of value
-		value *= 0x45d9f3b;    // A large prime multiplier for further mixing
-		value ^= value >> 16;
-		value *= 0x45d9f3b;
-		value ^= value >> 16;
-		float v = value / (float)4294967295;
-		Debug.Log(v);
-		return v;
-	}
+
 	private void Awake() {
 
-		Hash(Hash(-0.3f) + Hash(0.311f));
 		mapSeed = UnityEngine.Random.Range(1, 1000);
 		if (MultiplayerVariables.ins != null)
 		{
@@ -523,8 +511,14 @@ public class Map : MonoBehaviour
 		}
 		for (int x = 0; x < numStates; x++)
 		{
-			Vector2Int avgCenter = sumCenter[x] / sumCounter[x];
-			state_centers[x] = avgCenter;
+			if (sumCounter[x] == 0) {
+				state_centers[x] = Vector2Int.zero;
+				Debug.Log("no cities on team " + x);
+			}
+			else {
+				Vector2Int avgCenter = sumCenter[x] / sumCounter[x];
+				state_centers[x] = avgCenter;
+			}
 		}
 	}
 

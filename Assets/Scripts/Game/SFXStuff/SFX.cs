@@ -9,6 +9,11 @@ using UnityEngine.UIElements;
 public class SFX : MonoBehaviour
 {
 	public static SFX ins;
+
+
+	public static float globalVolume = 2f;
+	public float chatterVolume = 0.005f;
+	public float loopvolume = 0.008f;
 	public float pilotChatterMult;
 	public float p_deltaExponent;
 	public float p_deltaMult;
@@ -38,8 +43,7 @@ public class SFX : MonoBehaviour
 
 	//string soundpath = "Sounds/";
 
-	float chatterVolume = 0.02f;
-	public static float globalVolume = 1f;
+
 
 	float delay = 5;
 
@@ -50,7 +54,7 @@ public class SFX : MonoBehaviour
 		ins = this;
 		main = GetComponent<AudioSource>();
 
-		main.volume = 0.02f * globalVolume;
+		main.volume = loopvolume * globalVolume;
 		main.clip = ambient;
 		main.loop = true;
 		main.Play();

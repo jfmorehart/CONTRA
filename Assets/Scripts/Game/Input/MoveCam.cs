@@ -81,7 +81,6 @@ public class MoveCam : MonoBehaviour
 
 		if (Camera.main.orthographicSize > 600 && Time.timeSinceLevelLoad - resetTime> 0.1f)
 		{
-			Debug.Log("resetting " + Time.timeSinceLevelLoad);
 			float multval = Camera.main.orthographicSize * (1 - Time.deltaTime * sizeDecay * Camera.main.orthographicSize);
 			Camera.main.orthographicSize = Mathf.Max(600, multval);
 		}

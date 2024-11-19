@@ -198,12 +198,12 @@ public class Airbase : Building
 	protected override void Reload()
 	{
 		numPlanes++;
+		UpdateIconDisplay(numPlanes);
 	}
 	protected override bool CanReload()
 	{
 		ApplyUpgrades();
 		CleanLaunched();
-		Debug.Log("canreload says " + launched.Count + " + " + numPlanes + " ");
 		return (launched.Count + numPlanes) < maxPlanes;
 	}
 	public override void Direct(Order order)

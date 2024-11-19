@@ -85,7 +85,9 @@ public class Fighter : Plane
 	}
 	public override void Update()
 	{
-		if (Map.multi && !IsOwner) return;
+		if (Map.multi) {
+			if (!IsOwner) return;
+		}
 
 		CheckRadar();
 
@@ -128,19 +130,24 @@ public class Fighter : Plane
 		//missile.Launch(transform.position, vel, bogey, team);
 		lastShot = Time.time;
 
-		if (Map.multi) {
+		if (Map.multi) { //multiplayer cases
 			if (Map.host) {
 				GameObject m = Instantiate(Pool.ins.atamPrefab, Pool.ins.transform);
 				m.GetComponent<ATAM>().Launch(transform.position, vel, bogey, team);
 				NetworkObject no_atam = m.GetComponent<NetworkObject>();
 				no_atam.SpawnWithOwnership(0);
 				Fox3ClientRPC(no_atam.NetworkObjectId);
-				Debug.Log("server fox3");
 			}
 			else {
 				Fox3ServerRPC(no.NetworkObjectId, bogey.no.NetworkObjectId);
-				Debug.Log("client fox3");
 			}
+		}
+		else {
+			//normal singleplayer firing
+			ATAM missile = Pool.ins.GetATAM();
+			missile.Launch(transform.position, vel, bogey, team);
+			lastShot = Time.time;
+			bogey = null;
 		}
 
 		bogey = null;

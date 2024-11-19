@@ -82,12 +82,12 @@ Material:
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
-    - _dist: 0.2
-    - _fuzzAmt: 0.89
-    - _noiseAmt: 0.5
+    - _dist: 0.21
+    - _fuzzAmt: 0.8
+    - _noiseAmt: 0
     - _scale: 0.78
     - _sls: 0.5
-    - _t: 198.00406
+    - _t: 1054.1237
     - _texScale1: 600
     - _texScale2: 100
     m_Colors:

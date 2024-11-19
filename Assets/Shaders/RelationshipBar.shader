@@ -76,7 +76,7 @@ Shader "Unlit/RelationshipBar"
                 //col *= 0.3;
                 float shapeterm = uv.x;
 
-                col *= 0.1 + step(frac(_Time.y + -shapeterm * 10 ), 0.2);
+                col *= 0.1 + step(frac(_Time.y + -shapeterm * 5 ), 0.2);
                 col.a *= alpha;
                 return float4(col);
             }
