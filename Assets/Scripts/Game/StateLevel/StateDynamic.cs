@@ -25,14 +25,14 @@ public struct StateDynamic
 	public float pVictory;
 	public Diplomacy.Relationship relationship;
 	public bool isHotWar;
-	public bool isRangedWar;
+	public bool shareBorder;
 
 	public StateDynamic(int team, int enemy)
 	{
 		team1 = team;
 		team2 = enemy;
 
-		isRangedWar = !(Diplomacy.states[team] as State_AI).sharesBorder[enemy];
+		shareBorder = (Diplomacy.states[team] as State_AI).sharesBorder[enemy];
 
 		popRatio = (1 + Map.ins.state_populations[enemy]) / (float)(Map.ins.state_populations[team] + 1f);
 		int enemyNukes = nuclearCount[enemy];
@@ -55,7 +55,7 @@ public struct StateDynamic
 		airRatio = (enemyAirbases + 1) / (myAirbases + 1);
 
 		armyRatio = (10 + armies[enemy].Count) / (float)(armies[team].Count + 10f);
-		float lerpTerm = nukeRatio * nukeWeight + armyRatio * armyWeight + airRatio * airWeight + popRatio * popWeight;
+		float lerpTerm = nukeRatio * nukeWeight + armyRatio * armyWeight * (shareBorder ? 1 : 0.2f) + airRatio * airWeight + popRatio * popWeight;
 		pVictory = ArmyUtils.RatioToCOV(lerpTerm);
 		relationship = Diplomacy.relationships[team, enemy];
 		isHotWar = (int)relationship > 4; // covers limited and total war

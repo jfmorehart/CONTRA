@@ -42,12 +42,14 @@ public class PlayerInput : MonoBehaviour
 	// Update is called once per frame
 	void Update()
     {
+		if (Input.anyKeyDown)
+		{
+			KeyClick();
+		}
+		if (UI.ins.locked) return;
         if (Input.GetKeyDown(KeyCode.B)) {
 			UI.ins.BuildScreen();
 	    }
-		if (Input.anyKeyDown) {
-			KeyClick();
-		}
 	}
 	public void KeyClick() {
 		AudioSource src = SFX.ins.NewSource(keyPress[Random.Range(0, keyPress.Length)], 0.01f, false);

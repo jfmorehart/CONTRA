@@ -10,7 +10,7 @@ public class City : MonoBehaviour
 	public int team;
 
 	//[HideInInspector]
-    public float pop; //todo some sort of popcount
+    public float captured_pop; //todo some sort of popcount
 	public float truepop;
 
 	public float capRate;
@@ -35,7 +35,7 @@ public class City : MonoBehaviour
 	public void SetUpCity(int te, float popu)
 	{
 		team = te;
-		pop = popu;
+		captured_pop = popu;
 		//truepop = pop;
 
 		lastPop = Random.Range(Time.time, Time.time + 5);
@@ -134,8 +134,8 @@ public class City : MonoBehaviour
 		System.Array.Sort(teaminfs, keys);
 		if (keys[^1] != team) {
 			//Shrink effective pop, and check if captured
-			pop -= teaminfs[^1];
-			if (pop < 0)
+			captured_pop -= teaminfs[^1];
+			if (captured_pop < 0)
 			{
 				team = TeamSurround();
 				//if (SurroundCheck(keys[^1])) {
@@ -149,8 +149,8 @@ public class City : MonoBehaviour
 		else {
 			//Grow effective pop to match realpop
 			teaminfs[team] += 0.01f;
-			pop += teaminfs[^1];
-			if (pop > truepop) pop = truepop;
+			captured_pop += teaminfs[^1];
+			if (captured_pop > truepop) captured_pop = truepop;
 		}
 	}
 

@@ -10,7 +10,7 @@ using Random = UnityEngine.Random;
 public class TypingInterface : MonoBehaviour
 {
 	public static TypingInterface ins;
-    public TMP_Text dialogue;
+	public Transform textHolder;
 
     string pstring = "";
 	public int maxLineLength;
@@ -39,8 +39,6 @@ public class TypingInterface : MonoBehaviour
 
 	List<string> unwritten;
 
-	int selected_scenario = -1;
-
 	//sound stuff
 	public GameObject oneshotPrefab;
 	public GameObject pooledSourcePrefab;
@@ -52,11 +50,12 @@ public class TypingInterface : MonoBehaviour
 	int booplength = 50;
 	int bcham;
 
-	bool lockout;
+	public bool lockout;
 
-	private void Awake()
+	public virtual void Awake()
 	{
 		ins = this;
+		if (textHolder == null) textHolder = transform;
 		Cursor.lockState = CursorLockMode.Locked;
 		if (!Simulator.IsSetup) Simulator.Setup();
 		Time.timeScale = 1;
@@ -69,7 +68,7 @@ public class TypingInterface : MonoBehaviour
 
 		for (int i =0; i < numLines; i++) {
 			Vector2 pos = new Vector2(0, -lineSpacer * i);
-			lineObjs[i] = Instantiate(linePrefab, (Vector2)transform.position + pos, Quaternion.identity, transform).GetComponent<TMP_Text>();
+			lineObjs[i] = Instantiate(linePrefab, (Vector2)textHolder.position + pos, Quaternion.identity, textHolder).GetComponent<TMP_Text>();
 			lineObjs[i].text = "";
 			lines[i] = new string("");
 			finishedWriting[i] = true;
@@ -80,32 +79,21 @@ public class TypingInterface : MonoBehaviour
 		for(int i = 0; i < booplength; i++) {
 			boopsources[i] = Instantiate(pooledSourcePrefab, transform).GetComponent<AudioSource>();
 		}
-		string name = PlayerPrefs.GetString("defaultName");
-		if (name == "falken"|| name == "joshua") {
-			WriteOut("greetings professor falken");
-
-		}
-		else
-		{
-			WriteOptions();
-		}
-
-		Simulator.tutorialOverride = false;
-
 	}
 
 	SFX_OneShot KeyPressSound() {
 
 		GameObject go = Instantiate(oneshotPrefab, transform);
 		SFX_OneShot os = go.GetComponent<SFX_OneShot>();
+		if (keyclick.Length < 1) return null;
 		os.Play(keyclick[Random.Range(0, keyclick.Length)], 0.01f * SFX.globalVolume);
 		os.GetComponent<AudioSource>().pitch = Random.Range(0.95f, 1.05f);
 		return os;
 	}
 	void BoopSound(float minPitch = 1, float maxPitch = 1)
 	{
-		if (Time.time - lastBoop < boopDelay) return;
-		lastBoop = Time.time;
+		if (Time.unscaledTime- lastBoop < boopDelay) return;
+		lastBoop = Time.unscaledTime;
 		bcham++;
 		if (bcham >= booplength) bcham = 0;
 		boopsources[bcham].clip = boops[Random.Range(0, boops.Length)];
@@ -114,30 +102,13 @@ public class TypingInterface : MonoBehaviour
 		boopsources[bcham].Play();
 	}
 
-	void WriteOptions() {
-		Debug.Log("write options " + Time.time);
-		WriteOut("_______________________________________", false);
-		WriteOut("select a simulation to load", false);
-		WriteOut("");
-		WriteOut("tutorial", false);
-		WriteOut("scenario a", false);
-		WriteOut("scenario b", false);
-		WriteOut("scenario c",false);
-
-		WriteOut("multiplayer");
-		WriteOut("");
-		WriteOut("type 'help' for more info",false);
-		WriteOut("_______________________________________", false);
-		WriteOut("");
-	}
-
 	// Update is called once per frame
 	void Update()
     {
 
-		if(Time.time - lastcharTime > typingDelay) {
+		if(Time.unscaledTime- lastcharTime > typingDelay) {
 			newchar = true;
-			lastcharTime = Time.time;
+			lastcharTime = Time.unscaledTime;
 		}
 		bool doneWriting = true;
 		for(int i =0; i < numLines; i++) {
@@ -153,7 +124,7 @@ public class TypingInterface : MonoBehaviour
 
 			KeyPressSound();
 
-            if (!pstring.Contains(c)) {
+			if (!pstring.Contains(c)) {
 				if (c == '\b')
 				{
 					if (lines[activeLine].Length > 1)
@@ -166,14 +137,17 @@ public class TypingInterface : MonoBehaviour
 					}
 				}
 				else if (c == '\n') break;
+				else if ((c > 'z' || c < '0') && c != ' ') break; //only 0-9, a-z, and space
+				else if (c == '\u001B') break; //esc char
 				else
 				{
 					char o = c;
-					if (o > 64 && o < 91) {
+					if (o > 64 && o < 91)
+					{
 						o = (char)(o + ('a' - 'A'));
 					}
 					lines[activeLine] += "\u200B" + o;//zero width space lmao
-					//the zero width space tricks the wrapping algorithm into splitting the word here
+													  //the zero width space tricks the wrapping algorithm into splitting the word here
 
 				}
 	        }
@@ -249,10 +223,10 @@ public class TypingInterface : MonoBehaviour
 
 		pstring = Input.inputString;
 
-		if (Time.time - cflop > cTimer)
+		if (Time.unscaledTime- cflop > cTimer)
 		{
 			hascursor = !hascursor;
-			cflop = Time.time;
+			cflop = Time.unscaledTime;
 		}
 	}
 	void NewLine() {
@@ -289,244 +263,24 @@ public class TypingInterface : MonoBehaviour
 			unwritten.Add(message + '\n');
 		}
 	}
-	void WriteBracket(bool greenify = false) {
+	public void WriteBracket(bool greenify = false) {
 		WriteOut("_______________________________________", greenify);
 	}
-	void ProcessText(string message) {
-		message = message.Replace("\u200B", "");
+	public virtual void ProcessText(string message) {
 
-		if (message.Contains("multiplayer", System.StringComparison.CurrentCultureIgnoreCase)) {
-			WriteBracket();
-			WriteOut("");
-			WriteOut("launching multiplayer");
-			WriteOut("");
-			WriteOut("'host' to start a new game");
-			WriteOut("'join joincode' to join a friends lobby");
-			WriteOut("no public lobbies yet");
-			WriteOut("");
-			WriteBracket();
-			//RelayDude.ins.StartMultiplayer();
-			return;
-		}
-		if (message.Contains("host", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			WriteOut("hosting");
-			RelayDude.ins.StartGame();
-			return;
-		}
-		if(message.Contains("start", System.StringComparison.CurrentCultureIgnoreCase) && RelayDude.ins.hosting) {
-			if(NetworkManager.Singleton.ConnectedClientsList.Count > 1) {
-				LoadGame(true);
-			}
-			else {
-				WriteOut("no opposing players, cannot start yet");
-			}
-			return;
-		}
-		if (message.Contains("join", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			int f = message.IndexOf(' ') + 1;
-			string joincode = message[f..];
-			Debug.Log("parsed this joincode = " + joincode);
-			WriteOut("trying code..." + joincode.ToLower());
-			RelayDude.ins.JoinGame(joincode);
-			return;
-		}
-		if (message.Contains("hello joshua", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			WriteOut("greetings professor falken");
-			WriteOut("how about a nice game of chess");
-			return;
-		}
-		if (message.Contains("name =", System.StringComparison.CurrentCultureIgnoreCase)
-	    || message.Contains("name=", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			int f = message.IndexOf('=') + 1;
-			string name = message[f..];
-			name = name.Replace(" ", "");
-			if(MultiplayerVariables.ins != null) {
-				MultiplayerVariables.ins.localName = name;
-				ulong c = NetworkManager.Singleton.LocalClientId;
-				MultiplayerVariables.ins.UpdateStateNameServerRPC(c, name);
-			}
-			PlayerPrefs.SetString("defaultName", name);
-			WriteOut("name set to " + name);
-			WriteOut("");
-			if (name == "falken" || name == "joshua") {
-				WriteOut("greetings professor falken");
-				WriteOut("how about a nice game of chess");
-			}
-			return;
-		}
-		if (message.Contains("tears in rain", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			WriteOut("time to die");
-			return;
-		}
-		if (message.Contains("repeat"))
-		{
-			if (RelayDude.ins.hosting) {
-				WriteBracket();
-				WriteOut("currently hosting a game");
-				WriteOut("joincode = " + RelayDude.ins.joinCode.ToLower());
-				WriteOut("number of players = " + NetworkManager.Singleton.ConnectedClientsList.Count);
-				WriteOut("type 'start' to start game");
-			}
-			else if (NetworkManager.Singleton.IsConnectedClient) {
-				WriteBracket();
-				WriteOut("currently connected to a server");
-				WriteOut("joincode = " + RelayDude.ins.joinCode.ToLower());
-				WriteOut("waiting for host to begin...");
-			}
-			else {
-				WriteOptions();
-			}
-			return;
-		}
-		if (message.Contains(">list games"))
-		{
-			WriteOut("tic-tac-toe");
-			WriteOut("falkens maze");
-			WriteOut("black jack");
-			WriteOut("gin rummy");
-			WriteOut("hearts");
-			WriteOut("bridge");
-			WriteOut("checkers");
-			WriteOut("chess");
-			WriteOut("poker");
-			WriteOut("fighter combat");
-			WriteOut("guerrilla engagement");
-			WriteOut("desert warfare");
-			WriteOut("air-to-ground actions");
-			WriteOut("theaterwide tactical warfare");
-			WriteOut("biotoxic and chemical warfare");
-			WriteOut("");
-			WriteOut("global thermonuclear war");
-			WriteOut("");
-			return;
-		}
-		if (message.Contains("back"))
-		{
-			WriteOut("you are already in the root menu", false);
-			return;
-		}
-		if (message.Contains("help"))
-		{
-			WriteOut("_______________________________________");
-			WriteOut("");
-			WriteOut("general commands");
-			WriteOut("");
-			WriteOut("'repeat' to see current options");
-			WriteOut("'back' to go back");
-			WriteOut("'controls' for list of controls");
-			WriteOut("'help' for commands");
-			WriteOut("");
-			WriteOut("_______________________________________");
-			return;
-		}
-		if (message.Contains("controls"))
-		{
-			WriteOut("_______________________________________");
-			WriteOut("");
-			WriteOut("simulation controls");
-			WriteOut("");
-			WriteOut("arrow keys - menu navigation");
-			WriteOut("spacebar or return - select");
-			WriteOut("tab - back");
-			WriteOut("w, a, s, d - pan camera");
-			WriteOut("q, e - zoom camera");
-			WriteOut("");
-			WriteOut("_______________________________________");
-			return;
-		}
-
-		if (message.Contains("tutorial", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			if (message.Contains("load")) {
-				Simulator.activeScenario = Simulator.scenarios[0];
-				Simulator.tutorialOverride = true;
-				LoadGame();
-			}
-			Simulator.activeScenario = Simulator.scenarios[0];
-			Simulator.tutorialOverride = true;
-			selected_scenario = 0;
-			WriteBracket();
-			WriteOut("");
-			WriteOut("the tutorial scenario introduces the player to cities, growth, countries, and pre-emptive nuclear strikes");
-			WriteOut("");
-			WriteOut("'load' to load scenario");
-			WriteOut("");
-			WriteBracket();
-			return;
-		}
-		if (message.Contains("scenario a", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			Simulator.tutorialOverride = false;
-			if (message.Contains("load"))
-			{
-				Simulator.activeScenario = Simulator.scenarios[0];
-				LoadGame();
-			}
-			selected_scenario = 0;
-			WriteBracket();
-			WriteOut("");
-			WriteOut("scenario a is two-nation scenario with a vast advantage to the player");
-			WriteOut("");
-			WriteOut("'load' to load scenario");
-			WriteOut("");
-			WriteBracket();
-			return;
-		}
-		if (message.Contains("scenario b", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			Simulator.tutorialOverride = false;
-			if (message.Contains("load"))
-			{
-				Simulator.activeScenario = Simulator.scenarios[1];
-				LoadGame();
-			}
-			selected_scenario = 1;
-			WriteBracket();
-			WriteOut("");
-			WriteOut("scenario b explores alliance dynamics by giving the player both a steadfast ally and a steadfast enemy");
-			WriteOut("");
-			WriteOut("'load' to load scenario");
-			WriteOut("");
-			WriteBracket();
-			return;
-		}
-		if (message.Contains("scenario c", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			Simulator.tutorialOverride = false;
-			if (message.Contains("load"))
-			{
-				Simulator.activeScenario = Simulator.scenarios[2];
-				LoadGame();
-			}
-			selected_scenario = 2;
-			WriteBracket();
-			WriteOut("");
-			WriteOut("scenario c represents a more complex geo-political environment");
-			WriteOut("");
-			WriteOut("'load' to load scenario");
-			WriteOut("");
-			WriteBracket();
-			return;
-		}
-		if(message.Contains("load") && selected_scenario != -1) {
-			Simulator.activeScenario = Simulator.scenarios[selected_scenario];
-			LoadGame();
-			return;
-		}
-		WriteOut("unknown command");
-		//selected_scenario = -1;
 	}
 
 	string GreenText(string message) {
 		return "<color=\"green\">" + message + "</color>";
 	}
 
-
+	public void ClearConsole() { 
+		for(int i =0;i < lines.Length; i++) {
+			lines[i] = "";
+			finishedWriting[i] = true;
+			lengths[i] = 0;
+		}
+    }
 	void LoadGame(bool online = false)
 	{
 		if (online) {
@@ -570,7 +324,7 @@ public class TypingInterface : MonoBehaviour
 		}
 	}
 
-	void Dot()
+	public void Dot()
 	{
 		string s = "";
 		for (int i = 0; i < Random.Range(0, 128); i++)

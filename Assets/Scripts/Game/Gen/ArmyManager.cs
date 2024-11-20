@@ -228,7 +228,7 @@ public class ArmyManager : MonoBehaviour
 		{
 			infcities[i] = new Inf(
 				cities[i].mpos,
-                cities[i].pop,
+                cities[i].captured_pop,
 				cities[i].team,
 				0
 				);

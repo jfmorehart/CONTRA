@@ -4940,6 +4940,7 @@ MonoBehaviour:
   localTest: 0
   input: {fileID: 0}
   hosting: 0
+  connected: 0
   joinCode: 
   mv: {fileID: 8128055568697848334, guid: e937ef8e06a6744ada8fcbb2fbbb2610, type: 3}
 --- !u!114 &1154260235
@@ -5343,6 +5344,7 @@ MonoBehaviour:
   shakeFreq: 0
   shakeDecay: 0
   launchShakeMagnitude: 0
+  shakeMax: 0
   shake: {x: 0, y: 0}
 --- !u!1 &1244199757
 GameObject:
@@ -7663,8 +7665,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1779911599}
-  - component: {fileID: 1779911600}
   - component: {fileID: 1779911601}
+  - component: {fileID: 1779911602}
   m_Layer: 5
   m_Name: MenuConsole
   m_TagString: Untagged
@@ -7693,38 +7695,6 @@ RectTransform:
   m_AnchoredPosition: {x: -1783, y: 549}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1779911600
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1779911598}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd1a179c354004c0aaa8effe350c00ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dialogue: {fileID: 1278413274}
-  maxLineLength: 41
-  cTimer: 0.25
-  linePrefab: {fileID: 9053520773003539838, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
-  lineObjs: []
-  numLines: 18
-  lines: []
-  lineSpacer: 2.9
-  finishedWriting: 
-  lengths: 
-  typingDelay: 0
-  boopDelay: 0.07
-  oneshotPrefab: {fileID: 6726727101188241934, guid: 36c681e417ae547b1a2d318680c02a33, type: 3}
-  pooledSourcePrefab: {fileID: 9171367100995716691, guid: 1e32b8107027944e69104bd4275d315e, type: 3}
-  src: {fileID: 1779911601}
-  keyclick:
-  - {fileID: 8300000, guid: b2ba7ea96eab74998b11e3019dbf622b, type: 3}
-  - {fileID: 8300000, guid: ba2afe2e1db7b44f7aad383ddf33486d, type: 3}
-  boops:
-  - {fileID: 8300000, guid: 71cd0cb186c814a32a919f61280b65f2, type: 3}
 --- !u!82 &1779911601
 AudioSource:
   m_ObjectHideFlags: 0
@@ -7821,6 +7791,39 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1779911602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1779911598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f6475232a7744c45854942c429258c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogue: {fileID: 1278413274}
+  maxLineLength: 41
+  cTimer: 0.25
+  linePrefab: {fileID: 9053520773003539838, guid: b50384f10a35f416abb0831aa53152b5, type: 3}
+  lineObjs: []
+  numLines: 18
+  lines: []
+  lineSpacer: 2.9
+  finishedWriting: 
+  lengths: 
+  typingDelay: 0
+  boopDelay: 0.07
+  oneshotPrefab: {fileID: 6726727101188241934, guid: 36c681e417ae547b1a2d318680c02a33, type: 3}
+  pooledSourcePrefab: {fileID: 9171367100995716691, guid: 1e32b8107027944e69104bd4275d315e, type: 3}
+  src: {fileID: 1779911601}
+  keyclick:
+  - {fileID: 8300000, guid: b2ba7ea96eab74998b11e3019dbf622b, type: 3}
+  - {fileID: 8300000, guid: ba2afe2e1db7b44f7aad383ddf33486d, type: 3}
+  boops:
+  - {fileID: 8300000, guid: 71cd0cb186c814a32a919f61280b65f2, type: 3}
+  lockout: 0
 --- !u!1 &1782566321
 GameObject:
   m_ObjectHideFlags: 0

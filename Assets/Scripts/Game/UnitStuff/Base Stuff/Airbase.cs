@@ -113,7 +113,6 @@ public class Airbase : Building
 	}
 
 	public Plane LaunchAircraft() {
-		Debug.Log("calling launch " + numPlanes);
 		if (numPlanes < 1) return null;
 		if (Map.multi) {
 			if (!IsOwner) return null; //not owner, no valid reason
@@ -122,7 +121,6 @@ public class Airbase : Building
 				numPlanes--;
 				lastLaunch = Time.time;
 				LaunchPlaneServerRPC(no.NetworkObjectId);
-				Debug.Log("sending plane launch server rpc");
 				return null;
 			}
 		}
@@ -175,7 +173,6 @@ public class Airbase : Building
 				numPlanes--;
 			}
 			UpdateIconDisplay(numPlanes);
-			Debug.Log("plane is launched");
 		}
 
 	}
@@ -190,7 +187,6 @@ public class Airbase : Building
 	IEnumerator Recover() {
 		yield return new WaitForSeconds(5);
 		if(launched.Count + numPlanes < maxPlanes) {
-			Debug.Log("recovering! " + Time.time);
 			numPlanes++;
 			UpdateIconDisplay(numPlanes);
 		}

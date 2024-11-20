@@ -338,5 +338,10 @@ public class MultiplayerVariables : NetworkBehaviour
 		Research.unlockedUpgrades[team] = research;
 		Research.ResearchChange[team]?.Invoke();
 	}
+	[ClientRpc]
+	public void EndGameClientRPC()
+	{
+		DisplayHandler.resetGame?.Invoke();
+	}
 	#endregion
 }

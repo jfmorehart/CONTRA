@@ -34,6 +34,7 @@ public class RelayDude : MonoBehaviour
 	{
         ins = this;
         clients = new();
+        if (UnityServices.State != ServicesInitializationState.Uninitialized) return;
         StartMultiplayer();
 	}
 	// Start is called before the first frame update
@@ -46,6 +47,18 @@ public class RelayDude : MonoBehaviour
 
     public void JoinGame(string code)
     {
+		if (UnityServices.State == ServicesInitializationState.Uninitialized)
+		{
+			StartMultiplayer();
+		}
+
+		if (nm != null) {
+			if(nm.IsConnectedClient || nm.IsServer) {
+				nm.Shutdown();
+				StartMultiplayer();
+			}
+		}
+
         if (localTest)
         {
 			NetworkManager.Singleton.StartClient();
@@ -55,6 +68,21 @@ public class RelayDude : MonoBehaviour
     }
     public void StartGame()
     {
+		if (UnityServices.State == ServicesInitializationState.Uninitialized) {
+			StartMultiplayer();
+		}
+
+		if(nm != null) {
+			if (nm.IsConnectedClient || !nm.IsServer){
+				nm.Shutdown();
+			}else if (nm.IsServer) {
+				TypingInterface.ins.WriteOut("already hosting");
+				TypingInterface.ins.WriteOut("joincode= " + joinCode.ToLower());
+				TypingInterface.ins.WriteOut(" ");
+			}
+		}
+
+
         hosting = true;
 		if (localTest)
 		{

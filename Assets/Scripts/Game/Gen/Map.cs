@@ -407,26 +407,60 @@ public class Map : MonoBehaviour
 		numCities = cities.Count();
 
 		//Re-center state_centers
-		Vector2Int[] sumCenter = new Vector2Int[numStates];
+		UpdateStateCenters(cities);
+
+		if (Simulator.activeScenario.percentOfCities == null) return;
+		ReassignCities(cities, citiesPerTeam, distancesFromCorner);
+	}
+	void UpdateStateCenters(List<City> cities) {
+		Vector2[] sumCenter = new Vector2[numStates];
 		int[] sumCounter = new int[numStates];
+		float[] popTotals = new float[numStates];
 		for (int i = 0; i < numCities; i++)
 		{
 			City c = cities[i];
 			sumCounter[c.team]++;
-			sumCenter[c.team] += c.mpos;
+			sumCenter[c.team] += (Vector2)c.mpos;// * c.captured_pop;
+			popTotals[c.team] += c.captured_pop;
 		}
 		for (int i = 0; i < numStates; i++)
 		{
-			if (sumCounter[i] == 0) {
+			if (sumCounter[i] == 0)
+			{
 				Debug.LogError("no cities on team " + i + " state center = " + state_centers[i]);
 				state_centers[i] = Vector2Int.zero;
 				continue;
 			}
-			Vector2Int avgCenter = sumCenter[i] / sumCounter[i];
-			state_centers[i] = avgCenter;
+			Vector2 avgCenter = sumCenter[i] / sumCounter[i];
+			Debug.Log(popTotals[i] + " on team " + i);
+			//avgCenter /= popTotals[i] / Mathf.Sqrt(2);
+			state_centers[i] = new Vector2Int(Mathf.RoundToInt(avgCenter.x), Mathf.RoundToInt(avgCenter.y));
 		}
-
-		if (Simulator.activeScenario.percentOfCities == null) return;
+		////Re-center state_centers
+		//sumCenter = new Vector2[numStates];
+		//sumCounter = new int[numStates];
+		//for (int x = 0; x < cities.Count; x++)
+		//{
+		//	City c = cities[x];
+		//	sumCounter[c.team]++;
+		//	sumCenter[c.team] += c.mpos;
+		//}
+		//for (int x = 0; x < numStates; x++)
+		//{
+		//	if (sumCounter[x] == 0)
+		//	{
+		//		state_centers[x] = Vector2Int.zero;
+		//		Debug.Log("no cities on team " + x);
+		//	}
+		//	else
+		//	{
+		//		Vector2 avgCenter = sumCenter[x] / sumCounter[x];
+		//		avgCenter /= popTotals[x];
+		//		state_centers[x] = new Vector2Int(Mathf.RoundToInt(avgCenter.x), Mathf.RoundToInt(avgCenter.y));
+		//	}
+		//}
+	}
+	void ReassignCities(List<City> cities, List<City>[] citiesPerTeam, List<float> distancesFromCorner) {
 		//reassign cities protocol is active
 
 		//calculate city deficits
@@ -435,10 +469,48 @@ public class Map : MonoBehaviour
 		List<int> surplusTeams = new List<int>();
 		List<int> unlockedTeams = new List<int>();
 
+		float[] assignedPercent = new float[Map.ins.numStates];
+		float remainingPercent = 1;
+		float minSize = 0.15f;
+		if(Simulator.activeScenario.percentOfCities.Length < Map.ins.numStates) {
+			//we've set minimums on the values of some states (the player)
+			//the rest we will generate from the remaining amounts
+			for (int i = 0; i < numStates; i++)
+			{
+				if (i >= Simulator.activeScenario.percentOfCities.Length)
+				{
+					//no assigned value
+				}
+				else
+				{
+					//assign from simulator the minimum value
+					assignedPercent[i] = (float)Simulator.activeScenario.percentOfCities[i];
+
+					//if we're the player and its higher, keep it
+					if (i == 0 && !Map.multi)
+					{
+						assignedPercent[i] = Mathf.Max(assignedPercent[i], citiesPerTeam[i].Count() / (float)cities.Count);
+					}
+					remainingPercent -= assignedPercent[i];
+				}
+			}
+			for (int i = 0; i < numStates; i++)
+			{
+				if (i >= Simulator.activeScenario.percentOfCities.Length)
+				{
+					//give assignment from remaining pool
+					float starterValue = citiesPerTeam[i].Count() / (float)cities.Count;
+					assignedPercent[i] = UnityEngine.Random.Range(minSize, remainingPercent - (numStates - i) * minSize);
+					remainingPercent -= assignedPercent[i];
+				}
+			}
+		}
+
 		for (int i = 0; i < numStates; i++)
 		{
+			
 			unlockedTeams.Add(i);
-			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
+			calloc[i] = Mathf.FloorToInt(assignedPercent[i] * numCities);
 			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
 			if (deficit[i] < 0) surplusTeams.Add(i);
 		}
@@ -449,17 +521,29 @@ public class Map : MonoBehaviour
 		City[] carr = cities.ToArray();
 		float[] darr = distancesFromCorner.ToArray();
 		Array.Sort(darr, carr);
-		for(int i = 0; i < numCities; i++) {
-			if (!orderbyDistance.Contains(carr[i].team)) {
+		for (int i = 0; i < numCities; i++)
+		{
+			if (!orderbyDistance.Contains(carr[i].team))
+			{
 				orderbyDistance.Add(carr[i].team);
 			}
-			if(orderbyDistance.Count == numStates) {
+			if (orderbyDistance.Count == numStates)
+			{
 				break;
+			}
+		}
+		if(orderbyDistance.Count <= numStates) {
+			for (int i = 0; i < numStates; i++)
+			{
+				if (!orderbyDistance.Contains(i)){
+					orderbyDistance.Add(i);
+				}
 			}
 		}
 
 		//steal cities from other teams
-		for(int i =0;i < numStates; i++) {
+		for (int i = 0; i < numStates; i++)
+		{
 			int team = orderbyDistance[i];
 			if (citiesPerTeam[team].Count > calloc[team]) continue;
 			unlockedTeams.Remove(team);
@@ -468,7 +552,8 @@ public class Map : MonoBehaviour
 			//generate a list of nearby cities from unlocked teams
 			//its as long as the deficit is
 			List<City> stolen = ArmyUtils.GetNearestCitiesOfTeams(cities, unlockedTeams, state_centers[team]);
-			foreach(City stole in stolen) {
+			foreach (City stole in stolen)
+			{
 
 				//we may have locked this team during this loop, so check anyhow
 				if (!unlockedTeams.Contains(stole.team)) continue;
@@ -477,10 +562,12 @@ public class Map : MonoBehaviour
 				citiesPerTeam[stole.team].Remove(stole);
 
 				//they're at a good spot, lock them
-				if (citiesPerTeam[stole.team].Count == calloc[stole.team]){
-					
+				if (citiesPerTeam[stole.team].Count == calloc[stole.team])
+				{
+
 					//if they've already gone, lock them
-					if(stole.team < team) {
+					if (stole.team < team)
+					{
 						unlockedTeams.Remove(stole.team);
 					}
 				}
@@ -488,7 +575,8 @@ public class Map : MonoBehaviour
 				//steal it
 				stole.team = team;
 				citiesPerTeam[team].Add(stole);
-				if (citiesPerTeam[team].Count >= calloc[team]) {
+				if (citiesPerTeam[team].Count >= calloc[team])
+				{
 					break;
 				}
 			}
@@ -496,29 +584,8 @@ public class Map : MonoBehaviour
 
 		for (int i = 0; i < numStates; i++)
 		{
-			calloc[i] = Mathf.FloorToInt((float)Simulator.activeScenario.percentOfCities[i] * numCities);
+			calloc[i] = Mathf.FloorToInt(assignedPercent[i] * numCities);
 			deficit[i] = calloc[i] - citiesPerTeam[i].Count();
-		}
-
-		//Re-center state_centers
-		sumCenter = new Vector2Int[numStates];
-		sumCounter = new int[numStates];
-		for (int x = 0; x < cities.Count; x++)
-		{
-			City c = cities[x];
-			sumCounter[c.team]++;
-			sumCenter[c.team] += c.mpos;
-		}
-		for (int x = 0; x < numStates; x++)
-		{
-			if (sumCounter[x] == 0) {
-				state_centers[x] = Vector2Int.zero;
-				Debug.Log("no cities on team " + x);
-			}
-			else {
-				Vector2Int avgCenter = sumCenter[x] / sumCounter[x];
-				state_centers[x] = avgCenter;
-			}
 		}
 	}
 

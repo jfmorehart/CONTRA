@@ -216,7 +216,7 @@ public class State_AI : State
 	}
 	IEnumerator InformLaunch(int enemy) {
 		yield return new WaitForSeconds(3); //todo find launch delay
-
+		if(!ROE.AreWeAtWar(team, enemy)) ROE.DeclareWar(team, enemy);
 		LaunchDetection.StrikeDetected(team, enemy);
 
 	}

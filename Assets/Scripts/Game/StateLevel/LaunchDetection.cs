@@ -14,9 +14,9 @@ public static class LaunchDetection
 		int perp = Map.ins.GetPixTeam(MapUtils.PointToCoords(launchPos));
 		int victim = Map.ins.GetPixTeam(MapUtils.PointToCoords(target));
 		if (perp == -1 || victim == -1) return;
-		if(!ROE.AreWeAtWar(perp, victim)) {
-			ROE.DeclareWar(perp, victim);
-		}
+		//if(!ROE.AreWeAtWar(perp, victim)) {
+		//	ROE.DeclareWar(perp, victim);
+		//}
 		launchDetectedAction.Invoke(launchPos, target, perp, victim);
 	}
 	public static void StrikeDetected(int perp, int victim)

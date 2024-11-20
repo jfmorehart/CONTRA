@@ -27,7 +27,10 @@ public class State_Enemy : State_AI
 	float airThreat; //defensive airforce strength we should have
 	public float groundThreat; //army strength we should have
 
-	//[SerializeField] string debugString = "";
+	//this list is of people we're worried will invade us
+	public List<int> threats = new List<int>();
+	//people who we want to protect
+	public List<int> friends = new List<int>();
 
 	protected override void Awake()
 	{
@@ -77,6 +80,7 @@ public class State_Enemy : State_AI
 
 		//loop through the current wars and determine our standing
 		SituationEvaluation();
+		StateOpinions();
 
 		if (Research.currentlyResearching[team] == -Vector2Int.one) {
 			NewResearch();
@@ -110,8 +114,6 @@ public class State_Enemy : State_AI
 		if (confidence_warTotal < 0.6f) {
 			AttemptDeescalation();
 		}
-
-		StateOpinions();
 	}
 	#region sitrep
 	void SituationEvaluation() {
@@ -164,9 +166,13 @@ public class State_Enemy : State_AI
 
 		float pLoss = 1 - dynamic.pVictory;
 		float invOpinion = 1 - opinion[dynamic.team2];
-		Debug.Log(dynamic.team1 + " " + dynamic.team2 + " pow = " + (pLoss * invOpinion));
 		return pLoss * invOpinion;
     }
+	float ProbabilityOfWar(int enemy)
+	{
+		StateDynamic dynamic = new StateDynamic(team, enemy);
+		return ProbabilityOfWar(dynamic);
+	}
 	#endregion sitrep
 	#region wars 
 	void ForeignAdventures()
@@ -182,13 +188,13 @@ public class State_Enemy : State_AI
 			{
 				//todo replace with more sophisticated method for mimicking anger
 				//Debug.Log(team + " " + i + "  " + rivals[i].pVictory);
-				bool prepareInvasion = sharesBorder[i] && rivals[i].pVictory > opinion[i] * 2f && rivals[i].pVictory > 0.55f;
-				prepareInvasion |= (invasionTarget == i);
+				bool tryGroundInvasion = sharesBorder[i] && rivals[i].pVictory > opinion[i] * 2f && rivals[i].pVictory > 0.55f;
+				tryGroundInvasion |= (invasionTarget == i);
 
-				if (prepareInvasion)
+				if (tryGroundInvasion)
 				{
 					//float armyThreshold = Mathf.Min(armies[team].Count * 0.6f, Map.ins.state_populations[i] * 0.6f);//Mathf.Max(Map.ins.state_populations[i] * 0.4f, armies[i].Count * 0.5f);
-					float armyThreshold = EnemiesReadyOnFront(i) + Map.ins.state_populations[i] + 0.25f;
+					float armyThreshold = EnemiesReadyOnFront(i) + Map.ins.state_populations[i] * 0.25f;
 					//are we ready to attack?
 					//Debug.Log(team + " vs " + i + " with= " + ArmiesReadyOnFront(i) + " requires " + armyThreshold);
 					if (ArmiesReadyOnFront(i) > armyThreshold)
@@ -227,6 +233,9 @@ public class State_Enemy : State_AI
 							SendAid(e);
 							opinion[e] += 0.025f;
 						}
+					}
+					if (RatioToCOV(rivals[i].nukeRatio) > 0.5 && RatioToCOV(rivals[i].airRatio) > 0.6f) { 
+						//we can attack them i guess
 					}
 				}
 			}
@@ -493,19 +502,46 @@ public class State_Enemy : State_AI
 	void StateOpinions(){
 		//todo manage opinions;
 
+		friends.Clear();
+		threats.Clear();
 		//things shouldn't really stabilize
 		//but ideally reactions will be mostly understandable
 
 		for (int i = 0; i < Map.ins.numStates; i++)
 		{
+			if (i == team) continue;
+
 			float o = opinion[i];
 			o = Mathf.Max(o, 0);
 			o = Mathf.Min(o, 1);
 			if (ROE.AreWeAtWar(team, i))
 			{
 				o -= 0.003f;
+				threats.Add(i);
+			}
+			else if(o < 0.4 && ProbabilityOfWar(i) > 0.6) {
+				threats.Add(i);
 			}
 			opinion[i] = o;
+		}
+
+		//threats are generated, determine friends in response to threats
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (i == team) continue;
+			if (opinion[i] < 0.45) continue;
+			if (ProbabilityOfWar(i) > 0.6) continue;
+			for (int j = 0; j < threats.Count; j++)
+			{
+				if (j == team || j == i) continue;
+				if (!ROE.AreWeAtWar(i, j)) continue;
+				//this person is at war with someone whos a threat
+				//we should like them
+				if (opinion[i] < 0.8) opinion[i] += 0.003f;
+				friends.Add(i);
+				continue;
+			}
+			if (opinion[i] > 0.6) friends.Add(i);
 		}
 	}
 	void AttemptDeescalation()

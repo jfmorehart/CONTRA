@@ -14,6 +14,7 @@ public class EndPanel : MonoBehaviour
 	public TMP_Text header;
 	public TMP_Text scoreText;
 
+	public bool scenarioEndOffered;
 	private void Awake()
 	{
 		over = false;
@@ -23,15 +24,41 @@ public class EndPanel : MonoBehaviour
 
 	private void Update()
 	{
-		for(int i =1; i < Map.ins.numStates; i++) {
-			if (Diplomacy.states[i].alive) {
-				return;
+		if (scenarioEndOffered) return;
+		if (WinCheck()) TimePanel.ins.EndGame();
+		float teamPop = Map.ins.state_populations[Map.localTeam];
+		float enemyPop = 0;
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			if (i == Map.localTeam) continue;
+			if (Diplomacy.states[i] is State_Enemy) {
+				//disregard sworn allies
+				if ((Diplomacy.states[i] as State_Enemy).opinion[Map.localTeam] > 0.8) continue;
+			}
+			enemyPop += Map.ins.state_populations[i];
+		}
+		if(teamPop > enemyPop * 2) {
+			OfferScenarioEnd();
+		}
+	}
+	void OfferScenarioEnd() {
+		scenarioEndOffered = true;
+		ConsolePanel.Clear();
+		ConsolePanel.Log("  ", Mathf.Infinity);
+		ConsolePanel.Log("[scenario stabilized: player victory]", Mathf.Infinity);
+		ConsolePanel.Log("press 'escape' when ready to leave", Mathf.Infinity);
+		ConsolePanel.Log(" ", Mathf.Infinity);
+	}
+	bool WinCheck() {
+		for (int i = 1; i < Map.ins.numStates; i++)
+		{
+			if (Diplomacy.states[i].alive)
+			{
+				return false;
 			}
 		}
-
-		TimePanel.ins.EndGame();
+		return true;
 	}
-
 	public void Enable() {
 		over = true;
 		endCam.enabled = true;

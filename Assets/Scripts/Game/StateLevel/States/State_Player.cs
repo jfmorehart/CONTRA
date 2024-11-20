@@ -72,6 +72,7 @@ public class State_Player : State_AI
 			string str = "<color=\"red\">" + " Launch Detected" + "</color>" + " from: ";
 			str += ConsolePanel.ColoredName(perp);
 			ConsolePanel.Log(str);
+			//if(!ROE.AreWeAtWar(perp) ROE.DeclareWar())
 		}
 	}
 

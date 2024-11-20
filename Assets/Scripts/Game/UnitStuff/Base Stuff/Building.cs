@@ -27,7 +27,6 @@ public class Building : Construction
 		{
 			if (CanReload()) {
 				lastReload = Time.time;
-				Debug.Log("reloading! " + Time.time);
 				Reload();
 			}
 			else {

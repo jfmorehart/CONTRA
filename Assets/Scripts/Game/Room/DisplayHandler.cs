@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.SceneManagement;
+using Unity.Netcode;
 
 public class DisplayHandler : MonoBehaviour
 {
@@ -72,8 +73,12 @@ public class DisplayHandler : MonoBehaviour
 		}
 	}
 	void Pause() {
+		if (!Map.multi) {
+			Time.timeScale = 0;
+		}
+		UI.ins.locked = true;
 		paused = true;
-		Time.timeScale = 0;
+		PausePanel.pauseInstance.Boot();
 		WideScreenCam.ins.Refresh();
 		pauseCam.enabled = true;
 		foreach (Screen s in screens)
@@ -89,7 +94,9 @@ public class DisplayHandler : MonoBehaviour
 	}
 
 	public void UnPause() {
+		UI.ins.locked = false;
 		paused = false;
+		PausePanel.pauseInstance.Shutdown();
 		Time.timeScale = 1;
 		WideScreenCam.ins.Refresh();
 		foreach (Screen s in screens) {
@@ -122,14 +129,32 @@ public class DisplayHandler : MonoBehaviour
 
 		}
 
-        if (Input.GetKeyDown(KeyCode.R) && !menuNotGame)
-        {
-            if (paused || EndPanel.over)
-            {
-                resetGame?.Invoke();
-				TimePanel.timesUp -= EndScreens;
-				SceneManager.LoadScene("Menu");
-            }
-        }
+    //    if (Input.GetKeyDown(KeyCode.R) && !menuNotGame)
+    //    {
+    //        if (paused || EndPanel.over)
+    //        {
+    //            resetGame?.Invoke();
+				//TimePanel.timesUp -= EndScreens;
+				//SceneManager.LoadScene("Menu");
+    //        }
+    //    }
+	}
+
+	public void LoadMenu() {
+		resetGame?.Invoke();
+		TimePanel.timesUp -= EndScreens;
+		if (Map.multi) { //must be the host
+			MultiplayerVariables.ins.EndGameClientRPC();
+			NetworkManager.Singleton.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+		}
+		else {
+			SceneManager.LoadScene("Menu");
+		}
+	}
+	public void ReloadGame()
+	{
+		resetGame?.Invoke();
+		TimePanel.timesUp -= EndScreens;
+		SceneManager.LoadScene("Game");
 	}
 }

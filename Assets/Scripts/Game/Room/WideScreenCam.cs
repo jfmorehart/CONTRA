@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class WideScreenCam : MonoBehaviour
 {
+	public int normalScale = 55;
+	public int pauseScale = 30;
+	public Vector2 pausePos;
 	public static WideScreenCam ins;
 	bool rpause;
 
@@ -35,12 +38,15 @@ public class WideScreenCam : MonoBehaviour
 		//move the console camera over to the Pause menu to display the widescreen format
 		if (pause)
 		{
-			Vector2 cpos = PausePanel.ins.transform.position;
-			transform.position = new Vector3(cpos.x, cpos.y, transform.position.z);
+			Debug.Log("moving to paused pos");
+			transform.localPosition = new Vector3(pausePos.x, pausePos.y, -10);
+			GetComponent<Camera>().orthographicSize = pauseScale;
 		}
 		else
 		{
-			transform.localPosition = new Vector3(0, 0, transform.localPosition.z);
+			Debug.Log("moving to normal pos");
+			transform.localPosition = new Vector3(0, 0, -10);
+			GetComponent<Camera>().orthographicSize = normalScale;
 		}
 	}
 }
