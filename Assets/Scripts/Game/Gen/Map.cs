@@ -436,29 +436,6 @@ public class Map : MonoBehaviour
 			//avgCenter /= popTotals[i] / Mathf.Sqrt(2);
 			state_centers[i] = new Vector2Int(Mathf.RoundToInt(avgCenter.x), Mathf.RoundToInt(avgCenter.y));
 		}
-		////Re-center state_centers
-		//sumCenter = new Vector2[numStates];
-		//sumCounter = new int[numStates];
-		//for (int x = 0; x < cities.Count; x++)
-		//{
-		//	City c = cities[x];
-		//	sumCounter[c.team]++;
-		//	sumCenter[c.team] += c.mpos;
-		//}
-		//for (int x = 0; x < numStates; x++)
-		//{
-		//	if (sumCounter[x] == 0)
-		//	{
-		//		state_centers[x] = Vector2Int.zero;
-		//		Debug.Log("no cities on team " + x);
-		//	}
-		//	else
-		//	{
-		//		Vector2 avgCenter = sumCenter[x] / sumCounter[x];
-		//		avgCenter /= popTotals[x];
-		//		state_centers[x] = new Vector2Int(Mathf.RoundToInt(avgCenter.x), Mathf.RoundToInt(avgCenter.y));
-		//	}
-		//}
 	}
 	void ReassignCities(List<City> cities, List<City>[] citiesPerTeam, List<float> distancesFromCorner) {
 		//reassign cities protocol is active
@@ -499,10 +476,16 @@ public class Map : MonoBehaviour
 				if (i >= Simulator.activeScenario.percentOfCities.Length)
 				{
 					//give assignment from remaining pool
-					float starterValue = citiesPerTeam[i].Count() / (float)cities.Count;
 					assignedPercent[i] = UnityEngine.Random.Range(minSize, remainingPercent - (numStates - i) * minSize);
 					remainingPercent -= assignedPercent[i];
 				}
+				Debug.Log("team " + i + " assinged pct = " + assignedPercent[i]);
+			}
+		}
+		else {
+			for (int i = 0; i < numStates; i++)
+			{
+				assignedPercent[i] = (float)Simulator.activeScenario.percentOfCities[i];
 			}
 		}
 
@@ -573,8 +556,10 @@ public class Map : MonoBehaviour
 				}
 
 				//steal it
+				Debug.Log("moved " + stole.team + " city to" + team);
 				stole.team = team;
 				citiesPerTeam[team].Add(stole);
+
 				if (citiesPerTeam[team].Count >= calloc[team])
 				{
 					break;

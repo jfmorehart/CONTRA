@@ -39,12 +39,12 @@ public static class Simulator
 		description = "scenario c gives the player a strong position, but also a large number of rival states to contend with";
 		scenarios.Add(new Scenario("scenario c", description, 5, tsizes, teams));
 
-		tsizes = new double[] {0.4, 0.1, 0.1, 0.1};
+		double[] buddy = new double[] {0.4, 0.1, 0.1, 0.1};
 		teams = new int[2][];
 		teams[0] = new int[] {0, 1}; //team A is the player
 		teams[1] = new int[] {2, 3}; //team B is the enemy
 		description = "scenario d gives the player two enemies, and an ally they'll likely need to protect in order to succeed";
-		scenarios.Add(new Scenario("scenario d", description, 4, tsizes, teams));
+		scenarios.Add(new Scenario("scenario d", description, 4, buddy, teams));
 
 		activeScenario = scenarios[2]; //default to scenario c
 		IsSetup = true;
