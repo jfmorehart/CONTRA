@@ -1,10 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using static ArmyUtils;
 

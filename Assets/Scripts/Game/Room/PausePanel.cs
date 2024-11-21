@@ -25,34 +25,22 @@ public class PausePanel : TypingInterface
 		lockout = false;
 		//ClearConsole();
 		if (Map.multi) {
-			ClearConsole();
 			WriteOut("____________________________________");
 			WriteOut("multiplayer sessions cannot be paused");
 			WriteOut("the game is still live");
 			WriteOut("hit 'esc' to return to the game");
-
-			if (Map.host) {
-				WriteOut("you are: the host");
-				WriteOut("disconnecting will return everyone to the lobby");
-			}
-			else {
-				WriteOut("you are: a client");
-				WriteOut("disconnecting will end the game for everyone");
-			}
+			WriteOut("type 'end' to end the game");
 			WriteOut("____________________________________");
-
 		}
 		else if (EndPanel.ins.scenarioEndOffered) {
-			ClearConsole();
 			WriteOut("____________________________________");
 			WriteOut("scenario result:             victory");
 			WriteOut("completion:                     %100");
-			WriteOut("score:                        147pts");
+			WriteOut("score:                        " + Mathf.RoundToInt(Diplomacy.score[0]).ToString() + "pts");
 			WriteOut("type 'back' to exit to the home menu");
 			WriteOut("____________________________________");
 		}
 		else {
-			ClearConsole();
 			WriteOut("____________________________________");
 			WriteOut("game in progress - paused");
 			WriteOut("type 'help' for options");
@@ -61,7 +49,8 @@ public class PausePanel : TypingInterface
 	}
 	public void Shutdown() {
 		//lockout = true;
-    }
+		ClearConsole();
+	}
 
 	public override void ProcessText(string message)
 	{
@@ -82,12 +71,14 @@ public class PausePanel : TypingInterface
 			DisplayHandler.ins.ReloadGame();
 			return;
 		}
-		if (message.Contains("back") || (message.Contains("menu")))
+		if (message.Contains("back") || (message.Contains("menu")) || (message.Contains("end")))
 		{
-			if(Map.multi && !Map.host) {
-				WriteOut("only the host can end the game");
-				return;
-			}
+			//if (Map.multi && !Map.host)
+			//{
+			//	WriteOut("only the host can end the game");
+
+			//	return;
+			//}
 			StartCoroutine(nameof(PausedDot));
 			DisplayHandler.ins.LoadMenu();
 			return;

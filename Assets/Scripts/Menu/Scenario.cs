@@ -15,8 +15,9 @@ public struct Scenario
 								 //if a nation is listed here, they like everyone else in their array
 								 //and hate everyone on a different array
 								 //and are neutral to unlisted parties
+	public ScenarioConditions conditions;
 
-	public Scenario(string sname, string sdesc, int tn, double[] pctc, int[][] afil)
+	public Scenario(string sname, string sdesc, int tn, double[] pctc, int[][] afil, ScenarioConditions cond)
 	{
 		name = sname;
 		description = sdesc;
@@ -32,5 +33,17 @@ public struct Scenario
 			teams[1] = new int[] { }; //team B is the enemy}
 			afil = teams;
 		}
+		conditions = cond;
+	}
+
+	public class ScenarioConditions
+	{
+		public int randomArmies;
+		public int[][] unlockedupgrades;
+		public int[] silos;
+		public int[] airbases;
+		public int[] batteries;
+		public int[] troops;
+
 	}
 }

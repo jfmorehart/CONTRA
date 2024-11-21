@@ -80,6 +80,13 @@ public static class Research
 
 	public static void ResearchCompleted(int i) {
 		Debug.Log(i + "completed research");
+		if(i == Map.localTeam) {
+			Vector2Int completed = currentlyResearching[i];
+			if(completed.x > 0 && completed.y == 0) {
+				ConsolePanel.Log("new base type unlocked: " + headers[completed.x]);
+			}
+
+		}
 		unlockedUpgrades[i][currentlyResearching[i].x]++;
 		unlockProgress[i] = 0;
 		currentlyResearching[i] = -Vector2Int.one;

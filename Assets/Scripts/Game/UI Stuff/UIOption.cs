@@ -63,7 +63,10 @@ public class UIOption : MonoBehaviour
 	public void UnHighlight()
 	{
 		highlighted = false;
-		text.text = plaintext;
+		if(text != null) {
+			text.text = plaintext;
+		}
+
 
 		if (locked)
 		{

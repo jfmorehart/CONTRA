@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MultiplayerVariables : NetworkBehaviour
 {
@@ -342,6 +342,13 @@ public class MultiplayerVariables : NetworkBehaviour
 	public void EndGameClientRPC()
 	{
 		DisplayHandler.resetGame?.Invoke();
+		NetworkManager.Singleton.Shutdown();
+	}
+	[ServerRpc(RequireOwnership = false)]
+	public void EndGameServerRPC()
+	{
+		EndGameClientRPC();
+		NetworkManager.Singleton.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
 	}
 	#endregion
 }

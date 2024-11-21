@@ -274,11 +274,13 @@ public class TypingInterface : MonoBehaviour
 		return "<color=\"green\">" + message + "</color>";
 	}
 
-	public void ClearConsole() { 
+	public void ClearConsole() {
+		unwritten.Clear();
 		for(int i =0;i < lines.Length; i++) {
 			lines[i] = "";
 			finishedWriting[i] = true;
 			lengths[i] = 0;
+			activeLine = 0;
 		}
     }
 	void LoadGame(bool online = false)

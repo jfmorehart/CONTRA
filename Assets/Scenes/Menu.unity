@@ -7803,7 +7803,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f6475232a7744c45854942c429258c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogue: {fileID: 1278413274}
+  textHolder: {fileID: 0}
   maxLineLength: 41
   cTimer: 0.25
   linePrefab: {fileID: 9053520773003539838, guid: b50384f10a35f416abb0831aa53152b5, type: 3}

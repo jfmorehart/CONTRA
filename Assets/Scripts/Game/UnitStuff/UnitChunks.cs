@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public static class UnitChunks
 {
@@ -41,7 +38,13 @@ public static class UnitChunks
     }
     public static void AddToChunk(int index, Unit me) {
         chunks[index].Add(me);
-		chunkValues[me.team][index]++;
+        try {
+			chunkValues[me.team][index]++;
+		}
+        catch {
+            Debug.LogError("failed to add chunk" + index + " team:" + me.team);
+	    }
+
 	}
 
     public static int ChunkLookup(Vector2 position) {

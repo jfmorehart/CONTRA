@@ -16,35 +16,40 @@ public static class Simulator
         scenarios = new();
 
 		string description = "";
-        //basic tutorial, overwhelm
-        double[] ally = new double[] {0.8, 0.2}; 
+		//basic tutorial, overwhelm
+		Scenario.ScenarioConditions conditions = new Scenario.ScenarioConditions();
+		conditions.unlockedupgrades = new int[4][];
+		conditions.unlockedupgrades[0] = new int[] { 5, 5, 5, 5 };
+		conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
+		double[] ally = new double[] {0.8, 0.2}; 
         int[][] teams = new int[2][];
         teams[0] = new int[]{0}; //team A is the player
 		teams[1] = new int[] {1}; //team B is the enemy
 		description = "scenario a is two-nation scenario with a vast advantage to the player";
-		scenarios.Add(new Scenario("scenario a", description, 2, ally, teams));
+		scenarios.Add(new Scenario("scenario a", description, 2, ally, teams, conditions));
 
         //lvl 2
         double[] duoShowdown = new double [] {0.25, 0.25, 0.5}; 
 		teams = new int[2][];
 		teams[0] = new int[] { 0, 1 }; //team A is the player
 		teams[1] = new int[] { 2 }; //team B is the enemy
+		//conditions.airbases = new int[2] { 0, 5 };
 		description = "scenario b explores allianae dynamics by giving the player both a steadfast ally and a steadfast enemy";
-		scenarios.Add(new Scenario("scenario b", description, 4, duoShowdown, teams));
+		scenarios.Add(new Scenario("scenario b", description, 4, duoShowdown, teams, null));
 
         double[] tsizes = new double[] {0.5};
 		teams = new int[2][];
 		teams[0] = new int[] { }; //team A is the player
 		teams[1] = new int[] { }; //team B is the enemy
 		description = "scenario c gives the player a strong position, but also a large number of rival states to contend with";
-		scenarios.Add(new Scenario("scenario c", description, 5, tsizes, teams));
-
+		scenarios.Add(new Scenario("scenario c", description, 5, tsizes, teams, null));
+		
 		double[] buddy = new double[] {0.4, 0.1, 0.1, 0.1};
 		teams = new int[2][];
 		teams[0] = new int[] {0, 1}; //team A is the player
 		teams[1] = new int[] {2, 3}; //team B is the enemy
 		description = "scenario d gives the player two enemies, and an ally they'll likely need to protect in order to succeed";
-		scenarios.Add(new Scenario("scenario d", description, 4, buddy, teams));
+		scenarios.Add(new Scenario("scenario d", description, 4, buddy, teams, null));
 
 		activeScenario = scenarios[2]; //default to scenario c
 		IsSetup = true;

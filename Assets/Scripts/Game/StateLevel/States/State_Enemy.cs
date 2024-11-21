@@ -1,9 +1,7 @@
-using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using static ArmyUtils;
-using Unity.VisualScripting;
 
 public class State_Enemy : State_AI
 {
@@ -384,6 +382,7 @@ public class State_Enemy : State_AI
 		}
 		else
 		{
+			if (Simulator.tutorialOverride) return;
 			//AT PEACE
 			if (GetBuildings(team).Length < assesment.buyingPower / 30 && assesment.percentGrowth > 0.1f) {
 				//we can afford more

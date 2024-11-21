@@ -1,14 +1,8 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using Unity.Netcode;
-using Unity.Services.Authentication;
 using Unity.Services.Core;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Random = UnityEngine.Random;
 
 public class MenuConsole: TypingInterface
 {
@@ -44,8 +38,8 @@ public class MenuConsole: TypingInterface
 		}
 		WriteOut("");
 		WriteOut("multiplayer");
-		WriteOut("");
-		WriteOut("type 'help' for more info", false);
+		//WriteOut("");
+		//WriteOut("type 'help' for more info", false);
 		WriteOut("_______________________________________", false);
 		WriteOut("");
 	}

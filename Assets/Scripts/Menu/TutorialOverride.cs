@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class TutorialOverride : MonoBehaviour
 {
@@ -43,13 +41,14 @@ public class TutorialOverride : MonoBehaviour
 		int tries = 0;
 		City focus;
 		List<City> ignore = new List<City>();
+		int numCities = ArmyUtils.GetCities(0).Count;
 		do
 		{
 			tries++;
 			focus = ArmyUtils.NearestCity(Vector2.one * 0.5f * Map.localScale, 0, ignore);
 			ignore.Add(focus);
 
-		} while (focus.truepop > 5 && tries < 100);
+		} while (focus.truepop > 5 && tries < numCities);
 		Debug.Log("truepop" + focus.truepop);
 		MoveCam.ins.transform.position = (Vector3)focus.wpos - Vector3.forward * 20;
 		Camera.main.orthographicSize = 30;
@@ -78,6 +77,7 @@ public class TutorialOverride : MonoBehaviour
 		Map.ins.growth_tutorialManualValues = true;
 		Map.ins.growth_deltaOverride = 0.0015f;
 		Map.ins.growth_stateGrowthTickOverride = 1;
+
 		yield return new WaitForSecondsRealtime(5);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
@@ -88,6 +88,7 @@ public class TutorialOverride : MonoBehaviour
 		Map.ins.growth_tutorialManualValues = true;
 		Map.ins.growth_deltaOverride = 10f;
 		Map.ins.growth_stateGrowthTickOverride = -1;
+
 		yield return new WaitForSecondsRealtime(8);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		Map.ins.populationGrowthTickDelay = 0.25f;
@@ -174,12 +175,32 @@ public class TutorialOverride : MonoBehaviour
 
 		State_AI state = Diplomacy.states[0] as State_AI;
 
-		while(state.construction_sites.Count + ArmyUtils.silos[0].Count < 3) {
+		string numText = "";
+		while (state.construction_sites.Count + ArmyUtils.silos[0].Count < 3) {
 
 			if (UI.ins.currentMenu == UI.ins.menu_build_confirm)
 			{
 				if (UI.ins.selected == 0) {
-					ConsolePanel.ins.toolhead.text = "designate three construction sites";
+					int built = state.construction_sites.Count + ArmyUtils.silos[0].Count;
+					if(built == 0) {
+						numText = "three";
+					}
+					if (built == 1)
+					{
+						if(numText != "two") {
+							ConsolePanel.Log("Well done. Now two more.");
+						}
+						numText = "two";
+					}
+					if (built == 2)
+					{
+						if (numText != "one")
+						{
+							ConsolePanel.Log("Well done. Now one more.");
+						}
+						numText = "one";
+					}
+					ConsolePanel.ins.toolhead.text = "designate " + numText + " construction sites";
 					ConsolePanel.ins.tooltext.text = "move the cursor with w, a, s, and d keys. q and e to zoom";
 				}
 				else {
@@ -195,7 +216,7 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.Clear();
 		ConsolePanel.Log("well done.");
 		ConsolePanel.Log("now launch a pre-emptive strike.");
-
+		ConsolePanel.Log("press 'tab' four times to return to the home menu");
 		ConsolePanel.ins.toolhead.text = "launch a preemptive strike";
 
 		while (!hasLaunchedMissiles)

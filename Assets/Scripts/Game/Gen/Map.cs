@@ -5,8 +5,6 @@ using System.Linq;
 using UnityEngine;
 using Unity.Profiling;
 using static MapUtils;
-using System.Threading.Tasks;
-using Unity.VisualScripting;
 using Unity.Netcode;
 
 public class Map : MonoBehaviour
@@ -28,6 +26,7 @@ public class Map : MonoBehaviour
 	
 	//[HideInInspector]
 	public Vector2Int[] state_centers;
+	public Color tutorialColor;
 	public Color[] state_colors;
 
 	[HideInInspector]
@@ -157,6 +156,9 @@ public class Map : MonoBehaviour
 		TerminalMissileRegistry.Setup();
 
 		//Prefabulate that amulite
+		if (Simulator.tutorialOverride) {
+			state_colors[0] = tutorialColor;
+		}
 		state_colors_bufferable = new SColor[numStates];
 		state_mats = new Material[numStates];
 		for (int i = 0; i < numStates; i++)
@@ -183,8 +185,8 @@ public class Map : MonoBehaviour
 		Influences.SetInt("defenseBias", 0);
 
 		//Just city borders, used for army placement
-		StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
-
+		//StartCoroutine(nameof(BuildInfluences), false); //BuildInfluences();
+		BuildInfluences();
 		//if we're a lil nation, swap us with a bigger one
 		//removed 
 		//if (CheckSwapColors()) {
@@ -222,11 +224,12 @@ public class Map : MonoBehaviour
 		mapRT.Create();
 
 		if (!multi) {
+			BuildInfluences();
 			//spawn in some starting armies and silos randomly
 			ArmyManager.ins.RandomArmies(80);
-
+			LoadScenario();
 			//Rebuild borders now with army info
-			StartCoroutine(nameof(BuildInfluences), false);//BuildInfluences();
+			BuildInfluences();
 		}
 
 		//Render
@@ -258,6 +261,64 @@ public class Map : MonoBehaviour
 		}
 
 	}
+	public void LoadScenario() { 
+		if(Simulator.activeScenario.conditions != null) {
+			if(Simulator.activeScenario.conditions.unlockedupgrades != null) {
+				Research.unlockedUpgrades = Simulator.activeScenario.conditions.unlockedupgrades;
+			}
+
+			Vector2 pos;// = Vector2.zero;
+			if (Simulator.activeScenario.conditions.airbases != null)
+			{
+				for(int i = 0; i < numStates; i++) {
+					int n = Simulator.activeScenario.conditions.airbases[i];
+					for (int x = 0; x < n; x++) {
+						pos = CoordsToPoint(RandomPointInState(i));
+						Instantiate(ArmyManager.ins.airbasePrefab, pos, Quaternion.identity, ArmyManager.ins.transform);
+					}
+				}
+			}
+			if (Simulator.activeScenario.conditions.batteries != null)
+			{
+				for (int i = 0; i < numStates; i++)
+				{
+					int n = Simulator.activeScenario.conditions.batteries[i];
+					for (int x = 0; x < n; x++)
+					{
+						pos = CoordsToPoint(RandomPointInState(i));
+						Instantiate(ArmyManager.ins.aaaPrefab, pos, Quaternion.identity, ArmyManager.ins.transform);
+					}
+				}
+			}
+
+			if (Simulator.activeScenario.conditions.silos != null)
+			{
+				for (int i = 0; i < numStates; i++)
+				{
+					int n = Simulator.activeScenario.conditions.silos[i];
+					for (int x = 0; x < n; x++)
+					{
+						pos = CoordsToPoint(RandomPointInState(i));
+						Instantiate(ArmyManager.ins.siloPrefab, pos, Quaternion.identity, ArmyManager.ins.transform);
+					}
+				}
+			}
+
+			if (Simulator.activeScenario.conditions.troops != null)
+			{
+				for (int i = 0; i < numStates; i++)
+				{
+					int n = Simulator.activeScenario.conditions.troops[i];
+					for (int x = 0; x < n; x++)
+					{
+						pos = CoordsToPoint(RandomPointInState(i));
+						Instantiate(ArmyManager.ins.armyPrefab, pos, Quaternion.identity, ArmyManager.ins.transform);
+					}
+				}
+			}
+
+		}
+    }
 
 	public void Update()
 	{
@@ -265,7 +326,7 @@ public class Map : MonoBehaviour
 		if(Time.time - lastDraw > reDrawDelay) {
 			lastDraw = Time.time;
 			if (prepInfluences) {
-				StartCoroutine(nameof(BuildInfluences), true);
+				BuildInfluences();
 			}
 			else {
 				ConvertToTexture();
@@ -292,6 +353,7 @@ public class Map : MonoBehaviour
     }
 	void SlowUpdate() {
 		Diplomacy.CalculateStatePowerRankings();
+		UpdateStateCenters(ArmyManager.ins.cities);
 	}
 
 
@@ -409,7 +471,15 @@ public class Map : MonoBehaviour
 		//Re-center state_centers
 		UpdateStateCenters(cities);
 
-		if (Simulator.activeScenario.percentOfCities == null) return;
+		if (Simulator.activeScenario.percentOfCities == null && !Map.multi) return;
+		if (Map.multi) {
+			double[] even = new double[Map.ins.numStates];
+			float percent = 1 / (float)Map.ins.numStates;
+			for(int i = 0; i < even.Length; i++) {
+				even[i] = percent;
+			}
+			Simulator.activeScenario = new Scenario("custom", "none", Map.ins.numStates,even, null, null);
+		}
 		ReassignCities(cities, citiesPerTeam, distancesFromCorner);
 	}
 	void UpdateStateCenters(List<City> cities) {
@@ -427,7 +497,7 @@ public class Map : MonoBehaviour
 		{
 			if (sumCounter[i] == 0)
 			{
-				Debug.LogError("no cities on team " + i + " state center = " + state_centers[i]);
+				//Debug.LogError("no cities on team " + i + " state center = " + state_centers[i]);
 				state_centers[i] = Vector2Int.zero;
 				continue;
 			}
@@ -556,7 +626,7 @@ public class Map : MonoBehaviour
 				}
 
 				//steal it
-				Debug.Log("moved " + stole.team + " city to" + team);
+				//Debug.Log("moved " + stole.team + " city to" + team);
 				stole.team = team;
 				citiesPerTeam[team].Add(stole);
 
@@ -632,7 +702,7 @@ public class Map : MonoBehaviour
 		return TexelPopToWorldPop(cpop[0]);
     }
 
-	IEnumerator BuildInfluences(bool waitframe = false)
+	void BuildInfluences()
 	{
 
 		teamOf.SetData(pixTeam);
@@ -686,18 +756,12 @@ public class Map : MonoBehaviour
 
 		teamOf.GetData(pixTeam);
 
-		if (waitframe) {
-			yield return new WaitForEndOfFrame();
-		}
-
-
 		//teamOf.Release();
 		atWar.Release();
 		//stin.Release(); we're gonna leave this allocated
 		infs.Release();
 		liveteams.Release();
 
-		yield break;
 	}
 
 	public  void ConvertToTexture() {
@@ -897,7 +961,7 @@ public class Map : MonoBehaviour
 		return originalMap[index];
 	}
 	public int GetPixTeam(Vector2Int coordinate) {
-		if (pixTeam == null) return 0;
+		if (pixTeam == null) return -1;
 		int index = (coordinate.y * texelDimensions.x) + coordinate.x;
 		index = Mathf.Clamp(index, 0, pixTeam.Length - 1);
 		return pixTeam[index];

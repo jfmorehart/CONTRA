@@ -17,6 +17,7 @@ public class UIResearch : UIMenu
 
     public UIOption[] kiddos;
 	public UIOption[] k2;
+    public TMP_Text budgetText;
 
     public Research.Branch prevBranch;
 
@@ -44,6 +45,7 @@ Research.headers[Research.currentlyResearching[Map.localTeam].x] + " :" +
 Research.names[Research.currentlyResearching[Map.localTeam].x][Research.currentlyResearching[Map.localTeam].y];
 
             Research.budget[Map.localTeam] = k2[0].value;
+            budgetText.text = "budget: " + Mathf.RoundToInt(k2[0].value * 25) + "% of gdp";
 		}
 
 	}

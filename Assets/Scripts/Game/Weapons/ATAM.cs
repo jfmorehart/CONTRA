@@ -205,9 +205,13 @@ public class ATAM : NetworkBehaviour
 			{
 				//kill both missiles
 				Map.ins.Detonate(transform.position, 0.5f, team, true);
-				if (Map.multi) MultiplayerVariables.ins.ATAMDetonateClientRPC(transform.position, team);
-				ulong networkteam = MultiplayerVariables.ins.clientIDs[team];
-				if (Map.multi) MultiplayerVariables.ins.FireballDownClientRPC(networkteam, fireball.en);
+				if (Map.multi)
+				{
+
+					MultiplayerVariables.ins.ATAMDetonateClientRPC(transform.position, team);
+					ulong networkteam = MultiplayerVariables.ins.clientIDs[team];
+					MultiplayerVariables.ins.FireballDownClientRPC(networkteam, fireball.en);
+				}
 				fireball.Toggle(false);
 				Toggle(false);
 			}

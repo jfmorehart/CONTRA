@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using Unity.VisualScripting;
+using System;
 
 public class ConsolePanel : MonoBehaviour
 {
@@ -124,12 +123,16 @@ public class ConsolePanel : MonoBehaviour
 			lines.RemoveAt(0);
 		}
 	}
+	public static string ColoredText(int team, string message) {
+		
+		return "<color=#" + ToHex(Map.ins.state_colors[team]) + ">" + message + "</color >";
 
+	}
 	public static string ColoredName(int team) {
 		if(team == Map.localTeam) {
-			return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + "you" + "</color >";
+			return "<color=#" + ToHex(Map.ins.state_colors[team]) + ">" + "you" + "</color >";
 		}
-		return "<color=#" + Map.ins.state_colors[team].ToHexString() + ">" + Diplomacy.state_names[team] + "</color >";
+		return "<color=#" + ToHex(Map.ins.state_colors[team]) + ">" + Diplomacy.state_names[team] + "</color >";
 	}
 
 	public static int LineThatContains(string str) { 
@@ -145,4 +148,9 @@ public class ConsolePanel : MonoBehaviour
 			lines.RemoveAt(0);
 		}
 	}
+
+	public static string ToHex(Color c) {
+		return ColorUtility.ToHtmlStringRGB(c);
+    }
+	//=> $"#{c.r:X2}{c.g:X2}{c.b:X2}";
 }

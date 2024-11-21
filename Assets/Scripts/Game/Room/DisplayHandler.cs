@@ -60,19 +60,19 @@ public class DisplayHandler : MonoBehaviour
     }
 	public void EndScreens() {
 		EndPanel.ins.Enable();
-		TallScreenCam.ins.End();
-		foreach (Screen s in screens)
-		{
-			if (s.wideFormat) {
-				s.Switch(9); //endscreen;
-			}
-			else {
-				s.Switch(4); //tallscreen (economy)
-			}
+		//TallScreenCam.ins.End();
+		//foreach (Screen s in screens)
+		//{
+		//	if (s.wideFormat) {
+		//		s.Switch(9); //endscreen;
+		//	}
+		//	else {
+		//		s.Switch(4); //tallscreen (economy)
+		//	}
 	
-		}
+		//}
 	}
-	void Pause() {
+	public void Pause() {
 		if (!Map.multi) {
 			Time.timeScale = 0;
 		}
@@ -143,9 +143,15 @@ public class DisplayHandler : MonoBehaviour
 	public void LoadMenu() {
 		resetGame?.Invoke();
 		TimePanel.timesUp -= EndScreens;
-		if (Map.multi) { //must be the host
-			MultiplayerVariables.ins.EndGameClientRPC();
-			NetworkManager.Singleton.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+		if (Map.multi) {
+
+			if (Map.host) {
+				MultiplayerVariables.ins.EndGameClientRPC();
+				NetworkManager.Singleton.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+			}
+			else {
+				MultiplayerVariables.ins.EndGameServerRPC();
+			}
 		}
 		else {
 			SceneManager.LoadScene("Menu");

@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using static ConsolePanel;
 public class EconUIPanel : MonoBehaviour
@@ -59,6 +56,6 @@ public class EconUIPanel : MonoBehaviour
 
 	public static string Colorize(string input, Color col)
 	{
-		return "<color=#" + col.ToHexString() + ">" + input + "</color >";
+		return "<color=#" + ConsolePanel.ToHex(col) + ">" + input + "</color >"; 
 	}
 }

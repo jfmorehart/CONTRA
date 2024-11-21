@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ArmyManager : MonoBehaviour
@@ -168,10 +166,22 @@ public class ArmyManager : MonoBehaviour
 	}
 	public static bool ValidMapPlacement(int team, Vector2Int mapPos) {
 		int teamOf = Map.ins.GetPixTeam(mapPos);
-		if (team != teamOf) return false;
+		if (team != teamOf) {
+			if(teamOf == -1 && team == 0) {
+				ConsolePanel.Log("you cannot build in the ocean");
+				return false;
+			}
+			if(team == 0) {
+				ConsolePanel.Log("you cannot build on enemy territory");
+			}
+			return false;
+		}
 
 		foreach(Vector2Int v in MapUtils.BuildingPositions()) {
 			if (Vector2Int.Distance(mapPos, v) < Map.ins.buildExclusionDistance) {
+				if(team == 0) {
+					ConsolePanel.Log("this site is too close to nearby bases");
+				}
 				return false;
 			}
 		}

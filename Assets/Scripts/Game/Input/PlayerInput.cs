@@ -78,8 +78,8 @@ public class PlayerInput : MonoBehaviour
 		Vector2Int mp = MapUtils.PointToCoords(wp);
 		if (!ArmyManager.ValidMapPlacement(Map.localTeam, mp))
 		{
-
-			ConsolePanel.Log("unsuitable construction location", 5);
+			//ConsolePanel.Log("unsuitable construction location", 5);
+			//the console messages are now specified in validmapplacement
 			return;
 		}
 

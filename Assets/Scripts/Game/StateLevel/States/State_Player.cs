@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class State_Player : State_AI
@@ -18,6 +14,9 @@ public class State_Player : State_AI
 	{
 		troopAllocPlayerInput = new float[Map.ins.numStates];
 		base.Start();
+		if(team == 0 && !Simulator.tutorialOverride) {
+			ConsolePanel.Log("you control the " + ConsolePanel.ColoredText(0, "red") + " team");
+		}
 	}
 
 	protected override void StateUpdate()
