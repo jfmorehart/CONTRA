@@ -343,12 +343,14 @@ public class MultiplayerVariables : NetworkBehaviour
 	{
 		DisplayHandler.resetGame?.Invoke();
 		NetworkManager.Singleton.Shutdown();
+		SceneManager.LoadScene("Menu");
 	}
 	[ServerRpc(RequireOwnership = false)]
 	public void EndGameServerRPC()
 	{
 		EndGameClientRPC();
-		NetworkManager.Singleton.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+		NetworkManager.Singleton.Shutdown();
+		SceneManager.LoadScene("Menu");
 	}
 	#endregion
 }

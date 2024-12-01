@@ -54,7 +54,8 @@ public static class ArmyUtils
 		Civilian, // cities
 		Support, // radars, etc
     }
-	public struct Target {
+	public struct Target
+	{
 		public Target(Vector2 p, float v, Tar t) {
 			wpos = p;
 			value = v;
@@ -65,7 +66,22 @@ public static class ArmyUtils
 		public float value;
 		public Tar type;
 		public int hash;
-    }
+		public static bool operator ==(Target one, Target two) { 
+			if(one.wpos == two.wpos && one.type == two.type) {
+				return true;
+			}
+			return false;
+		}
+		public static bool operator !=(Target one, Target two)
+		{
+			if (one.wpos == two.wpos && one.type == two.type)
+			{
+				return false;
+			}
+			return true;
+		}
+	}
+	public static Target nullTarget = new Target(Vector2.zero, 0, Tar.Support);
 
 	static List<Target> tars = new List<Target>();
 	public static Target[] GetTargets(int team) {

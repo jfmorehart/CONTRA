@@ -49,6 +49,7 @@ public class EndPanel : MonoBehaviour
 	}
 	void OfferScenarioEnd() {
 		scenarioEndOffered = true;
+		Simulator.activeScenario.Complete();
 		ConsolePanel.Clear();
 		ConsolePanel.Log("[scenario stabilized: player victory]", Mathf.Infinity);
 		ConsolePanel.Log("press 'escape' when ready to leave", Mathf.Infinity);

@@ -40,6 +40,10 @@ public class State_AI : State
 	public List<Target> airTargets;
 	float lastTargetRefresh;
 
+	float bomber_riskFactor = 10f;
+	float bomber_timeFactor = 0.5f;
+	float bomber_AAAprio = 0.2f;
+
 	//test hack
 	//public bool testREGARRSION;
 
@@ -299,11 +303,11 @@ public class State_AI : State
 		if (Time.time - lastTargetRefresh > 1)
 		{
 			lastTargetRefresh = Time.time;
-			airTargets = RefreshAirTargets();
+			airTargets = RefreshAirTargets(plane);
 		}
 		if (airTargets.Count > 0)
 		{
-			if (!targetHashList.Contains(airTargets[0].hash))
+			if (true) // !targetHashList.Contains(airTargets[0].hash))
 			{
 				//targetHashList.Add(airTargets[0].hash);
 				Plane.Mission mission;
@@ -341,7 +345,7 @@ public class State_AI : State
 		Target t = new Target(pos, 0, Tar.Conventional);
 		return !bombedHashList.Contains(t.hash);
     }
-	List<Target> RefreshAirTargets() {
+	List<Target> RefreshAirTargets(Plane plane) {
 
 		int[] enemies = ROE.GetEnemies(team).ToArray();
 		List<Target> ts = new List<Target>();
@@ -371,12 +375,81 @@ public class State_AI : State
 		{
 			if (airdoctrine[i][(int)AirDoctrines.AirSuperiority])
 			{
-				ts.AddRange(AirSupremacyTargets(i));
+				foreach (Airbase sl in GetAirbases(team))
+				{
+					ts.Add(new Target(sl.transform.position, 45, Tar.Nuclear));
+				}
 			}
 		}
+		List<AAA> bats = new List<AAA>();
+		List<Target> batTargets = new List<Target>(); //ordered the same as the AAA array
+		AAA[] hold;
+		int numbatTargets = 0;
+		foreach (int i in enemies)
+		{
+			hold = GetAAAs(i);
+			bats.AddRange(hold);
+			foreach (AAA bat in bats)
+			{
+				Target t = nullTarget;
+				if (airdoctrine[i][(int)AirDoctrines.AirSuperiority])
+				{
+					t = new Target(bat.transform.position, 15, Tar.Conventional);
+					numbatTargets++;
+				}
+				batTargets.Add(t);
 
-		return TargetSort(ts.ToArray()).ToList();
+			}
+
+		}
+
+		//method for calculating battery value involves seeing how much
+		//plane value they're currently denying
+		float[] batteryValues = new float[bats.Count];
+
+		Target[] riskAdjusted = new Target[ts.Count + bats.Count];
+		for (int t = 0; t < ts.Count; t++)
+		{
+			float value = ts[t].value;
+			//Debug.Log("plt " + team + "tar " + ts[t].type.ToString() + " ival= " + ts[t].value);
+			Vector2 targetVector = ts[t].wpos - (Vector2)plane.transform.position;
+			value -= (targetVector.magnitude / plane.speed) * bomber_timeFactor;
+			//Debug.Log("dval= " + value);
+
+			for (int i = 0; i < bats.Count; i++)
+			{
+				Vector2 enemyVector = bats[i].transform.position - plane.transform.position;
+				if (enemyVector.magnitude > targetVector.magnitude + bats[i].fireRange) continue;
+				//angle between vectors
+				float abtw = Vector2.Angle(targetVector, enemyVector);
+				//radius at closes point
+				float racp = enemyVector.magnitude * Mathf.Tan(abtw * Mathf.Deg2Rad);
+				if (racp > bats[i].fireRange) {
+					continue;
+				}
+				float radPercentage = 1 - (racp / bats[i].fireRange);
+				float crossLength = radPercentage * bats[i].fireRange;
+				float timeUnderFire = crossLength / plane.speed;
+				
+				value -= timeUnderFire * bomber_riskFactor;
+				batteryValues[i] += timeUnderFire * bomber_riskFactor;
+				//Debug.Log("intersect: "+ radPercentage + " abtw= " + abtw);
+			}
+			//Debug.Log("plt " + team + "tar " + ts[t].type.ToString() + "fval=" + value);
+			riskAdjusted[t] = new Target(ts[t].wpos, value, ts[t].type);
+		}
+		for(int b = 0; b < bats.Count; b++) {
+			if (batTargets[b] == nullTarget) continue;
+			Debug.Log("AAA battery " + bats[b].name + " worth: " + batteryValues[b] * bomber_AAAprio);
+			riskAdjusted[riskAdjusted.Length - (b + 1)] = new Target(
+				batTargets[b].wpos,
+				batteryValues[b] * bomber_AAAprio,
+				Tar.Conventional);
+		}
+		
+		return TargetSort(riskAdjusted).ToList();
 	}
+
 
 	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
 	{

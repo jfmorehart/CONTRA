@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct Scenario
+public class Scenario
 {
 	public string name;
 	public string description;
-
+	public bool completed;// = false;
 	public int numTeams;
 
 	public double[] percentOfCities; //roughly determines starting popsizes
@@ -24,16 +24,23 @@ public struct Scenario
 
 		numTeams = tn;
 		percentOfCities = pctc;
-		affiliations = afil;
 
-		if (afil == null)
-		{
-			int[][] teams = new int[2][];
-			teams[0] = new int[] { }; //team A is the player
-			teams[1] = new int[] { }; //team B is the enemy}
-			afil = teams;
-		}
+
+		//if (afil == null)
+		//{
+		//	int[][] teams = new int[2][];
+		//	teams[0] = new int[] { }; //team A is the player
+		//	teams[1] = new int[] { }; //team B is the enemy}
+		//	afil = teams;
+		//}
 		conditions = cond;
+		affiliations = afil;
+		completed = false;
+	}
+	public void Complete()
+	{
+		completed = true;
+		PlayerPrefs.SetInt(name, 1);
 	}
 
 	public class ScenarioConditions

@@ -6,6 +6,7 @@ public class TutorialOverride : MonoBehaviour
 {
 	//this class has the difficult job of managing to stop the gameplay and teach the player how cities work
 	public static bool hasLaunchedMissiles;
+	public static bool railroad; //lock everything
 
 	private void Start()
 	{
@@ -16,7 +17,7 @@ public class TutorialOverride : MonoBehaviour
 	IEnumerator TutorialProcedure() {
 
 		yield return null; //wait for the old scene to unload
-
+		railroad = true;
 		DisplayHandler.ins.locked = true;
 		UI.ins.locked = true;
 		ConsolePanel.ins.toolTipLockout = true;
@@ -57,14 +58,14 @@ public class TutorialOverride : MonoBehaviour
 		Time.timeScale = 0.1f;
 		yield return new WaitForSecondsRealtime(1);
 
-		ConsolePanel.Log("this is your city.");
+		ConsolePanel.Log("this is your city.", float.PositiveInfinity);
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("the <color=#ff0000> color </color> represents population density.");
+		ConsolePanel.Log("the brightness represents population density.", float.PositiveInfinity);
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -108,7 +109,7 @@ public class TutorialOverride : MonoBehaviour
 		Camera.main.orthographicSize = 300;
 
 		ConsolePanel.Clear();
-		ConsolePanel.Log("you have many cities.");
+		ConsolePanel.Log("you have many cities.", float.PositiveInfinity);
 		//grow back a little from the shrinkage
 		Map.ins.populationGrowthTickDelay = 0f;
 		Map.ins.growth_tutorialManualValues = true;
@@ -122,14 +123,15 @@ public class TutorialOverride : MonoBehaviour
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("it's <color=#ff0000> your </color> responsibility to make sure it stays that way.");
+		ConsolePanel.Log("it's <color=#ff0000> your </color> responsibility to make sure it stays that way.", float.PositiveInfinity);
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		Camera.main.cullingMask = PlayerInput.ins.regularMask;
-		ConsolePanel.Log("the white dots are armies.");
+		ConsolePanel.Clear();
+		ConsolePanel.Log("the white dots are armies.", float.PositiveInfinity);
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -143,14 +145,14 @@ public class TutorialOverride : MonoBehaviour
 
 		ConsolePanel.Clear();
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("this is a rival nation.");
+		ConsolePanel.Log("this is a rival nation.", float.PositiveInfinity);
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("they pose a threat to you.");
+		ConsolePanel.Log("they pose a threat to you.", float.PositiveInfinity);
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -163,11 +165,15 @@ public class TutorialOverride : MonoBehaviour
 		Camera.main.orthographicSize = 600;
 		UI.ins.targetNation = 1;
 		UI.ins.locked = false;
+		railroad = false;
 
 		ConsolePanel.Clear();
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("you have been granted access to the computer controls");
-		ConsolePanel.Log("use them to construct missile silos");
+		ConsolePanel.Log(" ");
+		yield return new WaitForSecondsRealtime(1);
+		ConsolePanel.Log("construct three missile silos", 9999);
+		ConsolePanel.Log(" ");
 		MoveCam.ins.canMove = true;
 		DisplayHandler.ins.screens[3].Switch(-1);
 
@@ -216,7 +222,7 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.Clear();
 		ConsolePanel.Log("well done.");
 		ConsolePanel.Log("now launch a pre-emptive strike.");
-		ConsolePanel.Log("press 'tab' four times to return to the home menu");
+		ConsolePanel.Log("press 'tab' three times to return to the home menu");
 		ConsolePanel.ins.toolhead.text = "launch a preemptive strike";
 
 		while (!hasLaunchedMissiles)

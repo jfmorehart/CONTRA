@@ -23,18 +23,28 @@ public class MenuConsole: TypingInterface
 		}
 
 		Simulator.tutorialOverride = false;
-		Debug.Log(SceneManager.GetActiveScene().name);
 	}
 
 	void WriteOptions()
 	{
-		Debug.Log("write options " + Time.time);
 		WriteOut("_______________________________________", false);
 		WriteOut("select a simulation to load", false);
 		WriteOut("");
 		WriteOut("tutorial", false);
 		for(int i = 0; i < Simulator.scenarios.Count; i++) {
-			WriteOut(Simulator.scenarios[i].name);
+			Simulator.scenarios[i].completed = PlayerPrefs.GetInt(Simulator.scenarios[i].name, 0) == 1;
+			if (Simulator.scenarios[i].completed) {
+				WriteOut(Simulator.scenarios[i].name);
+			}
+			else if(i > 0){
+				if (Simulator.scenarios[i - 1].completed) {
+					WriteOut(Simulator.scenarios[i].name);
+				}
+			}
+			else {
+				WriteOut(Simulator.scenarios[i].name);
+			}
+
 		}
 		WriteOut("");
 		WriteOut("multiplayer");

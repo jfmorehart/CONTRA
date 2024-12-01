@@ -120,7 +120,17 @@ public class ConsolePanel : MonoBehaviour
 
 		lines.Add(new Logline(str, 1, Time.time, lifeTime));
 		if(lines.Count > linecount) {
-			lines.RemoveAt(0);
+			for(int i = 0; i < lines.Count; i++) {
+				if (lines[i].lifeTime == Mathf.Infinity) {
+					//Do not remove this line, its permanent
+				}
+				else {
+					lines.RemoveAt(i);
+					break;
+				}
+				if(i == lines.Count - 1) lines.RemoveAt(i); //dont spawn the new one after all
+			}
+
 		}
 	}
 	public static string ColoredText(int team, string message) {
@@ -143,10 +153,11 @@ public class ConsolePanel : MonoBehaviour
 	}
 
 	public static void Clear() {
-		for (int i = 0; i < lines.Count; i++)
-		{
-			lines.RemoveAt(0);
-		}
+		lines.Clear();
+		//for (int i = 0; i < lines.Count; i++)
+		//{
+		//	lines.RemoveAt(0);
+		//}
 	}
 
 	public static string ToHex(Color c) {

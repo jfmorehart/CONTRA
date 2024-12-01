@@ -25,7 +25,7 @@ public static class Research
 	public static Vector2Int[] currentlyResearching; //x = branch, y = upgrade
 
 	//								ground, AAA, air, icbm
-	public static float[] baseCosts = {200, 200, 200, 200};
+	public static float[] baseCosts = {200, 100, 200, 200};
 	public static float[] rankMultipliers = { 1, 2f, 2.5f, 3f, 3.5f};
 	public static float[][] costs;
 	public static float[] budget;

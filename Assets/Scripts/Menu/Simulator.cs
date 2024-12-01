@@ -15,6 +15,7 @@ public static class Simulator
 	public static void Setup() {
         scenarios = new();
 
+		Scenario sc;
 		string description = "";
 		//basic tutorial, overwhelm
 		Scenario.ScenarioConditions conditions = new Scenario.ScenarioConditions();
@@ -26,30 +27,55 @@ public static class Simulator
         teams[0] = new int[]{0}; //team A is the player
 		teams[1] = new int[] {1}; //team B is the enemy
 		description = "scenario a is two-nation scenario with a vast advantage to the player";
-		scenarios.Add(new Scenario("scenario a", description, 2, ally, teams, conditions));
+		sc = new Scenario("scenario a", description, 2, ally, teams, conditions);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		scenarios.Add(sc);
 
-        //lvl 2
-        double[] duoShowdown = new double [] {0.25, 0.25, 0.5}; 
+		//lvl 2
+		double[] overmatch = new double[] { 0.6, 0.4};
+		teams = new int[2][];
+		teams[0] = new int[] { 0 }; //team A is the player
+		teams[1] = new int[] { 1 }; //team B is the enemy
+		conditions = new Scenario.ScenarioConditions();
+		conditions.unlockedupgrades = new int[4][];
+		conditions.unlockedupgrades[0] = new int[] { 0, 4, 5, 0 };
+		conditions.unlockedupgrades[1] = new int[] { 0, 0, 5, 4};
+		conditions.airbases = new int[2] { 3, 0};
+		conditions.silos = new int[2] { 0, 3};
+		conditions.batteries = new int[2] { 0, 3};
+		description = "tutorial b familiarizes the player with aspects of research and conscription";
+		sc = new Scenario("tutorial b", description, 2, overmatch, teams, conditions);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		scenarios.Add(sc);
+
+		//lvl 2
+		double[] duoShowdown = new double [] {0.4, 0.2, 0.4}; 
 		teams = new int[2][];
 		teams[0] = new int[] { 0, 1 }; //team A is the player
 		teams[1] = new int[] { 2 }; //team B is the enemy
 		//conditions.airbases = new int[2] { 0, 5 };
-		description = "scenario b explores allianae dynamics by giving the player both a steadfast ally and a steadfast enemy";
-		scenarios.Add(new Scenario("scenario b", description, 4, duoShowdown, teams, null));
+		description = "scenario b explores alliance dynamics by giving the player both a steadfast ally and a steadfast enemy";
+		sc = new Scenario("scenario b", description, 3, duoShowdown, teams, null);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		scenarios.Add(sc);
 
-        double[] tsizes = new double[] {0.5};
+		double[] tsizes = new double[] {0.5};
 		teams = new int[2][];
 		teams[0] = new int[] { }; //team A is the player
 		teams[1] = new int[] { }; //team B is the enemy
 		description = "scenario c gives the player a strong position, but also a large number of rival states to contend with";
-		scenarios.Add(new Scenario("scenario c", description, 5, tsizes, teams, null));
-		
+		sc = new Scenario("scenario c", description, 5, tsizes, teams, null);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		scenarios.Add(sc);
+
 		double[] buddy = new double[] {0.4, 0.1, 0.1, 0.1};
 		teams = new int[2][];
 		teams[0] = new int[] {0, 1}; //team A is the player
 		teams[1] = new int[] {2, 3}; //team B is the enemy
 		description = "scenario d gives the player two enemies, and an ally they'll likely need to protect in order to succeed";
-		scenarios.Add(new Scenario("scenario d", description, 4, buddy, teams, null));
+		sc = new Scenario("scenario d", description, 4, buddy, teams, null);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		scenarios.Add(sc);
 
 		activeScenario = scenarios[2]; //default to scenario c
 		IsSetup = true;

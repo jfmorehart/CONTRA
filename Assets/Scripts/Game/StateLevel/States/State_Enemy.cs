@@ -192,7 +192,7 @@ public class State_Enemy : State_AI
 				if (tryGroundInvasion)
 				{
 					//float armyThreshold = Mathf.Min(armies[team].Count * 0.6f, Map.ins.state_populations[i] * 0.6f);//Mathf.Max(Map.ins.state_populations[i] * 0.4f, armies[i].Count * 0.5f);
-					float armyThreshold = EnemiesReadyOnFront(i) + Map.ins.state_populations[i] * 0.25f;
+					float armyThreshold = Mathf.Min(EnemiesReadyOnFront(i) + Map.ins.state_populations[i] * 0.3f, Map.ins.state_populations[i]);
 					//are we ready to attack?
 					//Debug.Log(team + " vs " + i + " with= " + ArmiesReadyOnFront(i) + " requires " + armyThreshold);
 					if (ArmiesReadyOnFront(i) > armyThreshold)
@@ -382,10 +382,10 @@ public class State_Enemy : State_AI
 		}
 		else
 		{
-			if (Simulator.tutorialOverride) return;
 			//AT PEACE
 			if (GetBuildings(team).Length < assesment.buyingPower / 30 && assesment.percentGrowth > 0.1f) {
 				//we can afford more
+				if (Simulator.tutorialOverride) return;
 				ConsiderNewConstruction();
 			}
 

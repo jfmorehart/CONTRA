@@ -94,15 +94,41 @@ public class DisplayHandler : MonoBehaviour
 	}
 
 	public void UnPause() {
-		UI.ins.locked = false;
-		paused = false;
-		PausePanel.pauseInstance.Shutdown();
-		Time.timeScale = 1;
-		WideScreenCam.ins.Refresh();
-		foreach (Screen s in screens) {
-			s.Switch(-1);
+		if(Simulator.tutorialOverride) {
+			if (!TutorialOverride.railroad) {
+				UI.ins.locked = false;
+			}
+			paused = false;
+			PausePanel.pauseInstance.Shutdown();
+			Time.timeScale = 1;
+			WideScreenCam.ins.Refresh();
+			pauseCam.enabled = false;
+			for (int i = 0; i < screens.Length; i++)
+			{
+				//if (i == 0)
+				//{
+				//	screens[i].Switch(-1);
+				//	continue;
+				//}
+				if (i == 4 || i == 0) {
+					screens[i].Switch(-1);
+					continue;
+				}
+				screens[i].Switch(-2);
+			}
 		}
-		pauseCam.enabled = false;
+		else {
+			UI.ins.locked = false;
+			paused = false;
+			PausePanel.pauseInstance.Shutdown();
+			Time.timeScale = 1;
+			WideScreenCam.ins.Refresh();
+			foreach (Screen s in screens)
+			{
+				s.Switch(-1);
+			}
+			pauseCam.enabled = false;
+		}
 	}
 
 	public void TogglePopStrikeScreen(bool strike) {
@@ -117,7 +143,7 @@ public class DisplayHandler : MonoBehaviour
 
 	private void Update()
 	{
-		if (locked) return;
+		//if (locked) return;
 		if (Input.GetKeyDown(KeyCode.Escape) && !EndPanel.over && !menuNotGame)
 		{
 			if (paused) {
@@ -147,11 +173,12 @@ public class DisplayHandler : MonoBehaviour
 
 			if (Map.host) {
 				MultiplayerVariables.ins.EndGameClientRPC();
-				NetworkManager.Singleton.SceneManager.LoadScene("Menu", LoadSceneMode.Single);
 			}
 			else {
 				MultiplayerVariables.ins.EndGameServerRPC();
 			}
+			NetworkManager.Singleton.Shutdown();
+			SceneManager.LoadScene("Menu");
 		}
 		else {
 			SceneManager.LoadScene("Menu");
