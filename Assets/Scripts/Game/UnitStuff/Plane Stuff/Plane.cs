@@ -43,7 +43,16 @@ public class Plane : Unit
 			bogey = bg;
 			value = val;
 		}
-    }
+		public static bool operator ==(Mission a, Mission b) {
+			if (a.distance!= b.distance) return false;
+			if (a.wpos != b.wpos) return false;
+			return true;
+		}
+		public static bool operator !=(Mission a, Mission b)
+		{
+			return !(a == b);
+		}
+	}
 	public enum AcceptableDistance { 
 		//the int values are the acceptable distances before a plane
 		// can consider those targets overflown

@@ -114,6 +114,10 @@ public class DisplayHandler : MonoBehaviour
 					screens[i].Switch(-1);
 					continue;
 				}
+				if(i == 3 && TutorialOverride.showMenu) {
+					screens[i].Switch(-1);
+					continue;
+				}
 				screens[i].Switch(-2);
 			}
 		}

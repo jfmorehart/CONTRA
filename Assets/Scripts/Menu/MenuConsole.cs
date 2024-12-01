@@ -278,6 +278,14 @@ public class MenuConsole: TypingInterface
 			LoadGame();
 			return;
 		}
+		if (message.Contains("resetprogress"))
+		{
+			PlayerPrefs.DeleteAll();
+			ClearConsole();
+			WriteOut("progress has been reset");
+			WriteOptions();
+			return;
+		}
 		WriteOut("unknown command");
 		//selected_scenario = -1;
 	}

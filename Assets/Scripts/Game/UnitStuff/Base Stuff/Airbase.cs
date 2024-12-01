@@ -52,7 +52,7 @@ public class Airbase : Building
 			}
 			else
 			{
-				Vector2 end = (pos + dir * 200);
+				Vector2 end = (pos + dir * 50);
 				patrolPoints[i] = MapUtils.CoordsToPoint(new Vector2Int(Mathf.RoundToInt(end.x), Mathf.RoundToInt(end.y)));
 			}
 

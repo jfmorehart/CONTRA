@@ -142,6 +142,8 @@ public class UI : MonoBehaviour
 
 		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.X))
 		{
+			if (currentMenu.children == null) return;
+			if (currentMenu.children.Length < selected) selected = currentMenu.children.Length - 1;
 			switch(currentMenu.children[selected].kind) {
 				case UIOption.Kind.Button:
 					if (currentMenu.children[selected].locked) break;
@@ -224,7 +226,7 @@ public class UI : MonoBehaviour
 	}
 	public void SwitchMenus(UIMenu start, UIMenu end) {
 
-		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike);
+		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike || end == menu_airdoctrine);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
 		PlayerInput.ins.ToggleAirMode(end == menu_airdoctrine);
 		if (start == menu_feelings) Relationships.ins.Clear();
@@ -303,7 +305,7 @@ public class UI : MonoBehaviour
 		}
 
 	}
-	void ChangeSelected(int dir) {
+	public void ChangeSelected(int dir) {
 		int osel = selected;
 		int nsel = selected + dir;
 		if (nsel < 0) nsel = 0;

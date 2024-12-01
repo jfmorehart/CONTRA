@@ -15,7 +15,9 @@ public class UIAirDoctrine : UIMenu
 
 	private void Update()
 	{
-		if(Time.time - lastUpdate > 0.1f) {
+		StrikePlan.ins.DrawAirPlan();
+
+		if (Time.time - lastUpdate > 0.1f) {
 			UpdateFromArray();
 		}
 		else {

@@ -502,8 +502,6 @@ public class Map : MonoBehaviour
 				continue;
 			}
 			Vector2 avgCenter = sumCenter[i] / sumCounter[i];
-			Debug.Log(popTotals[i] + " on team " + i);
-			//avgCenter /= popTotals[i] / Mathf.Sqrt(2);
 			state_centers[i] = new Vector2Int(Mathf.RoundToInt(avgCenter.x), Mathf.RoundToInt(avgCenter.y));
 		}
 	}

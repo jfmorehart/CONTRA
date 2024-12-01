@@ -29,7 +29,7 @@ public class Fighter : Plane
 	int patrolcham = 0;
 	int patroldir;
 
-	bool hasBombs = true;
+	public bool hasBombs = true;
 
 	State_AI state;
 
@@ -211,15 +211,27 @@ public class Fighter : Plane
 	protected override void Idle()
 	{
 		target = Plane.NULLMission;
-		if(Time.time - lastTargetAcquire > targetAcquireCooldown){
+		if (Time.time - lastTargetAcquire > targetAcquireCooldown)
+		{
 			AcquireNewTarget();
+			if (homeBase == null)
+			{
+				Airbase[] airbases = ArmyUtils.GetAirbases(team);
+				if (airbases.Length > 0)
+				{
+					homeBase = airbases[Random.Range(0, airbases.Length)];
+				}
+			}
 		}
-		else {
-			if(homeBase != null) {
+		else
+		{
+			if (homeBase != null)
+			{
 				//PatrolPoint(homeBase.transform.position);
-				target = new Mission(homeBase.patrolPoints[patrolcham], AcceptableDistance.Waypoint); 
+				target = new Mission(homeBase.patrolPoints[patrolcham], AcceptableDistance.Waypoint);
 				patrolcham += patroldir;
-				if(patrolcham >= homeBase.patrolPoints.Length) {
+				if (patrolcham >= homeBase.patrolPoints.Length)
+				{
 					patrolcham = 0;
 				}
 				if (patrolcham < 0) patrolcham = homeBase.patrolPoints.Length - 1;

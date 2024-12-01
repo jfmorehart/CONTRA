@@ -33,12 +33,13 @@ public class TimePanel : MonoBehaviour
     public void EndGame() {
         time.color = Color.red;
         Diplomacy.CalculateStatePowerRankings();
-		EndPanel.ins.Enable();
+
 		Time.timeScale = 0;
 		timesUp?.Invoke();
+		//EndPanel.ins.Enable(); this is invoked by timesup anyhow
 	}
 
-    string DoubleZero(int seconds) { 
+	string DoubleZero(int seconds) { 
         if(seconds < 10) {
             return "0" + seconds.ToString();
         }

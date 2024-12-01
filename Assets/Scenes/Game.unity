@@ -17064,7 +17064,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: hates obristan
+  m_text: '
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a099b5f00a3dd49d788b83ed864f1858, type: 2}
   m_sharedMaterial: {fileID: 1798366782539071105, guid: a099b5f00a3dd49d788b83ed864f1858, type: 2}
@@ -27275,7 +27277,7 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
-  tooltip_headerText: 
+  tooltip_headerText: relationship panel
   tooltip_bodyText: 
 --- !u!114 &7297933110011782444
 MonoBehaviour:

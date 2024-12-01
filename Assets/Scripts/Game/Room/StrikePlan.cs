@@ -44,7 +44,7 @@ public class StrikePlan : MonoBehaviour
 	private void Update()
 	{
 		if (UI.ins == null) return;
-		if (UI.ins.currentMenu == UI.ins.menu_strike) {
+		if (UI.ins.currentMenu == UI.ins.menu_strike || UI.ins.currentMenu == UI.ins.menu_airdoctrine) {
 			strikeCam.enabled = true;
 		}
 		else {
@@ -53,7 +53,62 @@ public class StrikePlan : MonoBehaviour
 		}
 
 	}
+	List<Fighter> missionPlanes = new();
+	public void DrawAirPlan() {
+		Debug.Log("drawing air plan");
+		ErasePlan();
+		missionPlanes.Clear();
 
+		Unit[] planes = ArmyUtils.GetAircraft(Map.localTeam);
+		Debug.Log(planes.Length + " planes");
+		if (planes.Length < 1)
+		{
+			warning.text = "No Bombers Remaining";
+			return;
+		}
+		int numBombs = 0;
+
+		for (int s = 0; s < planes.Length; s++)
+		{
+			Fighter f = (planes[s] as Fighter);
+			int bombs = f.hasBombs ? 1 : 0;
+			numBombs += bombs;
+			if(bombs > 0 && f.target != Plane.NULLMission) {
+				//tars.Add(f.target);
+				missionPlanes.Add(f);
+			}
+		}
+		if (missionPlanes.Count < 1)
+		{
+			warning.text = "All Bombers Re-Arming";
+			return;
+		}
+
+		for(int i = 0; i < missionPlanes.Count; i++) {
+
+			Debug.Log("drawing line");
+			Vector2 local = MapPositionToLocalPosition(missionPlanes[i].target.wpos);
+			Vector2 st = MapPositionToLocalPosition(missionPlanes[i].transform.position);
+			DrawLine(st, local);
+			Color c = Color.white;
+			switch (missionPlanes[i].target.distance) {
+				case Plane.AcceptableDistance.Bombtarget:
+					c = Color.red;
+					break;
+				case Plane.AcceptableDistance.Waypoint:
+					c = Color.green;
+					break;
+				case Plane.AcceptableDistance.Landing:
+					c = Color.blue;
+					break;
+				case Plane.AcceptableDistance.Bogey:
+					c = Color.red;
+					break;
+
+			}
+			DrawWorldLine(missionPlanes[i].transform.position, missionPlanes[i].target.wpos, c);
+		}
+	}
 	public void DrawPlan(int warheads, List<Target> targets) {
 		ErasePlan();
 		
@@ -124,7 +179,7 @@ public class StrikePlan : MonoBehaviour
 
 			Vector2 st = MapPositionToLocalPosition(silos[slcham].transform.position);
 			DrawLine(st, local);
-			DrawWorldLine(silos[slcham].transform.position, target.wpos);
+			DrawWorldLine(silos[slcham].transform.position, target.wpos, lineColor);
 			validTargetsDrawn++;
 			slcham++;
 			if (slcham >= silos.Length) slcham = 0;
@@ -149,7 +204,7 @@ public class StrikePlan : MonoBehaviour
 
 		go.GetComponent<Image>().color = lineColor;
     }
-	void DrawWorldLine(Vector2 start, Vector2 end) {
+	void DrawWorldLine(Vector2 start, Vector2 end, Color col) {
 		GameObject go = Instantiate(worldLinePrefab);
 		currentPlanIcons.Add(go.transform);
 		go.transform.position = (start + end) * 0.5f;
@@ -160,8 +215,8 @@ public class StrikePlan : MonoBehaviour
 		go.transform.localScale = new Vector3(delta.magnitude, 2f, 1);
 
 		Material renmat = go.GetComponent<Renderer>().material;
-		renmat = new Material(renmat);
-		renmat.color = lineColor;
+		renmat.SetColor("_Color", col);
+		//renmat.color = col;
 	}
 
 

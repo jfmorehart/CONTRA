@@ -171,5 +171,5 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-  headerText: nation menu
-  bodyText: this menu contains options for interacting with the selected state
+  tooltip_headerText: nation
+  tooltip_bodyText: press space to select

@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: hates obristan
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a099b5f00a3dd49d788b83ed864f1858, type: 2}
   m_sharedMaterial: {fileID: 1798366782539071105, guid: a099b5f00a3dd49d788b83ed864f1858, type: 2}
@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   parentMenu: {fileID: 0}
+  locked: 0
   highlighted: 0
   highlight_recolors_sprite: 1
   kind: 0
@@ -158,3 +159,5 @@ MonoBehaviour:
   onSelect:
     m_PersistentCalls:
       m_Calls: []
+  tooltip_headerText: '  '
+  tooltip_bodyText: this menu requires no input

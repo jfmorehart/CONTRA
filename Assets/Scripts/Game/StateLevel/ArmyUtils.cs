@@ -24,6 +24,8 @@ public static class ArmyUtils
 	static int[] unitChunkIndices_prealloc;
 	static int[] unitChunkValues_prealloc;
 
+	const float cityTargetExclusionRadius = 30;
+
 	public static void Init() {
 		nuclearCount = new int[Map.ins.numStates];
 		armies = new List<Unit>[Map.ins.numStates];
@@ -199,11 +201,21 @@ public static class ArmyUtils
 		foreach (City sl in GetCities(team))
 		{
 			if (Map.ins.GetPixTeam(sl.mpos) != team) continue;
+
+			//sometimes cities are ontop of one another
+			if (!PassesTargetDuplicateCheck(tars, sl.transform.position)) continue;
+
 			tars.Add(new Target(sl.transform.position, sl.truepop * 0.5f, Tar.Civilian));
 		}
 		return tars.ToArray();
 	}
-
+	public static bool PassesTargetDuplicateCheck(List<Target> tars, Vector2 pos) {
+		foreach (Target tar in tars)
+		{
+			if (Vector2.Distance(pos, tar.wpos) < cityTargetExclusionRadius) return false;
+		}
+		return true;
+	}
 	public static Silo[] GetSilos(int team)
 	{
 		return silos[team].ToArray();
@@ -244,6 +256,10 @@ public static class ArmyUtils
 
 	public static Unit[] GetAircraft(int team) {
 		return aircraft[team].ToArray();
+	}
+	public static List<Unit> GetAircraftList(int team)
+	{
+		return aircraft[team];
 	}
 
 	public static Unit EnemyAircraftInRange(int team, Vector2 pos, float range, List<Unit> ignore = null) {

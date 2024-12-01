@@ -7,6 +7,7 @@ public class TutorialOverride : MonoBehaviour
 	//this class has the difficult job of managing to stop the gameplay and teach the player how cities work
 	public static bool hasLaunchedMissiles;
 	public static bool railroad; //lock everything
+	public static bool showMenu;
 
 	private void Start()
 	{
@@ -18,6 +19,7 @@ public class TutorialOverride : MonoBehaviour
 
 		yield return null; //wait for the old scene to unload
 		railroad = true;
+		showMenu = false;
 		DisplayHandler.ins.locked = true;
 		UI.ins.locked = true;
 		ConsolePanel.ins.toolTipLockout = true;
@@ -164,8 +166,11 @@ public class TutorialOverride : MonoBehaviour
 		Research.ResearchChange[0]?.Invoke(); //tell armies they're big ups
 		Camera.main.orthographicSize = 600;
 		UI.ins.targetNation = 1;
-		UI.ins.locked = false;
-		railroad = false;
+
+		//new railroad attempt
+		//UI.ins.locked = false;
+		//railroad = false;
+
 
 		ConsolePanel.Clear();
 		ConsolePanel.ins.tooltext.text = "";
@@ -176,6 +181,7 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.Log(" ");
 		MoveCam.ins.canMove = true;
 		DisplayHandler.ins.screens[3].Switch(-1);
+		showMenu = true;
 
 		yield return new WaitForSecondsRealtime(1);
 
@@ -292,14 +298,27 @@ public class TutorialOverride : MonoBehaviour
 			if (UI.ins.selected > 1)
 			{
 				ConsolePanel.ins.tooltext.text = "press 'up' on the arrow keys";
+				if (Input.GetKeyDown(KeyCode.UpArrow))
+				{
+					UI.ins.ChangeSelected(-1);
+				}
 			}
 			else if (UI.ins.selected < 1)
 			{
 				ConsolePanel.ins.tooltext.text = "press 'down' on the arrow keys";
+				Debug.Log("reading input...");
+				if (Input.GetKeyDown(KeyCode.DownArrow))
+				{
+					Debug.Log("pressed down!!!");
+					UI.ins.ChangeSelected(1);
+				}
 			}
 			else
 			{
 				ConsolePanel.ins.tooltext.text = "press 'space' to select";
+				if (Input.GetKeyDown(KeyCode.Space)) {
+					UI.ins.DefenseScreen();
+				}
 			}
 		}else if(UI.ins.currentMenu == UI.ins.menu_defense)
 		{
@@ -307,24 +326,39 @@ public class TutorialOverride : MonoBehaviour
 			if (UI.ins.selected > 2)
 			{
 				ConsolePanel.ins.tooltext.text = "press 'up' on the arrow keys";
+				if (Input.GetKeyDown(KeyCode.UpArrow))
+				{
+					UI.ins.ChangeSelected(-1);
+				}
 			}
 			else if (UI.ins.selected < 2)
 			{
 				ConsolePanel.ins.tooltext.text = "press 'down' on the arrow keys";
+				if (Input.GetKeyDown(KeyCode.DownArrow))
+				{
+					UI.ins.ChangeSelected(1);
+				}
 			}
 			else
 			{
 				ConsolePanel.ins.tooltext.text = "press 'space' to select";
+				if (Input.GetKeyDown(KeyCode.Space))
+				{
+					UI.ins.BuildScreen();
+				}
 			}
 		}
 		else if (UI.ins.currentMenu == UI.ins.menu_build)
 		{
+			UI.ins.locked = false;
+		
 			ConsolePanel.ins.toolhead.text = "select 'silo'";
 			ConsolePanel.ins.tooltext.text = "";
 		}
 		else 
 		{
-			ConsolePanel.ins.toolhead.text = "return to correct menu";
+			UI.ins.locked = false;
+			ConsolePanel.ins.toolhead.text = "should never happen";
 			ConsolePanel.ins.tooltext.text = "press 'tab' to go back";
 		}
 	}
