@@ -8,9 +8,8 @@ public class Scenario
 	public string description;
 	public bool completed;// = false;
 	public int numTeams;
-
+	public int tutorial = 0;
 	public double[] percentOfCities; //roughly determines starting popsizes
-
 	public int[][] affiliations; //determines starting opinions
 								 //if a nation is listed here, they like everyone else in their array
 								 //and hate everyone on a different array

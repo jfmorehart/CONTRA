@@ -73,7 +73,7 @@ public class State : MonoBehaviour
 		Economics.state_assesments[team] = assesment;
 		RecordEconomyData();
 
-		if (Simulator.tutorialOverride && team == Map.localTeam) {
+		if (Simulator.activeScenario.tutorial == 1 && team == Map.localTeam) {
 			//rig the game, 2x max construction and no budget restrictions
 			ConstructionWork();
 			return;

@@ -22,30 +22,32 @@ public static class Simulator
 		conditions.unlockedupgrades = new int[4][];
 		conditions.unlockedupgrades[0] = new int[] { 5, 5, 5, 5 };
 		conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
-		double[] ally = new double[] {0.8, 0.2}; 
-        int[][] teams = new int[2][];
-        teams[0] = new int[]{0}; //team A is the player
-		teams[1] = new int[] {1}; //team B is the enemy
-		description = "scenario a is two-nation scenario with a vast advantage to the player";
-		sc = new Scenario("scenario a", description, 2, ally, teams, conditions);
+		double[] overmatch = new double[] { 0.8, 0.2 };
+		int[][] teams = new int[2][];
+		teams[0] = new int[] { 0 }; //team A is the player
+		teams[1] = new int[] { 1 }; //team B is the enemy
+		description = "tutorial a instructs the candidate in the absolute fundamentals of nuclear war";
+		sc = new Scenario("tutorial a", description, 2, overmatch, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		sc.tutorial = 1;
 		scenarios.Add(sc);
 
 		//lvl 2
-		double[] overmatch = new double[] { 0.6, 0.4};
+		double[] almosteven = new double[] { 0.7, 0.3};
 		teams = new int[2][];
 		teams[0] = new int[] { 0 }; //team A is the player
 		teams[1] = new int[] { 1 }; //team B is the enemy
 		conditions = new Scenario.ScenarioConditions();
 		conditions.unlockedupgrades = new int[4][];
-		conditions.unlockedupgrades[0] = new int[] { 0, 4, 5, 0 };
-		conditions.unlockedupgrades[1] = new int[] { 0, 0, 5, 4};
-		conditions.airbases = new int[2] { 3, 0};
-		conditions.silos = new int[2] { 0, 3};
-		conditions.batteries = new int[2] { 0, 3};
+		conditions.unlockedupgrades[0] = new int[] { 4, 4, 0, 0 };
+		conditions.unlockedupgrades[1] = new int[] { 0, 0, 5, 3};
+		conditions.airbases = new int[2] { 0, 2};
+		conditions.silos = new int[2] {0, 2};
+		conditions.batteries = new int[2] { 0, 0};
 		description = "tutorial b familiarizes the player with aspects of research and conscription";
-		sc = new Scenario("tutorial b", description, 2, overmatch, teams, conditions);
+		sc = new Scenario("tutorial b", description, 2, almosteven, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		sc.tutorial = 2;
 		scenarios.Add(sc);
 
 		//lvl 2

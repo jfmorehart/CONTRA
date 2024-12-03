@@ -18,9 +18,9 @@ public class ThinPanel : MonoBehaviour
     int PT_index;
     public float lastLetterTime, letterDelay, letterSpeed;
 
-	private void Awake()
+	private void Start()
 	{
-		if (Simulator.tutorialOverride)
+		if (Simulator.activeScenario.tutorial == 1)
 		{
             GetComponent<TimePanel>().timer = float.MaxValue;
 			idleScreen.SetActive(false);
@@ -31,7 +31,7 @@ public class ThinPanel : MonoBehaviour
 	// Update is called once per frame
 	void Update()
     {
-		if (Simulator.tutorialOverride) return;
+		if (Simulator.activeScenario.tutorial == 1) return;
 
 		if(Time.timeScale == 0) {
 			idleScreen.SetActive(false);

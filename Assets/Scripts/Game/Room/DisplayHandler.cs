@@ -58,6 +58,14 @@ public class DisplayHandler : MonoBehaviour
 			screens[i].Switch(-2);
 		}
     }
+	public void ResetAll()
+	{
+		for (int i = 1; i < screens.Length; i++)
+		{
+			//if (i == 4) continue;
+			screens[i].Switch(-1);
+		}
+	}
 	public void EndScreens() {
 		EndPanel.ins.Enable();
 		//TallScreenCam.ins.End();

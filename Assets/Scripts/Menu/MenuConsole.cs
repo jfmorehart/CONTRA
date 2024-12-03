@@ -30,7 +30,6 @@ public class MenuConsole: TypingInterface
 		WriteOut("_______________________________________", false);
 		WriteOut("select a simulation to load", false);
 		WriteOut("");
-		WriteOut("tutorial", false);
 		for(int i = 0; i < Simulator.scenarios.Count; i++) {
 			Simulator.scenarios[i].completed = PlayerPrefs.GetInt(Simulator.scenarios[i].name, 0) == 1;
 			if (Simulator.scenarios[i].completed) {
@@ -57,6 +56,12 @@ public class MenuConsole: TypingInterface
 	public override void ProcessText(string message)
 	{
 		message = message.Replace("\u200B", "");
+
+		if (message.Contains("quit", System.StringComparison.CurrentCultureIgnoreCase))
+		{
+			Application.Quit();
+			return;
+		}
 
 		if (message.Contains("multiplayer", System.StringComparison.CurrentCultureIgnoreCase))
 		{
@@ -203,6 +208,7 @@ public class MenuConsole: TypingInterface
 			WriteOut("'repeat' to see current options");
 			//WriteOut("'back' to go back");
 			WriteOut("'controls' for list of controls");
+			WriteOut("'quit' to exit");
 			WriteOut("'help' for commands");
 			WriteOut("");
 			WriteOut("_______________________________________");
@@ -233,7 +239,7 @@ public class MenuConsole: TypingInterface
 				if (message.Contains("load"))
 				{
 					Simulator.activeScenario = sc;
-					Simulator.tutorialOverride = false;
+					Simulator.tutorialOverride = sc.tutorial > 0;
 					LoadGame();
 					return;
 				}
@@ -250,31 +256,32 @@ public class MenuConsole: TypingInterface
 
 		}
 		//tutorial reuses scenario a, so I have to put this here
-		if (message.Contains("tutorial", System.StringComparison.CurrentCultureIgnoreCase))
-		{
-			if (message.Contains("load"))
-			{
-				Simulator.activeScenario = Simulator.scenarios[0];
-				Simulator.tutorialOverride = true;
-				LoadGame();
-			}
-			Simulator.activeScenario = Simulator.scenarios[0];
-			Simulator.tutorialOverride = true;
-			selected_scenario = 0;
-			WriteBracket();
-			WriteOut("");
-			WriteOut("the tutorial scenario introduces the player to cities, growth, countries, and pre-emptive nuclear strikes");
-			WriteOut("");
-			WriteOut("'load' to load scenario");
-			WriteOut("");
-			WriteBracket();
-			return;
-		}
+		//if (message.Contains("tutorial", System.StringComparison.CurrentCultureIgnoreCase))
+		//{
+		//	if (message.Contains("load"))
+		//	{
+		//		Simulator.activeScenario = Simulator.scenarios[0];
+		//		Simulator.tutorialOverride = true;
+		//		LoadGame();
+		//	}
+		//	Simulator.activeScenario = Simulator.scenarios[0];
+		//	Simulator.tutorialOverride = true;
+		//	selected_scenario = 0;
+		//	WriteBracket();
+		//	WriteOut("");
+		//	WriteOut("the tutorial scenario introduces the player to cities, growth, countries, and pre-emptive nuclear strikes");
+		//	WriteOut("");
+		//	WriteOut("'load' to load scenario");
+		//	WriteOut("");
+		//	WriteBracket();
+		//	return;
+		//}
 
 
 		if (message.Contains("load") && selected_scenario != -1)
 		{
 			Simulator.activeScenario = Simulator.scenarios[selected_scenario];
+			Simulator.tutorialOverride = Simulator.activeScenario.tutorial > 0;
 			LoadGame();
 			return;
 		}

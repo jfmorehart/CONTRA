@@ -69,6 +69,19 @@ public static class Research
 		{
 			if (currentlyResearching[i].x == -1) continue;
 			if (unlockSpeed[i] < 0f) continue;
+			if (currentlyResearching[i].x >= costs.Length) { 
+				currentlyResearching[i] = new Vector2Int(-1, -1);
+				Debug.LogError("over index x");
+				continue;
+			}
+			if (currentlyResearching[i].y >= costs[currentlyResearching[i].x].Length)
+			{
+				currentlyResearching[i] = new Vector2Int(-1, -1);
+				Debug.LogError("over index y");
+				continue;
+			}
+
+			if (currentlyResearching[i].x > costs.Length) currentlyResearching[i] = new Vector2Int(-1, -1);
 			unlockProgress[i] += unlockSpeed[i] / costs[currentlyResearching[i].x][currentlyResearching[i].y] * Time.deltaTime;
 
 			if (unlockProgress[i] > 1)

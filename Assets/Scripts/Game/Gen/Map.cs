@@ -156,7 +156,7 @@ public class Map : MonoBehaviour
 		TerminalMissileRegistry.Setup();
 
 		//Prefabulate that amulite
-		if (Simulator.tutorialOverride) {
+		if (Simulator.activeScenario.tutorial == 1) {
 			state_colors[0] = tutorialColor;
 		}
 		state_colors_bufferable = new SColor[numStates];
@@ -264,7 +264,13 @@ public class Map : MonoBehaviour
 	public void LoadScenario() { 
 		if(Simulator.activeScenario.conditions != null) {
 			if(Simulator.activeScenario.conditions.unlockedupgrades != null) {
-				Research.unlockedUpgrades = Simulator.activeScenario.conditions.unlockedupgrades;
+				for(int i = 0; i < Research.unlockedUpgrades.Length; i++) {
+					for (int j = 0; j < Research.unlockedUpgrades[i].Length; j++)
+					{
+						Research.unlockedUpgrades[i][j] = Simulator.activeScenario.conditions.unlockedupgrades[i][j];
+					}
+				}
+				
 			}
 
 			Vector2 pos;// = Vector2.zero;
@@ -322,7 +328,6 @@ public class Map : MonoBehaviour
 
 	public void Update()
 	{
-		Research.PerFrameResearch();
 		if(Time.time - lastDraw > reDrawDelay) {
 			lastDraw = Time.time;
 			if (prepInfluences) {
@@ -342,6 +347,7 @@ public class Map : MonoBehaviour
 			lastGrowth = Time.time;
 			GrowPopulation();
 		}
+		Research.PerFrameResearch();
 	}
 
 	void UpdatePops() {
@@ -816,6 +822,7 @@ public class Map : MonoBehaviour
 
 		if (growth_tutorialManualValues) {
 			state_growth_this_tick[0] = growth_stateGrowthTickOverride;
+			state_growth_this_tick[1] = growth_stateGrowthTickOverride;
 			GROWTH.SetFloat("deltaOverride", growth_deltaOverride);
 		}
 

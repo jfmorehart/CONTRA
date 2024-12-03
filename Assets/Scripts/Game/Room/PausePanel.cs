@@ -55,6 +55,12 @@ public class PausePanel : TypingInterface
 	public override void ProcessText(string message)
 	{
 		message = message.Replace("\u200B", "");
+		if (message.Contains("quit", System.StringComparison.CurrentCultureIgnoreCase))
+		{
+			Application.Quit();
+			return;
+		}
+
 		if (message.Contains("unpause", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			DisplayHandler.ins.UnPause();
@@ -91,6 +97,7 @@ public class PausePanel : TypingInterface
 			WriteOut("'controls' - how to play");
 			WriteOut("'retry' - restart current scenario");
 			WriteOut("'back' - surrender current scenario");
+			WriteOut("'quit' - exit game");
 			WriteOut("____________________________________");
 			return;
 		}
