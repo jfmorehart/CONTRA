@@ -76,9 +76,9 @@ public class RelayDude : MonoBehaviour
 			if (nm.IsConnectedClient || !nm.IsServer){
 				nm.Shutdown();
 			}else if (nm.IsServer) {
-				TypingInterface.ins.WriteOut("already hosting");
-				TypingInterface.ins.WriteOut("joincode= " + joinCode.ToLower());
-				TypingInterface.ins.WriteOut(" ");
+				TypingInterface.interfaceInstance.WriteOut("already hosting");
+				TypingInterface.interfaceInstance.WriteOut("joincode= " + joinCode.ToLower());
+				TypingInterface.interfaceInstance.WriteOut(" ");
 			}
 		}
 
@@ -103,7 +103,7 @@ public class RelayDude : MonoBehaviour
 
             joinCode = await RelayService.Instance.GetJoinCodeAsync(alloc.AllocationId);
             Debug.Log("joingcode = " + joinCode);
-            TypingInterface.ins.WriteOut("joincode= " + joinCode.ToLower());
+            TypingInterface.interfaceInstance.WriteOut("joincode= " + joinCode.ToLower());
 
             RelayServerData relayServerData = new RelayServerData(alloc, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
@@ -128,7 +128,7 @@ public class RelayDude : MonoBehaviour
     private async void JoinRelay(string inputJoin)
     {
         if(inputJoin.Length < 6) {
-			TypingInterface.ins.WriteOut("invalid join code");
+			TypingInterface.interfaceInstance.WriteOut("invalid join code");
             return;
 		}
         inputJoin = inputJoin[..6];
@@ -140,13 +140,13 @@ public class RelayDude : MonoBehaviour
 			NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
 
             NetworkManager.Singleton.StartClient();
-			TypingInterface.ins.WriteOut("connected to server");
-			TypingInterface.ins.WriteOut("waiting for host...");
+			TypingInterface.interfaceInstance.WriteOut("connected to server");
+			TypingInterface.interfaceInstance.WriteOut("waiting for host...");
 		}
 		catch (RelayServiceException e)
         {
             Debug.Log(e);
-            TypingInterface.ins.WriteOut("join attempt failed");
+            TypingInterface.interfaceInstance.WriteOut("join attempt failed");
         }
     }
 
@@ -157,20 +157,20 @@ public class RelayDude : MonoBehaviour
         if (id == NetworkManager.ServerClientId) return;
         clients.Add(id);
         Debug.Log("client connected!");
-        TypingInterface.ins.WriteOut("new client connected.");
-		TypingInterface.ins.WriteOut("players = " + nm.ConnectedClientsList.Count);
-		TypingInterface.ins.WriteOut("type 'start' when ready");
+        TypingInterface.interfaceInstance.WriteOut("new client connected.");
+		TypingInterface.interfaceInstance.WriteOut("players = " + nm.ConnectedClientsList.Count);
+		TypingInterface.interfaceInstance.WriteOut("type 'start' when ready");
         MultiplayerVariables.ins.UpdatePlayerNames();
 	}
 
     public void ClientDisconnected(ulong id) {
         if (clients.Contains(id)) {
             clients.Remove(id);
-			TypingInterface.ins.WriteOut("client disconnected");
-			TypingInterface.ins.WriteOut("players = " + (nm.ConnectedClientsList.Count - 1));
+			TypingInterface.interfaceInstance.WriteOut("client disconnected");
+			TypingInterface.interfaceInstance.WriteOut("players = " + (nm.ConnectedClientsList.Count - 1));
 			if (nm.ConnectedClientsList.Count < 2)
 			{
-				TypingInterface.ins.WriteOut("waiting for players...");
+				TypingInterface.interfaceInstance.WriteOut("waiting for players...");
 			}
 		}
 	}

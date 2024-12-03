@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System;
+using System.Linq;
 
-public class ConsolePanel : MonoBehaviour
+public class ConsolePanel : TypingInterface
 {
 	public static ConsolePanel ins;
 	public Transform center;
@@ -21,9 +22,9 @@ public class ConsolePanel : MonoBehaviour
 			lifeTime = life;
 		}
 	}
-	public static List<Logline> lines;
-	public TMP_Text[] spaces;
-	public static int linecount = 5;
+	//public static List<Logline> lines;
+	//public TMP_Text[] spaces;
+	//public static int lines.Length = 5;
 
 	public Vector2 offset;
 
@@ -36,68 +37,23 @@ public class ConsolePanel : MonoBehaviour
 
 	public bool toolTipLockout;
 
-	private void Awake()
+	public override void Awake()
 	{
+		lockout = true;
+		base.Awake();
 		ins = this;
 	}
 	private void Start()
 	{
-		spaces = new TMP_Text[linecount];
-		lines = new List<Logline>();
-
-		for (int i = 0; i < linecount; i++) {
-			spaces[i] = Instantiate(textPrefab, center.parent);
-			if(i % 2 > 0) {
-				spaces[i].text = carat + " Deterrence is the art of producing in the mind of the enemy the <color=\"red\"> FEAR </color> to attack";
-			}
-			else {
-				spaces[i].text = carat + "The international communist plot to...";
-			}
-			
-			spaces[i].transform.position = center.transform.position;
-			spaces[i].transform.Translate(i * offset, Space.World);
-		}
-		//for (int i = 0; i < linecount; i++)
-		//{
-		//	Log(" the <color=\"red\"> FEAR </color> to attack" + Random.Range(0, 100).ToString());
-		//}
+		//ins.WriteOut(ColoredText(0, "123456789012345678901234567890123456"));
+		//ins.WriteOut(ColoredText(0, "1234567890123456789012345678901234567"));
+		//ins.WriteOut(ColoredText(0, "12345678901234567890123456789012345678"));
+		//ins.WriteOut(ColoredText(0, "123456789012345678901234567890123456789"));
 	}
-
-	void Update()
+	public override void Update()
 	{
 		RefreshTooltip();
-		List<Logline> expired = new List<Logline>();
-		for(int i = 0; i < lines.Count; i++) { 
-			if(Time.time - lines[i].startTime > lines[i].lifeTime) {
-				expired.Add(lines[i]);
-			}
-		}
-		foreach(Logline log in expired) {
-			lines.Remove(log);
-		}
-
-		for (int i = 0; i < linecount; i++)
-		{
-			string line = "";
-			if (lines.Count > i)
-			{
-				if (i == lines.Count - 1)
-				{
-					line = greencarat + lines[i].text;
-				}
-				else
-				{
-					line = carat + lines[i].text;
-				}
-				if (lines[i].mult > 1)
-				{
-					line += " x" + lines[i].mult;
-				}
-			}
-
-			spaces[i].text = line;
-
-		}
+		base.Update();
 	}
 	void RefreshTooltip()
 	{
@@ -109,29 +65,71 @@ public class ConsolePanel : MonoBehaviour
 	}
 
 	public static void Log(string str, float lifeTime = 10) {
-		if(lines.Count > 0) {
-			int repeatCheck = LineThatContains(str);
-			if (repeatCheck != -1)
+		if (ins.lines.Length > 0)
+		{
+			if (str.Contains('\n'))
 			{
-				lines[repeatCheck] = new Logline(lines[repeatCheck].text, lines[repeatCheck].mult + 1, Time.time, lines[repeatCheck].lifeTime);
-				return;
+				str = str.Remove('\n');
+				Debug.Log("cleaned");
+			}
+			if (str[str.Length - 1] == ' ') {
+				str = str.Remove(str.Length - 1);
+			}
+
+			int repeatCheck = LineThatContains(str);
+			if (repeatCheck == -1)
+			{	if (str.Length < 1) return;
+				ins.WriteOut(str);
+				Debug.Log("wrote out from " + ins.name);
+			}
+			else
+			{
+				//increment counter
+				Debug.Log("inc!");
+				if (ins.lines[repeatCheck].Contains(" X"))
+				{
+					int ind = ins.lines[repeatCheck].IndexOf(" X");
+					Debug.Log("index:" + ind);
+					string sub = ins.lines[repeatCheck].Substring(ind);
+					string num = sub.Replace(" X", "");
+					Debug.Log("sub" + num);
+					Int32.TryParse(num, out int repetitions);
+					Debug.Log(repetitions);
+					repetitions++;
+					ins.lines[repeatCheck] = ins.lines[repeatCheck].Replace(sub, " X" + repetitions);
+					ins.lines[repeatCheck] += '\n';
+					Debug.Log("added" + repetitions);
+				}
+				else
+				{
+					ins.lines[repeatCheck] += " X2";
+					if (ins.lines[repeatCheck].Contains('\n'))
+					{
+
+						ins.lines[repeatCheck] = ins.lines[repeatCheck].Replace('\n', ' ');
+						Debug.Log("found and removed, remaining: " + ins.lines[repeatCheck]);
+						ins.lines[repeatCheck] += '\n';
+					}
+
+					Debug.Log("x2");
+				}
 			}
 		}
 
-		lines.Add(new Logline(str, 1, Time.time, lifeTime));
-		if(lines.Count > linecount) {
-			for(int i = 0; i < lines.Count; i++) {
-				if (lines[i].lifeTime == Mathf.Infinity) {
-					//Do not remove this line, its permanent
-				}
-				else {
-					lines.RemoveAt(i);
-					break;
-				}
-				if(i == lines.Count - 1) lines.RemoveAt(i); //dont spawn the new one after all
-			}
+		//lines.Add(new Logline(str, 1, Time.time, lifeTime));
+		//if(lines.Count > lines.Length) {
+		//	for(int i = 0; i < lines.Count; i++) {
+		//		if (lines[i].lifeTime == Mathf.Infinity) {
+		//			//Do not remove this line, its permanent
+		//		}
+		//		else {
+		//			lines.RemoveAt(i);
+		//			break;
+		//		}
+		//		if(i == lines.Count - 1) lines.RemoveAt(i); //dont spawn the new one after all
+		//	}
 
-		}
+		//}
 	}
 	public static string ColoredText(int team, string message) {
 		
@@ -146,14 +144,15 @@ public class ConsolePanel : MonoBehaviour
 	}
 
 	public static int LineThatContains(string str) { 
-		for(int i =0; i < lines.Count; i++) {
-			if (lines[i].text.Contains(str)) return i;
+		for(int i =0; i < ins.lines.Length; i++) {
+			if (ins.lines[i].Contains(str)) return i;
 		}
 		return -1;
 	}
 
 	public static void Clear() {
-		lines.Clear();
+		ins.ClearConsole();
+		//ins.lines.Clear();
 		//for (int i = 0; i < lines.Count; i++)
 		//{
 		//	lines.RemoveAt(0);

@@ -24,12 +24,12 @@ public class MultiplayerVariables : NetworkBehaviour
 		string name = PlayerPrefs.GetString("defaultName");
 		if (name == "")
 		{
-			TypingInterface.ins.WriteOut("name = ");
-			TypingInterface.ins.WriteOut("for a custom name, write 'name = [yourname]'");
+			TypingInterface.interfaceInstance.WriteOut("name = ");
+			TypingInterface.interfaceInstance.WriteOut("for a custom name, write 'name = [yourname]'");
 		}
 		else
 		{
-			TypingInterface.ins.WriteOut("name = " + name);
+			TypingInterface.interfaceInstance.WriteOut("name = " + name);
 		}
 		if (!NetworkManager.IsHost) return;
 		_mapSeed.Value = UnityEngine.Random.Range(1, 5000);

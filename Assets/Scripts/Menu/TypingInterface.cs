@@ -9,7 +9,7 @@ using Random = UnityEngine.Random;
 
 public class TypingInterface : MonoBehaviour
 {
-	public static TypingInterface ins;
+	public static TypingInterface interfaceInstance;
 	public Transform textHolder;
 
     string pstring = "";
@@ -52,9 +52,11 @@ public class TypingInterface : MonoBehaviour
 
 	public bool lockout;
 
+	public float textScaleOverride = 1;
+
 	public virtual void Awake()
 	{
-		ins = this;
+		interfaceInstance = this;
 		if (textHolder == null) textHolder = transform;
 		Cursor.lockState = CursorLockMode.Locked;
 		if (!Simulator.IsSetup) Simulator.Setup();
@@ -70,6 +72,7 @@ public class TypingInterface : MonoBehaviour
 			Vector2 pos = new Vector2(0, -lineSpacer * i);
 			lineObjs[i] = Instantiate(linePrefab, (Vector2)textHolder.position + pos, Quaternion.identity, textHolder).GetComponent<TMP_Text>();
 			lineObjs[i].text = "";
+			lineObjs[i].transform.localScale = lineObjs[i].transform.localScale * textScaleOverride;
 			lines[i] = new string("");
 			finishedWriting[i] = true;
 			lengths[i] = 0;
@@ -103,13 +106,16 @@ public class TypingInterface : MonoBehaviour
 	}
 
 	// Update is called once per frame
-	void Update()
+	public virtual void Update()
     {
 
+		//do we type?
 		if(Time.unscaledTime- lastcharTime > typingDelay) {
 			newchar = true;
 			lastcharTime = Time.unscaledTime;
 		}
+
+		//update whether or not we're finished typing
 		bool doneWriting = true;
 		for(int i =0; i < numLines; i++) {
 			if (i == activeLine) continue;
@@ -119,11 +125,14 @@ public class TypingInterface : MonoBehaviour
 			}
 		}
 
+		//read input
 		foreach (char c in Input.inputString) {
+			if (lockout) break;
 			if (!doneWriting) break;
 
 			KeyPressSound();
 
+			//we weren't pressing this last frame (new input)
 			if (!pstring.Contains(c)) {
 				if (c == '\b')
 				{
@@ -136,11 +145,13 @@ public class TypingInterface : MonoBehaviour
 						}
 					}
 				}
+				//special cases, clean input
 				else if (c == '\n') break;
 				else if ((c > 'z' || c < '0') && c != ' ') break; //only 0-9, a-z, and space
 				else if (c == '\u001B') break; //esc char
 				else
 				{
+					
 					char o = c;
 					if (o > 64 && o < 91)
 					{
@@ -152,14 +163,24 @@ public class TypingInterface : MonoBehaviour
 				}
 	        }
 	    }
-		if (doneWriting) { 
-			if(unwritten.Count > 0) {
+		//if we've finished the current line
+		if (doneWriting) {
+			//check to see if theres something new we need to write
+			if (unwritten.Count > 0)
+			{
+				//prep the new line for writing
 				lines[activeLine] = unwritten[0];
-				int skiplines = Mathf.CeilToInt(unwritten[0].Length / (float)maxLineLength);
+
+				//disregard tags on written length
+
+				int lengthWithoutTags = LengthWithoutTags(unwritten[0]);
+				Debug.Log("length of new line = " + unwritten[0].Length + " without tags: " + lengthWithoutTags);
+				int skiplines = Mathf.CeilToInt(lengthWithoutTags / (float)maxLineLength);
+
 				lengths[activeLine] = 0;
 				finishedWriting[activeLine] = false;
 				unwritten.RemoveAt(0);
-
+				//create proper amount of space for it
 				for (int i = 0; i < skiplines; i++)
 				{
 					NewLine();
@@ -167,7 +188,8 @@ public class TypingInterface : MonoBehaviour
 				}
 			}
 			else {
-				if (!lines[activeLine].Contains(">")) {
+				//create user-input carat
+				if (!lines[activeLine].Contains(">") && !lockout) {
 					NewLine();
 					lines[activeLine] = ">";
 				}
@@ -190,19 +212,45 @@ public class TypingInterface : MonoBehaviour
 			ProcessText(outString);
 		}
 
+		//refresh whats on screen
 		for(int i = 0; i < numLines; i++) {
 
+			//skip writing animation
 			if (Input.GetKey(KeyCode.LeftShift)) {
 				lineObjs[i].text = lines[i];
 				lengths[i] = lines[i].Length;
 				finishedWriting[i] = true;
 			}
+
+			//handle writing stuff
 			string s = lines[i];
 			if (!finishedWriting[i] && lines[i].Length > 0) {
 
 				if (newchar)
 				{
+					//write tags in one keypress
+					if (lines[i][lengths[i]] == '<')
+					{
+						int add = 0;
+						while (add < 30)
+						{
+							add++;
+							//end if we ran out of room
+							if (lines[i].Length <= lengths[i] + add)
+							{
+								Debug.Log("out of space" + lines[i].Length + " vs" + lengths[i] + add);
+								break;
+							}
+
+							//end if we found the end character
+							if(lines[i][lengths[i] + add] == '>') {
+								break;
+							}
+						}
+						lengths[i] += add;
+					}
 					lengths[i]++;
+
 					BoopSound(0.95f, 1.05f);
 					if (lengths[i] >= lines[i].Length) finishedWriting[i] = true;
 					newchar = false;
@@ -222,12 +270,40 @@ public class TypingInterface : MonoBehaviour
 
 
 		pstring = Input.inputString;
-
-		if (Time.unscaledTime- cflop > cTimer)
+		if (lockout) {
+			hascursor = false;
+		}else if (Time.unscaledTime- cflop > cTimer)
 		{
 			hascursor = !hascursor;
 			cflop = Time.unscaledTime;
 		}
+	}
+	int LengthWithoutTags(string str) {
+		int add = 0;
+		int l = 0;
+		while (add < str.Length)
+		{
+			if (str[add] != '<')
+			{
+				l++;
+				add++;
+			}
+			else
+			{
+				while (str[add] != '>')
+				{
+					add++;
+					if (add >= str.Length) break;
+				}
+			}
+		}
+		if(l == add) {
+			return l;
+		}
+		else {
+			return l - 2;
+		}
+
 	}
 	void NewLine() {
 		activeLine++;

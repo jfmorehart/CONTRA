@@ -6827,9 +6827,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f58a6f9bf68849deb34c1c86a0d2974, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  textHolder: {fileID: 1259214335}
+  maxLineLength: 38
+  cTimer: 0.1
+  linePrefab: {fileID: 1018816442292109612, guid: ea04e1ae3d625493c9089eb7d286bf4e, type: 3}
+  lineObjs: []
+  numLines: 6
+  lines: []
+  lineSpacer: 8
+  finishedWriting: 
+  lengths: 
+  typingDelay: 0.001
+  boopDelay: 0.07
+  oneshotPrefab: {fileID: 6726727101188241934, guid: 36c681e417ae547b1a2d318680c02a33, type: 3}
+  pooledSourcePrefab: {fileID: 9171367100995716691, guid: 61554fd84c19c45cca090b78e4fc85d9, type: 3}
+  src: {fileID: 0}
+  keyclick:
+  - {fileID: 8300000, guid: b2ba7ea96eab74998b11e3019dbf622b, type: 3}
+  boops:
+  - {fileID: 8300000, guid: 71cd0cb186c814a32a919f61280b65f2, type: 3}
+  lockout: 0
+  textScaleOverride: 1.15
   center: {fileID: 1259214335}
   textPrefab: {fileID: 2856113202255912706, guid: ea04e1ae3d625493c9089eb7d286bf4e, type: 3}
-  spaces: []
   offset: {x: 0, y: -10}
   toolhead: {fileID: 1480306633}
   tooltext: {fileID: 1847971159}
@@ -9106,6 +9126,7 @@ MonoBehaviour:
   boops:
   - {fileID: 8300000, guid: 71cd0cb186c814a32a919f61280b65f2, type: 3}
   lockout: 0
+  textScaleOverride: 1
   penaltyScore: {fileID: 1055874303}
 --- !u!1 &1069505894
 GameObject:
@@ -10812,7 +10833,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -1011, y: 630}
+  m_AnchoredPosition: {x: -923.6, y: 630}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1259214336

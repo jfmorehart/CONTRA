@@ -74,7 +74,7 @@ public class TutorialOverride : MonoBehaviour
 
 		float t = -0.49f;
 		int n = 0;
-		while (!Input.GetKeyDown(KeyCode.Space) && n < 12) {
+		while (!Input.GetKeyDown(KeyCode.Space) || (n < 3)) {
 			t += Time.deltaTime;
 			int pn = n;
 			n = Mathf.RoundToInt(t * 0.33f);
@@ -191,10 +191,46 @@ public class TutorialOverride : MonoBehaviour
 		}
 		ConsolePanel.Clear();
 		ConsolePanel.Log("well done", float.PositiveInfinity);
-		ConsolePanel.Log("now, conscript troops", float.PositiveInfinity);
+		ConsolePanel.Log("now, conscript two hundred thousand soldiers", float.PositiveInfinity);
+		ConsolePanel.Log("you can see your army count on the panel to the right", float.PositiveInfinity);
+		while (ArmyUtils.armies[0].Count < 200)
+		{
+			if (UI.ins.currentMenu == UI.ins.menu_defense)
+			{
+				UpDownSpace(0);
+			} 
+			else
+			{
+				NavigateToDefense();
+			}
+
+			yield return null;
+		}
+		ConsolePanel.Clear();
+		ConsolePanel.Log("well done", float.PositiveInfinity);
+		ConsolePanel.Log("invade when ready", float.PositiveInfinity);
 		ConsolePanel.ins.toolhead.text = "";
 		ConsolePanel.ins.tooltext.text = "";
-    }
+		while (ROE.AreWeAtWar(0, 1) == false)
+		{
+			if (UI.ins.currentMenu == UI.ins.menu_nation)
+			{
+				UpDownSpace(1);
+			}
+			else
+			{
+				NavigateToEnemy();
+			}
+
+			yield return null;
+		}
+		ConsolePanel.Clear();
+		ConsolePanel.Log("good", float.PositiveInfinity);
+		ConsolePanel.Log("keep your army strength above 200", float.PositiveInfinity);
+		ConsolePanel.Log("build more air defenses if necessary", float.PositiveInfinity);
+		ConsolePanel.ins.toolhead.text = "continue the attack";
+		ConsolePanel.ins.tooltext.text = "keep army count over 200k";
+	}
 	IEnumerator TutorialProcedure() {
 
 		yield return null; //wait for the old scene to unload
@@ -475,65 +511,30 @@ public class TutorialOverride : MonoBehaviour
 	{
 		if(UI.ins.currentMenu == UI.ins.menu_home) {
 			ConsolePanel.ins.toolhead.text = "navigate to 'defense'";
-			if (UI.ins.selected > 1)
-			{
-				ConsolePanel.ins.tooltext.text = "press 'up' on the arrow keys";
-				if (Input.GetKeyDown(KeyCode.UpArrow))
-				{
-					UI.ins.ChangeSelected(-1);
-				}
+			if  (UI.ins.locked) {
+				UpDownSpace_Restrictive(1);
 			}
-			else if (UI.ins.selected < 1)
-			{
-				ConsolePanel.ins.tooltext.text = "press 'down' on the arrow keys";
-				Debug.Log("reading input...");
-				if (Input.GetKeyDown(KeyCode.DownArrow))
-				{
-					Debug.Log("pressed down!!!");
-					UI.ins.ChangeSelected(1);
-				}
-			}
-			else
-			{
-				ConsolePanel.ins.tooltext.text = "press 'space' to select";
-				if (Input.GetKeyDown(KeyCode.Space)) {
-					UI.ins.DefenseScreen();
-				}
+			else {
+				UpDownSpace(1);
 			}
 		}
 		else if(UI.ins.currentMenu == UI.ins.menu_defense)
 		{
 			ConsolePanel.ins.toolhead.text = "navigate to 'new base'";
-			if (UI.ins.selected > 2)
+			if (UI.ins.locked)
 			{
-				ConsolePanel.ins.tooltext.text = "press 'up' on the arrow keys";
-				if (Input.GetKeyDown(KeyCode.UpArrow))
-				{
-					UI.ins.ChangeSelected(-1);
-				}
-			}
-			else if (UI.ins.selected < 2)
-			{
-				ConsolePanel.ins.tooltext.text = "press 'down' on the arrow keys";
-				if (Input.GetKeyDown(KeyCode.DownArrow))
-				{
-					UI.ins.ChangeSelected(1);
-				}
+				UpDownSpace_Restrictive(2);
 			}
 			else
 			{
-				ConsolePanel.ins.tooltext.text = "press 'space' to select";
-				if (Input.GetKeyDown(KeyCode.Space))
-				{
-					UI.ins.BuildScreen();
-				}
+				UpDownSpace(2);
 			}
 		}
 		else if (UI.ins.currentMenu == UI.ins.menu_build)
 		{
 			UI.ins.locked = false;
 		
-			ConsolePanel.ins.toolhead.text = "select '" + name + "'";
+			ConsolePanel.ins.toolhead.text = "select '" + itemname + "'";
 			ConsolePanel.ins.tooltext.text = "";
 		}
 		else 
@@ -564,6 +565,24 @@ public class TutorialOverride : MonoBehaviour
 		}
 	}
 
+	void NavigateToEnemy()
+	{
+		if (UI.ins.currentMenu == UI.ins.menu_home)
+		{
+			ConsolePanel.ins.toolhead.text = "navigate to 'diplomacy'";
+			UpDownSpace(0);
+		}
+		else if (UI.ins.currentMenu == UI.ins.menu_diplo)
+		{
+			ConsolePanel.ins.toolhead.text = "select the enemy";
+			UpDownSpace(0);
+		}
+		else
+		{
+			ConsolePanel.ins.toolhead.text = "navigate back to the home menu";
+			ConsolePanel.ins.tooltext.text = "press 'tab' to go back";
+		}
+	}
 
 	void NavigateToResearch()
 	{
@@ -587,6 +606,25 @@ public class TutorialOverride : MonoBehaviour
 			}
 		}
 	}
+	void NavigateToDefense()
+	{
+		if (UI.ins.currentMenu == UI.ins.menu_home)
+		{
+			ConsolePanel.ins.toolhead.text = "navigate to 'defense'";
+			UpDownSpace(2);
+		}
+		else
+		{
+			ConsolePanel.ins.toolhead.text = "navigate back to the home menu";
+			ConsolePanel.ins.tooltext.text = "press 'tab' to go back";
+			if (Input.GetKeyDown(KeyCode.Return))
+			{
+				UI.ins.Cancel();
+			}
+		}
+	}
+
+
 
 	void UpDownSpace(int desired) {
 		if (UI.ins.selected > desired)
