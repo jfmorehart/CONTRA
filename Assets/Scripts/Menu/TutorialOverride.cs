@@ -6,8 +6,9 @@ public class TutorialOverride : MonoBehaviour
 {
 	//this class has the difficult job of managing to stop the gameplay and teach the player how cities work
 	public static bool hasLaunchedMissiles;
-	public static bool railroad; //lock everything
-	public static bool showMenu;
+	public static bool railroad; //locking input and menus
+	public static bool showMenu; //specifically unlock the left menu
+	public static bool showAllPanels;
 
 	private void Start()
 	{
@@ -21,10 +22,12 @@ public class TutorialOverride : MonoBehaviour
 
 	}
 	IEnumerator Tutorial2() {
-		yield return null; //wait for the old scene to unload
-		railroad = true;
+		yield return new WaitForSecondsRealtime(0.1f); //wait for the old scene to unload
+		DisplayHandler.ins.Pause();
+		DisplayHandler.ins.UnPause();
 		railroad = true;
 		showMenu = false;
+		showAllPanels = false;
 		DisplayHandler.ins.locked = true;
 		UI.ins.locked = true;
 		ConsolePanel.ins.toolTipLockout = true;
@@ -46,7 +49,7 @@ public class TutorialOverride : MonoBehaviour
 		MoveCam.ins.transform.position = center - Vector3.forward * 20;
 		Camera.main.orthographicSize = 400;
 
-		ConsolePanel.Log("your country is strong", float.PositiveInfinity);
+		ConsolePanel.Log("your country is strong");
 		yield return new WaitForSecondsRealtime(4);
 
 		//fix growth
@@ -58,7 +61,7 @@ public class TutorialOverride : MonoBehaviour
 
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Clear();
-		ConsolePanel.Log("it can sustain a powerful army", float.PositiveInfinity);
+		ConsolePanel.Log("it can sustain a powerful army");
 		yield return new WaitForSecondsRealtime(2);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
@@ -69,7 +72,7 @@ public class TutorialOverride : MonoBehaviour
 		bases.AddRange(ArmyUtils.GetSilos(1));
 		bases.AddRange(ArmyUtils.GetAirbases(1));
 		ConsolePanel.Clear();
-		ConsolePanel.Log("but your enemies have sophisticated weaponry", float.PositiveInfinity);
+		ConsolePanel.Log("but your enemies have sophisticated weaponry");
 		yield return new WaitForSecondsRealtime(0.5f);
 
 		float t = -0.49f;
@@ -79,11 +82,11 @@ public class TutorialOverride : MonoBehaviour
 			int pn = n;
 			n = Mathf.RoundToInt(t * 0.33f);
 			if(pn != n && n == 1) {
-				ConsolePanel.Log("a mix of missile silos", float.PositiveInfinity);
+				ConsolePanel.Log("a mix of missile silos");
 			}
 			if (pn != n && n == 2)
 			{
-				ConsolePanel.Log("and nuclear-capable fighter - bombers", float.PositiveInfinity);
+				ConsolePanel.Log("and nuclear-capable fighter - bombers");
 			}
 			if (pn != n && n == 3)
 			{
@@ -102,16 +105,16 @@ public class TutorialOverride : MonoBehaviour
 
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Clear();
-		ConsolePanel.Log("a war with them risks unsustainable losses", float.PositiveInfinity);
+		ConsolePanel.Log("a war with them risks unsustainable losses");
 		yield return new WaitForSecondsRealtime(1);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 		ConsolePanel.ins.tooltext.text = "";
 
 		ConsolePanel.Clear();
-		ConsolePanel.Log("to protect your invasion forces", float.PositiveInfinity);
-		ConsolePanel.Log("you will build: ", float.PositiveInfinity);
-		ConsolePanel.Log("anti aircraft artillery batteries", float.PositiveInfinity);
+		ConsolePanel.Log("to protect your invasion forces");
+		ConsolePanel.Log("you will build: ");
+		ConsolePanel.Log("anti aircraft artillery batteries");
 	
 		yield return new WaitForSecondsRealtime(3);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -119,12 +122,13 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.ins.tooltext.text = "";
 
 		DisplayHandler.ins.ResetAll();
+		showAllPanels = true;
 		railroad = false;
 		showMenu = false;
 
 		ConsolePanel.Clear();
-		ConsolePanel.Log("first, research air defense", float.PositiveInfinity);
-		ConsolePanel.Log("for demonstration, we've already given you the first four tiers of research", float.PositiveInfinity);
+		ConsolePanel.Log("first, research air defense");
+		ConsolePanel.Log("for demonstration, we've already given you the first four tiers of research");
 		yield return new WaitForSecondsRealtime(1);
 		State state = Diplomacy.states[0];
 		while (Research.currentlyResearching[0].x != (int)Research.Branch.aaa)
@@ -149,10 +153,10 @@ public class TutorialOverride : MonoBehaviour
 		UI.ins.locked = false;
 		MoveCam.ins.canMove = true;
 		ConsolePanel.Clear();
-		ConsolePanel.Log("well done", float.PositiveInfinity);
-		ConsolePanel.Log("now, construct three air defense batteries", float.PositiveInfinity);
+		ConsolePanel.Log("well done");
+		ConsolePanel.Log("now, construct three air defense batteries");
 		yield return new WaitForSecondsRealtime(1);
-		ConsolePanel.Log("these sites will defend your cities and armies from aerial bombardment", float.PositiveInfinity);
+		ConsolePanel.Log("these sites will defend your cities and armies from aerial bombardment");
 		string numText = "";
 		while (state.construction_sites.Count + ArmyUtils.batteries[0].Count < 3)
 		{
@@ -190,13 +194,14 @@ public class TutorialOverride : MonoBehaviour
 			yield return null;
 		}
 		ConsolePanel.Clear();
-		ConsolePanel.Log("well done", float.PositiveInfinity);
-		ConsolePanel.Log("now, conscript two hundred thousand soldiers", float.PositiveInfinity);
-		ConsolePanel.Log("you can see your army count on the panel to the right", float.PositiveInfinity);
+		ConsolePanel.Log("well done");
+		ConsolePanel.Log("now, conscript two hundred thousand soldiers");
+		ConsolePanel.Log("you can see your army count on the panel to the right");
 		while (ArmyUtils.armies[0].Count < 200)
 		{
 			if (UI.ins.currentMenu == UI.ins.menu_defense)
 			{
+				ConsolePanel.ins.toolhead.text = "conscript 200 soldiers";
 				UpDownSpace(0);
 			} 
 			else
@@ -207,14 +212,15 @@ public class TutorialOverride : MonoBehaviour
 			yield return null;
 		}
 		ConsolePanel.Clear();
-		ConsolePanel.Log("well done", float.PositiveInfinity);
-		ConsolePanel.Log("invade when ready", float.PositiveInfinity);
+		ConsolePanel.Log("well done");
+		ConsolePanel.Log("invade when ready");
 		ConsolePanel.ins.toolhead.text = "";
 		ConsolePanel.ins.tooltext.text = "";
 		while (ROE.AreWeAtWar(0, 1) == false)
 		{
 			if (UI.ins.currentMenu == UI.ins.menu_nation)
 			{
+				ConsolePanel.ins.toolhead.text = "declare war";
 				UpDownSpace(1);
 			}
 			else
@@ -225,15 +231,16 @@ public class TutorialOverride : MonoBehaviour
 			yield return null;
 		}
 		ConsolePanel.Clear();
-		ConsolePanel.Log("good", float.PositiveInfinity);
-		ConsolePanel.Log("keep your army strength above 200", float.PositiveInfinity);
-		ConsolePanel.Log("build more air defenses if necessary", float.PositiveInfinity);
+		ConsolePanel.Log("good");
+		ConsolePanel.Log("keep your army strength above 200");
+		ConsolePanel.Log("build more air defenses if necessary");
 		ConsolePanel.ins.toolhead.text = "continue the attack";
 		ConsolePanel.ins.tooltext.text = "keep army count over 200k";
 	}
 	IEnumerator TutorialProcedure() {
 
 		yield return null; //wait for the old scene to unload
+
 		railroad = true;
 		showMenu = false;
 		DisplayHandler.ins.locked = true;
@@ -242,6 +249,7 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.ins.toolhead.text = "";
 		ConsolePanel.ins.tooltext.text = "";
 		//ConsolePanel.ins. = "";
+		WideScreenCam.ins.Refresh();
 		DisplayHandler.ins.TutorialBlack(); //black out distracting screens
 		MoveCam.ins.canMove = false;
 
@@ -276,14 +284,14 @@ public class TutorialOverride : MonoBehaviour
 		Time.timeScale = 0.1f;
 		yield return new WaitForSecondsRealtime(1);
 
-		ConsolePanel.Log("this is your city.", float.PositiveInfinity);
+		ConsolePanel.Log("this is your city.");
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("the brightness represents population density.", float.PositiveInfinity);
+		ConsolePanel.Log("the brightness represents population density.");
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -327,7 +335,7 @@ public class TutorialOverride : MonoBehaviour
 		Camera.main.orthographicSize = 300;
 
 		ConsolePanel.Clear();
-		ConsolePanel.Log("you have many cities.", float.PositiveInfinity);
+		ConsolePanel.Log("you have many cities.");
 		//grow back a little from the shrinkage
 		Map.ins.populationGrowthTickDelay = 0f;
 		Map.ins.growth_tutorialManualValues = true;
@@ -341,7 +349,7 @@ public class TutorialOverride : MonoBehaviour
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("it's <color=#ff0000> your </color> responsibility to make sure it stays that way.", float.PositiveInfinity);
+		ConsolePanel.Log("it's <color=#ff0000> your </color> responsibility to make sure it stays that way.");
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -349,7 +357,7 @@ public class TutorialOverride : MonoBehaviour
 
 		Camera.main.cullingMask = PlayerInput.ins.regularMask;
 		ConsolePanel.Clear();
-		ConsolePanel.Log("the white dots are armies.", float.PositiveInfinity);
+		ConsolePanel.Log("the white dots are armies.");
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -363,14 +371,14 @@ public class TutorialOverride : MonoBehaviour
 
 		ConsolePanel.Clear();
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("this is a rival nation.", float.PositiveInfinity);
+		ConsolePanel.Log("this is a rival nation.");
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
-		ConsolePanel.Log("they pose a threat to you.", float.PositiveInfinity);
+		ConsolePanel.Log("they pose a threat to you.");
 		yield return new WaitForSecondsRealtime(2);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
@@ -611,7 +619,7 @@ public class TutorialOverride : MonoBehaviour
 		if (UI.ins.currentMenu == UI.ins.menu_home)
 		{
 			ConsolePanel.ins.toolhead.text = "navigate to 'defense'";
-			UpDownSpace(2);
+			UpDownSpace(1);
 		}
 		else
 		{

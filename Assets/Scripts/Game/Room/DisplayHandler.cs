@@ -111,6 +111,8 @@ public class DisplayHandler : MonoBehaviour
 			Time.timeScale = 1;
 			WideScreenCam.ins.Refresh();
 			pauseCam.enabled = false;
+
+			// i know this is stupid, im sorry
 			for (int i = 0; i < screens.Length; i++)
 			{
 				//if (i == 0)
@@ -126,7 +128,13 @@ public class DisplayHandler : MonoBehaviour
 					screens[i].Switch(-1);
 					continue;
 				}
-				screens[i].Switch(-2);
+				if (TutorialOverride.showAllPanels) {
+					screens[i].Switch(-1);
+				}
+				else {
+					screens[i].Switch(-2);
+				}
+
 			}
 		}
 		else {

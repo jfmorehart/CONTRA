@@ -28,7 +28,7 @@ public class MenuConsole: TypingInterface
 	void WriteOptions()
 	{
 		WriteOut("_______________________________________", false);
-		WriteOut("select a simulation to load", false);
+		WriteOut("enter a simulation title to load...", false);
 		WriteOut("");
 		for(int i = 0; i < Simulator.scenarios.Count; i++) {
 			Simulator.scenarios[i].completed = PlayerPrefs.GetInt(Simulator.scenarios[i].name, 0) == 1;

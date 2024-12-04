@@ -26,8 +26,8 @@ public static class Simulator
 		int[][] teams = new int[2][];
 		teams[0] = new int[] { 0 }; //team A is the player
 		teams[1] = new int[] { 1 }; //team B is the enemy
-		description = "tutorial a instructs the candidate in the absolute fundamentals of nuclear war";
-		sc = new Scenario("tutorial a", description, 2, overmatch, teams, conditions);
+		description = "tutorial instructs the candidate in the absolute fundamentals of nuclear war";
+		sc = new Scenario("tutorial", description, 2, overmatch, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		sc.tutorial = 1;
 		scenarios.Add(sc);
@@ -39,13 +39,13 @@ public static class Simulator
 		teams[1] = new int[] { 1 }; //team B is the enemy
 		conditions = new Scenario.ScenarioConditions();
 		conditions.unlockedupgrades = new int[4][];
-		conditions.unlockedupgrades[0] = new int[] { 4, 4, 0, 0 };
-		conditions.unlockedupgrades[1] = new int[] { 0, 0, 5, 3};
+		conditions.unlockedupgrades[0] = new int[] { 5, 4, 0, 0 };
+		conditions.unlockedupgrades[1] = new int[] { 0, 0, 3, 3};
 		conditions.airbases = new int[2] { 0, 2};
 		conditions.silos = new int[2] {0, 2};
 		conditions.batteries = new int[2] { 0, 0};
-		description = "tutorial b familiarizes the player with aspects of research and conscription";
-		sc = new Scenario("tutorial b", description, 2, almosteven, teams, conditions);
+		description = "scenario a familiarizes the player with aspects of research and conscription";
+		sc = new Scenario("scenario a", description, 2, almosteven, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		sc.tutorial = 2;
 		scenarios.Add(sc);
@@ -55,9 +55,10 @@ public static class Simulator
 		teams = new int[2][];
 		teams[0] = new int[] { 0, 1 }; //team A is the player
 		teams[1] = new int[] { 2 }; //team B is the enemy
-		//conditions.airbases = new int[2] { 0, 5 };
+		conditions = new Scenario.ScenarioConditions();
+		conditions.silos = new int[3] { 1, 0, 1 };
 		description = "scenario b explores alliance dynamics by giving the player both a steadfast ally and a steadfast enemy";
-		sc = new Scenario("scenario b", description, 3, duoShowdown, teams, null);
+		sc = new Scenario("scenario b", description, 3, duoShowdown, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		scenarios.Add(sc);
 

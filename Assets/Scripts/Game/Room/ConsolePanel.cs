@@ -65,12 +65,13 @@ public class ConsolePanel : TypingInterface
 	}
 
 	public static void Log(string str, float lifeTime = 10) {
+		//too tired to go replace all of the references to lifetime
+
 		if (ins.lines.Length > 0)
 		{
 			if (str.Contains('\n'))
 			{
 				str = str.Remove('\n');
-				Debug.Log("cleaned");
 			}
 			if (str[str.Length - 1] == ' ') {
 				str = str.Remove(str.Length - 1);
@@ -79,26 +80,26 @@ public class ConsolePanel : TypingInterface
 			int repeatCheck = LineThatContains(str);
 			if (repeatCheck == -1)
 			{	if (str.Length < 1) return;
-				ins.WriteOut(str);
-				Debug.Log("wrote out from " + ins.name);
+				if(lifeTime == Mathf.Infinity) {
+					ins.WriteOut(str, true, true, true); //green, instant, permanent
+				}
+				else {
+					ins.WriteOut(str);
+				}
 			}
 			else
 			{
 				//increment counter
-				Debug.Log("inc!");
 				if (ins.lines[repeatCheck].Contains(" X"))
 				{
 					int ind = ins.lines[repeatCheck].IndexOf(" X");
-					Debug.Log("index:" + ind);
 					string sub = ins.lines[repeatCheck].Substring(ind);
 					string num = sub.Replace(" X", "");
-					Debug.Log("sub" + num);
 					Int32.TryParse(num, out int repetitions);
 					Debug.Log(repetitions);
 					repetitions++;
 					ins.lines[repeatCheck] = ins.lines[repeatCheck].Replace(sub, " X" + repetitions);
 					ins.lines[repeatCheck] += '\n';
-					Debug.Log("added" + repetitions);
 				}
 				else
 				{

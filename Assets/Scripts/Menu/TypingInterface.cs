@@ -23,6 +23,7 @@ public class TypingInterface : MonoBehaviour
 	public TMP_Text[] lineObjs;
 	public int numLines;
 	public string[] lines;
+	public bool[] permanent;
 	public float lineSpacer;
 
 	int activeLine = 0;
@@ -66,6 +67,7 @@ public class TypingInterface : MonoBehaviour
 		lines = new string[numLines];
 		finishedWriting = new bool[numLines];
 		lengths = new int[numLines];
+		permanent = new bool[numLines];
 		unwritten = new List<string>();
 
 		for (int i =0; i < numLines; i++) {
@@ -309,7 +311,12 @@ public class TypingInterface : MonoBehaviour
 		activeLine++;
 		if (activeLine >= numLines) {
 			for(int i = 0; i < numLines - 1; i++) {
+				if (permanent[i]) continue;
 				lines[i] = lines[i + 1].ToString();
+				if (permanent[i + 1]) {
+					permanent[i] = true;
+					permanent[i + 1] = false;
+				}
 				finishedWriting[i] = finishedWriting[i + 1];
 				lengths[i] = lengths[i + 1];
 			}
@@ -320,7 +327,7 @@ public class TypingInterface : MonoBehaviour
 		finishedWriting[activeLine] = false;
 
 	}
-	public void WriteOut(string message, bool greenify = false, bool instant = false) {
+	public void WriteOut(string message, bool greenify = false, bool instant = false, bool setpermanent = false) {
 
 		if (greenify) {
 			message = GreenText(message);
@@ -328,6 +335,9 @@ public class TypingInterface : MonoBehaviour
 		if (instant) {
 			lines[activeLine] += message + '\n';
 			finishedWriting[activeLine] = true;
+			if (setpermanent) {
+				permanent[activeLine] = true;
+			}
 			int skiplines = Mathf.CeilToInt(message.Length / (float)maxLineLength);
 			for (int i = 0; i < skiplines; i++)
 			{

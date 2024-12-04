@@ -208,15 +208,17 @@ MonoBehaviour:
   drag: 1
   avel: 0
   lights:
-  - {fileID: 8297970366685037321}
-  - {fileID: 5198959186351203817}
+  - {fileID: 365014118603338568}
+  - {fileID: 3484941296840805546}
   sirenPlaying: 0
   lowPitch: 0.1
   highPitch: 5
-  spinUpAmt: 0
+  speed: 0
+  maxSpeed: 10
   noiseAccel: 0.05
   maxVolume: 0.05
   ndrag: 0.1
+  maxBrightness: 5
   on: 0
 --- !u!82 &4933548191531362702
 AudioSource:
