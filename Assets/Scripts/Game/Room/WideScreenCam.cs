@@ -38,13 +38,13 @@ public class WideScreenCam : MonoBehaviour
 		//move the console camera over to the Pause menu to display the widescreen format
 		if (pause)
 		{
-			Debug.Log("moving to paused pos");
+			//Debug.Log("moving to paused pos");
 			transform.localPosition = new Vector3(pausePos.x, pausePos.y, -10);
 			GetComponent<Camera>().orthographicSize = pauseScale;
 		}
 		else
 		{
-			Debug.Log("moving to normal pos");
+			//Debug.Log("moving to normal pos");
 			transform.localPosition = new Vector3(0, 0, -10);
 			GetComponent<Camera>().orthographicSize = normalScale;
 		}

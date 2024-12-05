@@ -50,7 +50,7 @@ public class TutorialOverride : MonoBehaviour
 		Camera.main.orthographicSize = 400;
 
 		ConsolePanel.Log("your country is strong");
-		yield return new WaitForSecondsRealtime(4);
+		yield return new WaitForSecondsRealtime(1);
 
 		//fix growth
 		Map.ins.populationGrowthTickDelay = 0.25f;
@@ -62,7 +62,7 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Clear();
 		ConsolePanel.Log("it can sustain a powerful army");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(1);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
@@ -70,29 +70,44 @@ public class TutorialOverride : MonoBehaviour
 
 		List<Unit> bases = new();
 		bases.AddRange(ArmyUtils.GetSilos(1));
-		bases.AddRange(ArmyUtils.GetAirbases(1));
+		List<Unit> air = new();
+		air.AddRange(ArmyUtils.GetAirbases(1));
+		List <Unit> planes = new();
+		planes = ArmyUtils.GetAircraftList(1);
 		ConsolePanel.Clear();
 		ConsolePanel.Log("but your enemies have sophisticated weaponry");
-		yield return new WaitForSecondsRealtime(0.5f);
+		yield return new WaitForSecondsRealtime(1f);
 
 		float t = -0.49f;
-		int n = 0;
-		while (!Input.GetKeyDown(KeyCode.Space) || (n < 3)) {
+		int n = -1;
+		while (!Input.GetKeyDown(KeyCode.Space) || (n < 4)) {
 			t += Time.deltaTime;
 			int pn = n;
 			n = Mathf.RoundToInt(t * 0.33f);
-			if(pn != n && n == 1) {
+			//Debug.Log(n);
+			if(pn != n && n % 3 == 0) {
+				center = bases[n % bases.Count].transform.position;
 				ConsolePanel.Log("a mix of missile silos");
 			}
-			if (pn != n && n == 2)
+			if (pn != n && n % 3 == 1)
 			{
-				ConsolePanel.Log("and nuclear-capable fighter - bombers");
+				center = air[n % air.Count].transform.position;
+				ConsolePanel.Log("airbases");
 			}
-			if (pn != n && n == 3)
+			if (n % 3 == 2)
+			{
+				center = planes[n % planes.Count].transform.position;
+				if (pn != n)
+				{
+					ConsolePanel.Log("and nuclear capable fighter-bombers");
+				}
+			}
+
+			if (pn != n && n == 4)
 			{
 				ConsolePanel.ins.tooltext.text = "press space to continue";
 			}
-			center = bases[n % bases.Count].transform.position;
+			
 			MoveCam.ins.transform.position = center - Vector3.forward * 20;
 			Camera.main.orthographicSize = 100;
 			yield return null;
@@ -188,7 +203,7 @@ public class TutorialOverride : MonoBehaviour
 			}
 			else
 			{
-				NavigateToBuildItem("aaa");
+				NavigateToBuildItem("air defense");
 			}
 
 			yield return null;
@@ -201,7 +216,7 @@ public class TutorialOverride : MonoBehaviour
 		{
 			if (UI.ins.currentMenu == UI.ins.menu_defense)
 			{
-				ConsolePanel.ins.toolhead.text = "conscript 200 soldiers";
+				ConsolePanel.ins.toolhead.text = "conscript 200k soldiers";
 				UpDownSpace(0);
 			} 
 			else
@@ -285,14 +300,14 @@ public class TutorialOverride : MonoBehaviour
 		yield return new WaitForSecondsRealtime(1);
 
 		ConsolePanel.Log("this is your city.");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(0.5f);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("the brightness represents population density.");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(1);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
@@ -300,12 +315,12 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("your city can grow, like this:");
 		Time.timeScale = 1;
-		Map.ins.populationGrowthTickDelay = 0f;
+		Map.ins.populationGrowthTickDelay = 0.01f;
 		Map.ins.growth_tutorialManualValues = true;
 		Map.ins.growth_deltaOverride = 0.0015f;
 		Map.ins.growth_stateGrowthTickOverride = 1;
 
-		yield return new WaitForSecondsRealtime(5);
+		yield return new WaitForSecondsRealtime(3);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
@@ -316,7 +331,7 @@ public class TutorialOverride : MonoBehaviour
 		Map.ins.growth_deltaOverride = 10f;
 		Map.ins.growth_stateGrowthTickOverride = -1;
 
-		yield return new WaitForSecondsRealtime(8);
+		yield return new WaitForSecondsRealtime(5);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		Map.ins.populationGrowthTickDelay = 0.25f;
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
@@ -341,7 +356,7 @@ public class TutorialOverride : MonoBehaviour
 		Map.ins.growth_tutorialManualValues = true;
 		Map.ins.growth_deltaOverride = 0.015f;
 		Map.ins.growth_stateGrowthTickOverride = 1;
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(1);
 
 		Map.ins.populationGrowthTickDelay = 0.25f;
 		Map.ins.growth_tutorialManualValues = false;
@@ -350,15 +365,15 @@ public class TutorialOverride : MonoBehaviour
 
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("it's <color=#ff0000> your </color> responsibility to make sure it stays that way.");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(1);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
-
+		ConsolePanel.ins.tooltext.text = "";
 		Camera.main.cullingMask = PlayerInput.ins.regularMask;
 		ConsolePanel.Clear();
 		ConsolePanel.Log("the white dots are armies.");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(0.5f);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
@@ -372,14 +387,14 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.Clear();
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("this is a rival nation.");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(1);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("they pose a threat to you.");
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(1);
 
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
@@ -400,7 +415,7 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("you have been granted access to the computer controls");
 		ConsolePanel.Log(" ");
-		yield return new WaitForSecondsRealtime(1);
+		yield return new WaitForSecondsRealtime(3);
 		ConsolePanel.Log("construct three missile silos", 9999);
 		ConsolePanel.Log(" ");
 		MoveCam.ins.canMove = true;
@@ -449,6 +464,7 @@ public class TutorialOverride : MonoBehaviour
 			}
 			yield return null;
 		}
+		UI.ins.locked = false;
 		ConsolePanel.Clear();
 		ConsolePanel.Log("well done.");
 		ConsolePanel.Log("now launch a pre-emptive strike.");

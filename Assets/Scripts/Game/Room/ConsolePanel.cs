@@ -96,7 +96,7 @@ public class ConsolePanel : TypingInterface
 					string sub = ins.lines[repeatCheck].Substring(ind);
 					string num = sub.Replace(" X", "");
 					Int32.TryParse(num, out int repetitions);
-					Debug.Log(repetitions);
+					//Debug.Log(repetitions);
 					repetitions++;
 					ins.lines[repeatCheck] = ins.lines[repeatCheck].Replace(sub, " X" + repetitions);
 					ins.lines[repeatCheck] += '\n';
@@ -108,11 +108,11 @@ public class ConsolePanel : TypingInterface
 					{
 
 						ins.lines[repeatCheck] = ins.lines[repeatCheck].Replace('\n', ' ');
-						Debug.Log("found and removed, remaining: " + ins.lines[repeatCheck]);
+						//Debug.Log("found and removed, remaining: " + ins.lines[repeatCheck]);
 						ins.lines[repeatCheck] += '\n';
 					}
 
-					Debug.Log("x2");
+					//Debug.Log("x2");
 				}
 			}
 		}

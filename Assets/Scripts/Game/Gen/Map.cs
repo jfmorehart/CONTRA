@@ -6,7 +6,7 @@ using UnityEngine;
 using Unity.Profiling;
 using static MapUtils;
 using Unity.Netcode;
-
+using Random = UnityEngine.Random;
 public class Map : MonoBehaviour
 {
 	[HideInInspector]
@@ -103,6 +103,15 @@ public class Map : MonoBehaviour
 	private void Awake() {
 
 		mapSeed = UnityEngine.Random.Range(1, 1000);
+
+		if (Simulator.activeScenario.conditions != null) {
+			int[] seeds = Simulator.activeScenario.conditions.seedBucket;
+			if (seeds != null)
+			{
+				mapSeed = seeds[Random.Range(0, seeds.Length)];
+			}
+		}
+
 		if (MultiplayerVariables.ins != null)
 		{
 			multi = true;

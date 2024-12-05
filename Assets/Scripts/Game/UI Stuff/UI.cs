@@ -300,6 +300,9 @@ public class UI : MonoBehaviour
 		SFX.ins.NewSource(SFX.ins.countdown, 0.05f);
 		(menu_strike as UIStrikeMenu).UpdateStrikePlanScreen();
 		FinalCam.ins.MissileLaunch();
+		foreach (LaunchSiren ls in FindObjectsOfType<LaunchSiren>()) {
+			ls.PlayerLaunch(3);
+		}
 		if (Simulator.tutorialOverride) {
 			TutorialOverride.hasLaunchedMissiles = true;
 		}

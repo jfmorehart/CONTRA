@@ -176,7 +176,7 @@ public class TypingInterface : MonoBehaviour
 				//disregard tags on written length
 
 				int lengthWithoutTags = LengthWithoutTags(unwritten[0]);
-				Debug.Log("length of new line = " + unwritten[0].Length + " without tags: " + lengthWithoutTags);
+				//Debug.Log("length of new line = " + unwritten[0].Length + " without tags: " + lengthWithoutTags);
 				int skiplines = Mathf.CeilToInt(lengthWithoutTags / (float)maxLineLength);
 
 				lengths[activeLine] = 0;

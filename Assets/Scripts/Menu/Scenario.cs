@@ -44,12 +44,13 @@ public class Scenario
 
 	public class ScenarioConditions
 	{
+		//this class holds optional, nonstandard additions 
 		public int randomArmies;
 		public int[][] unlockedupgrades;
 		public int[] silos;
 		public int[] airbases;
 		public int[] batteries;
 		public int[] troops;
-
+		public int[] seedBucket;
 	}
 }

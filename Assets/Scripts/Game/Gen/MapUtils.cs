@@ -10,7 +10,7 @@ public static class MapUtils
 
 		Vector2Int posI;
 
-		if (Map.multi) {
+		if (true) {///Map.multi) {
 			posI = MultiplayerCityPosition(index);
 		}
 		else {
@@ -117,7 +117,7 @@ public static class MapUtils
 				Debug.LogError("no valid point found to place state");
 				return Vector2Int.zero;
 			}
-			if (Map.multi) {
+			if (true) {//Map.multi) {
 				posI = MultiplayerCityPosition((index * 11003) + 1 * it);
 				//Debug.Log("input " + ((index * 11003) + 1 * it) + " output = " + posI);
 			}

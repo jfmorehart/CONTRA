@@ -50,7 +50,7 @@ public class ArmyManager : MonoBehaviour
 	}
 
 	public State NewState(int index, Vector2Int pos) {
-		Debug.Log("placing state " + index);
+		//Debug.Log("placing state " + index);
 		Vector3 p = MapUtils.CoordsToPoint(pos);
 		GameObject go;
 

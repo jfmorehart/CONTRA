@@ -193,10 +193,12 @@ public class State_Enemy : State_AI
 				{
 					//float armyThreshold = Mathf.Min(armies[team].Count * 0.6f, Map.ins.state_populations[i] * 0.6f);//Mathf.Max(Map.ins.state_populations[i] * 0.4f, armies[i].Count * 0.5f);
 					float armyThreshold = Mathf.Min(EnemiesReadyOnFront(i) + Map.ins.state_populations[i] * 0.3f, Map.ins.state_populations[i]);
+					armyThreshold = Mathf.Max(armyThreshold, 0.3f * ArmyUtils.armies[team].Count);
 					//are we ready to attack?
 					//Debug.Log(team + " vs " + i + " with= " + ArmiesReadyOnFront(i) + " requires " + armyThreshold);
 					if (ArmiesReadyOnFront(i) > armyThreshold)
 					{
+						Debug.Log(ArmiesReadyOnFront(i) + " was over " + armyThreshold);
 						//invade!
 						invasionTarget = -1;
 						confidence_warTotal *= rivals[i].pVictory;
@@ -681,7 +683,7 @@ public class State_Enemy : State_AI
 	}
 	bool CanResearchBranch(Research.Branch branch)
 	{
-		if (Research.unlockedUpgrades[team][(int)branch] > 4)
+		if (Research.unlockedUpgrades[team][(int)branch] > 3)
 		{
 			return false;
 		}

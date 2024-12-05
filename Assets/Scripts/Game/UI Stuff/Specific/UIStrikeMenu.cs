@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using TMPro;
 using static ArmyUtils;
 
 public class UIStrikeMenu : UIMenu
@@ -9,11 +10,13 @@ public class UIStrikeMenu : UIMenu
     public float tickRate = 0.1f;
     float lastTick;
 
+    public TMP_Text nation;
     public UIOption saturationSlider;
 
     // Update is called once per frame
     void Update()
     {
+        nation.text = "Target: " + ConsolePanel.ColoredName(UI.ins.targetNation);
         if(Time.time - lastTick > tickRate) {
             lastTick = Time.time;
             UpdateStrikePlanScreen();

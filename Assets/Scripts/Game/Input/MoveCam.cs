@@ -36,7 +36,7 @@ public class MoveCam : MonoBehaviour
 	float resetTime;
 	private void Start()
 	{
-		Debug.Log("setting to max" + Time.timeSinceLevelLoad);
+		//Debug.Log("setting to max" + Time.timeSinceLevelLoad);
 		GetComponent<Camera>().orthographicSize = 2000;
 		resetTime = Time.timeSinceLevelLoad;
 	}
