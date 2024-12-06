@@ -44,8 +44,8 @@ public static class Simulator
 		conditions.airbases = new int[2] { 0, 2};
 		conditions.silos = new int[2] {0, 2};
 		conditions.batteries = new int[2] { 0, 0};
-		description = "scenario a familiarizes the player with aspects of research and conscription";
-		sc = new Scenario("scenario a", description, 2, almosteven, teams, conditions);
+		description = "air defense familiarizes the player with aspects of research and conscription";
+		sc = new Scenario("air defense", description, 2, almosteven, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		sc.tutorial = 2;
 		scenarios.Add(sc);
@@ -69,8 +69,17 @@ public static class Simulator
 		teams = new int[2][];
 		teams[0] = new int[] { }; //team A is the player
 		teams[1] = new int[] { }; //team B is the enemy
-		description = "'easy' gives the player a strong position, but also a large number of rival states to contend with";
-		sc = new Scenario("easy", description, 5, tsizes, teams, null);
+		description = "'superpower' gives the player a strong position, but also a large number of rival states to contend with";
+		conditions = new Scenario.ScenarioConditions();
+		conditions.unlockedupgrades = new int[5][];
+		conditions.airbases = new int[5] { 1, 0, 0, 0, 0 };
+		conditions.silos = new int[5] { 1, 0, 0, 0, 0 };
+		conditions.unlockedupgrades[0] = new int[] { 0, 0, 1, 1 };
+		//conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
+		//conditions.unlockedupgrades[2] = new int[] { 0, 0, 0, 0 };
+		//conditions.unlockedupgrades[3] = new int[] { 0, 0, 0, 0 };
+		//conditions.unlockedupgrades[4] = new int[] { 0, 0, 0, 0 };
+		sc = new Scenario("superpower", description, 5, tsizes, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		scenarios.Add(sc);
 
@@ -83,23 +92,6 @@ public static class Simulator
 		//sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		//scenarios.Add(sc);
 
-		//lvl 2
-		double[] puppet = new double[] { 0.1, 0.3, 0.3, 0.3};
-		teams = new int[2][];
-		teams[0] = new int[] { 0, 2 }; //team A is the player
-		teams[1] = new int[] { 1 }; //team B is the enemy
-		conditions = new Scenario.ScenarioConditions();
-		conditions.silos = new int[] { 0, 2, 2, 0};
-		conditions.airbases = new int[] { 0, 1, 0, 0};
-		conditions.unlockedupgrades = new int[4][];
-		conditions.unlockedupgrades[0] = new int[] { 0, 0, 0, 0 };
-		conditions.unlockedupgrades[1] = new int[] { 1, 0, 1, 1 };
-		conditions.unlockedupgrades[2] = new int[] { 0, 0, 1, 0 };
-		conditions.unlockedupgrades[3] = new int[] { 0, 0, 0, 0 };
-		description = "'puppet' is a difficult scenario where the player has a strong enemy and a strong ally";
-		sc = new Scenario("puppet", description, 4, puppet, teams, conditions);
-		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
-		scenarios.Add(sc);
 
 		double[] fair = new double[] { 0.2};
 		teams = null;
@@ -111,6 +103,23 @@ public static class Simulator
 		double[] hard = new double[] {0.1, 0.2, 0.2, 0.1, 0.4};
 		description = "hard makes you a small country";
 		sc = new Scenario("hard", description, 5, hard, null, null);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		scenarios.Add(sc);
+
+		double[] puppet = new double[] { 0.1, 0.3, 0.3, 0.3 };
+		teams = new int[2][];
+		teams[0] = new int[] { 0, 2 }; //team A is the player
+		teams[1] = new int[] { 1 }; //team B is the enemy
+		conditions = new Scenario.ScenarioConditions();
+		conditions.silos = new int[] { 0, 2, 2, 0 };
+		conditions.airbases = new int[] { 0, 1, 0, 0 };
+		conditions.unlockedupgrades = new int[4][];
+		conditions.unlockedupgrades[0] = new int[] { 0, 0, 0, 0 };
+		conditions.unlockedupgrades[1] = new int[] { 1, 0, 1, 1 };
+		conditions.unlockedupgrades[2] = new int[] { 0, 0, 1, 0 };
+		conditions.unlockedupgrades[3] = new int[] { 0, 0, 0, 0 };
+		description = "'puppet' is a difficult scenario where the player has a strong enemy and a strong ally";
+		sc = new Scenario("puppet", description, 4, puppet, teams, conditions);
 		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
 		scenarios.Add(sc);
 

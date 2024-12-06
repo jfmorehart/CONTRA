@@ -89,10 +89,7 @@ public class State : MonoBehaviour
 		}
 		else {
 			Research.ConductResearch(team, assesment.researchBudget);
-
-			if (assesment.percentGrowth > -0.5) {
-				ConstructionWork();
-			}
+			ConstructionWork();
 		}
 
 		transform.position = MapUtils.CoordsToPoint(Map.ins.state_centers[team]);

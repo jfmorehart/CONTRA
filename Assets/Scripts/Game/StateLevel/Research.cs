@@ -98,6 +98,10 @@ public static class Research
 			if(completed.x > 0 && completed.y == 0) {
 				ConsolePanel.Log("new base type unlocked: " + headers[completed.x]);
 			}
+			else {
+				
+				ConsolePanel.Log("<color=\"green\"> research complete </color>");
+			}
 
 		}
 		unlockedUpgrades[i][currentlyResearching[i].x]++;

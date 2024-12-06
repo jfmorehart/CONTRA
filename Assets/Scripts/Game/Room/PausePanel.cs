@@ -34,8 +34,24 @@ public class PausePanel : TypingInterface
 		}
 		else if (EndPanel.ins.scenarioEndOffered) {
 			WriteOut("____________________________________");
-			WriteOut("scenario result:             victory");
-			WriteOut("completion:                     %100");
+			if (Diplomacy.score[0] > 30) {
+				WriteOut("scenario result:             victory");
+			}else if (Diplomacy.score[0] > 5) {
+				WriteOut("scenario result:            positive");
+			}
+			else if (Diplomacy.score[0] > -5)
+			{
+				WriteOut("scenario result:            stagnant");
+			}
+			else if (Diplomacy.score[0] > -30)
+			{
+				WriteOut("scenario result:            negative");
+			}
+			else {
+				WriteOut("scenario result:              defeat");
+			}
+
+			WriteOut("completion:                     100%");
 			WriteOut("score:                        " + Mathf.RoundToInt(Diplomacy.score[0]).ToString() + "pts");
 			WriteOut("type 'back' to exit to the home menu");
 			WriteOut("____________________________________");
@@ -55,7 +71,7 @@ public class PausePanel : TypingInterface
 	public override void ProcessText(string message)
 	{
 		message = message.Replace("\u200B", "");
-		if (message.Contains("quit", System.StringComparison.CurrentCultureIgnoreCase))
+		if (message.Contains("quit") || message.Contains("exit"))
 		{
 			Application.Quit();
 			return;
@@ -63,8 +79,15 @@ public class PausePanel : TypingInterface
 
 		if (message.Contains("unpause", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			DisplayHandler.ins.UnPause();
-			return;
+			if (EndPanel.over) {
+				WriteOut("action not possible: session has terminated");
+				return;
+			}
+			else {
+				DisplayHandler.ins.UnPause();
+				return;
+			}
+
 		}
 		if (message.Contains("retry", System.StringComparison.CurrentCultureIgnoreCase))
 		{
@@ -96,7 +119,7 @@ public class PausePanel : TypingInterface
 			WriteOut("esc key or 'unpause' - back to game");
 			WriteOut("'controls' - how to play");
 			WriteOut("'retry' - restart current scenario");
-			WriteOut("'back' - surrender current scenario");
+			WriteOut("'back' - terminate current scenario");
 			WriteOut("'quit' - exit game");
 			WriteOut("____________________________________");
 			return;
@@ -113,6 +136,7 @@ public class PausePanel : TypingInterface
 			WriteOut("_______________________________________");
 			return;
 		}
+		WriteOut("unknown command");
 	}
 
 	IEnumerator PausedDot() { 

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Drawing;
 using Unity.Netcode;
 using Unity.Services.Core;
 using UnityEngine;
@@ -24,7 +25,11 @@ public class MenuConsole: TypingInterface
 
 		Simulator.tutorialOverride = false;
 	}
-
+	bool isLastUnlocked(int scen) {
+		if (scen + 1 <= Simulator.scenarios.Count) return true;
+		if (Simulator.scenarios[scen + 1].completed) return false;
+		return true;
+    }
 	void WriteOptions()
 	{
 		WriteOut("_______________________________________", false);
@@ -33,15 +38,34 @@ public class MenuConsole: TypingInterface
 		for(int i = 0; i < Simulator.scenarios.Count; i++) {
 			Simulator.scenarios[i].completed = PlayerPrefs.GetInt(Simulator.scenarios[i].name, 0) == 1;
 			if (Simulator.scenarios[i].completed) {
-				WriteOut(Simulator.scenarios[i].name);
-			}
-			else if(i > 0){
-				if (Simulator.scenarios[i - 1].completed) {
+				if (isLastUnlocked(i)) {
+					WriteOut("<color=\"yellow\">" + Simulator.scenarios[i].name + "</color > ");
+				}
+				else {
 					WriteOut(Simulator.scenarios[i].name);
 				}
 			}
+			else if(i > 0){
+				if (Simulator.scenarios[i - 1].completed) {
+					if (isLastUnlocked(i))
+					{
+						WriteOut("<color=\"yellow\">" + Simulator.scenarios[i].name + "</color > ");
+					}
+					else
+					{
+						WriteOut(Simulator.scenarios[i].name);
+					}
+				}
+			}
 			else {
-				WriteOut(Simulator.scenarios[i].name);
+				if (isLastUnlocked(i))
+				{
+					WriteOut("<color=\"yellow\">" + Simulator.scenarios[i].name + "</color > ");
+				}
+				else
+				{
+					WriteOut(Simulator.scenarios[i].name);
+				}
 			}
 
 		}
@@ -57,7 +81,7 @@ public class MenuConsole: TypingInterface
 	{
 		message = message.Replace("\u200B", "");
 
-		if (message.Contains("quit", System.StringComparison.CurrentCultureIgnoreCase))
+		if (message.Contains("quit") || message.Contains("exit"))
 		{
 			Application.Quit();
 			return;

@@ -274,6 +274,9 @@ public class Map : MonoBehaviour
 		if(Simulator.activeScenario.conditions != null) {
 			if(Simulator.activeScenario.conditions.unlockedupgrades != null) {
 				for(int i = 0; i < Research.unlockedUpgrades.Length; i++) {
+
+					if (Simulator.activeScenario.conditions.unlockedupgrades[i] == null) continue;
+
 					for (int j = 0; j < Research.unlockedUpgrades[i].Length; j++)
 					{
 						Research.unlockedUpgrades[i][j] = Simulator.activeScenario.conditions.unlockedupgrades[i][j];

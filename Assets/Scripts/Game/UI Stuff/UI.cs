@@ -101,15 +101,15 @@ public class UI : MonoBehaviour
 		if (EndPanel.over) return;
 
 		ReconsiderStatehood();
-		if (Input.GetKeyDown(KeyCode.UpArrow))
+		if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.K))
 		{
 			ChangeSelected(-1);
 		}
-		if (Input.GetKeyDown(KeyCode.DownArrow))
+		if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.J))
 		{
 			ChangeSelected(1);
 		}
-		if (Input.GetKey(KeyCode.LeftArrow))
+		if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.H))
 		{
 			if(currentMenu.children[selected].kind == UIOption.Kind.Slider) {
 
@@ -123,7 +123,7 @@ public class UI : MonoBehaviour
 				}
 			}
 		}
-		if (Input.GetKey(KeyCode.RightArrow))
+		if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.L))
 		{
 			if (currentMenu.children[selected].kind == UIOption.Kind.Slider)
 			{
@@ -229,10 +229,12 @@ public class UI : MonoBehaviour
 		DisplayHandler.ins.TogglePopStrikeScreen(end == menu_strike || end == menu_airdoctrine);
 		PlayerInput.ins.ToggleBuildMode(end == menu_build || end == menu_build_confirm);
 		PlayerInput.ins.ToggleAirMode(end == menu_airdoctrine);
+		if (start == menu_nation) Relationships.ins.Clear();
 		if (start == menu_feelings) Relationships.ins.Clear();
 		if (start == menu_diplo) Relationships.ins.Clear();
 		if (end == menu_feelings) Relationships.ins.Draw();
 		if (end == menu_diplo) Relationships.ins.Draw();
+		if (end == menu_nation) Relationships.ins.Draw();
 		if (end == menu_diplo) targetNation = Map.localTeam;
 
 		if(start.children.Length > 0) {

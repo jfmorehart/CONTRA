@@ -9,7 +9,7 @@ public class Relationships : MonoBehaviour
 	public GameObject dotPrefab;
 	
 	public List<GameObject> drawing;
-	float drawDelay = 0.15f;
+	float drawDelay = 0.05f;
     float lastDraw = 0;
 	public int focalNode = -1;
 
@@ -24,7 +24,7 @@ public class Relationships : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
-		if(UI.ins.currentMenu == UI.ins.menu_feelings || (UI.ins.currentMenu == UI.ins.menu_diplo)) {
+		if(UI.ins.currentMenu == UI.ins.menu_feelings || (UI.ins.currentMenu == UI.ins.menu_diplo) || (UI.ins.currentMenu == UI.ins.menu_nation)) {
 			if (Time.time - lastDraw > drawDelay)
 			{
 				focalNode = UI.ins.targetNation;
@@ -51,7 +51,13 @@ public class Relationships : MonoBehaviour
 			GameObject go = Instantiate(dotPrefab, transform);
 			go.transform.position = (Vector3)MapUtils.CoordsToPoint(Map.ins.state_centers[i]) - Vector3.forward * 2;
 			go.GetComponent<Renderer>().material = Map.ins.state_mats[i];
-			go.transform.localScale *= sc1;
+			go.transform.localScale *= sc1 * Camera.main.orthographicSize;
+			if(focalNode == i) {
+				go.transform.localScale *= 1.5f;
+			}
+			else {
+				go.transform.localScale *= 0.75f;
+			}
 			drawing.Add(go);
 
 			if (focalNode != 0 && focalNode != i) continue;

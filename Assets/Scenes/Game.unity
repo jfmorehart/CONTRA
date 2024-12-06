@@ -4991,7 +4991,7 @@ MonoBehaviour:
   dotPrefab: {fileID: 6069955483612066574, guid: 5874013aecef145048bbd47af0e6b0aa, type: 3}
   drawing: []
   focalNode: -1
-  sc1: 3
+  sc1: 0.005
   sc2: 50
 --- !u!1 &544150181
 GameObject:

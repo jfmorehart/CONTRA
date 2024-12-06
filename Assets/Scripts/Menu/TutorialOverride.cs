@@ -80,30 +80,35 @@ public class TutorialOverride : MonoBehaviour
 
 		float t = -0.49f;
 		int n = -1;
-		while (!Input.GetKeyDown(KeyCode.Space) || (n < 4)) {
+		while (!Input.GetKeyDown(KeyCode.Space) || (n < 3)) {
 			t += Time.deltaTime;
 			int pn = n;
 			n = Mathf.RoundToInt(t * 0.33f);
 			//Debug.Log(n);
-			if(pn != n && n % 3 == 0) {
+			if(n % 3 == 0) {
 				center = bases[n % bases.Count].transform.position;
-				ConsolePanel.Log("a mix of missile silos");
+				if (pn != n && n == 0)
+				{
+					ConsolePanel.Log("a mix of missile silos");
+				}
 			}
-			if (pn != n && n % 3 == 1)
+			if (n % 3 == 1)
 			{
 				center = air[n % air.Count].transform.position;
-				ConsolePanel.Log("airbases");
+				if (pn != n && n == 1)
+				{
+					ConsolePanel.Log("airbases");
+				}
 			}
 			if (n % 3 == 2)
 			{
 				center = planes[n % planes.Count].transform.position;
-				if (pn != n)
+				if (pn != n && n == 2)
 				{
 					ConsolePanel.Log("and nuclear capable fighter-bombers");
 				}
 			}
-
-			if (pn != n && n == 4)
+			if (pn != n && n == 3)
 			{
 				ConsolePanel.ins.tooltext.text = "press space to continue";
 			}
@@ -156,7 +161,7 @@ public class TutorialOverride : MonoBehaviour
 			{
 				ConsolePanel.ins.toolhead.text = "select abm capable";
 				ConsolePanel.ins.tooltext.text = "press space to select";
-				if (Input.GetKeyDown(KeyCode.Space))
+				if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.KeypadEnter))
 				{
 					UI.ins.currentMenu.children[UI.ins.selected].onSelect?.Invoke();
 				}
@@ -168,6 +173,7 @@ public class TutorialOverride : MonoBehaviour
 		UI.ins.locked = false;
 		MoveCam.ins.canMove = true;
 		ConsolePanel.Clear();
+		ConsolePanel.Log("<color=\"green\"> research started </color>");
 		ConsolePanel.Log("well done");
 		ConsolePanel.Log("now, construct three air defense batteries");
 		yield return new WaitForSecondsRealtime(1);
@@ -180,26 +186,27 @@ public class TutorialOverride : MonoBehaviour
 				int built = state.construction_sites.Count + ArmyUtils.batteries[0].Count;
 				if (built == 0)
 				{
-					numText = "three";
+					numText = "3";
 				}
 				if (built == 1)
 				{
-					if (numText != "two")
+					if (numText != "3")
 					{
+						ConsolePanel.Clear();
 						ConsolePanel.Log("Well done. Now two more.");
 					}
-					numText = "two";
+					numText = "2";
 				}
 				if (built == 2)
 				{
-					if (numText != "one")
+					if (numText != "1")
 					{
 						ConsolePanel.Log("Well done. Now one more.");
 					}
-					numText = "one";
+					numText = "1";
 				}
-				ConsolePanel.ins.toolhead.text = "designate " + numText + " construction sites";
-				ConsolePanel.ins.tooltext.text = "move the cursor with w, a, s, and d keys. q and e to zoom";
+				ConsolePanel.ins.toolhead.text = "designate " + numText + " build sites";
+				ConsolePanel.ins.tooltext.text = "use 'wasdqe' keys to move cursor";
 			}
 			else
 			{
@@ -210,13 +217,13 @@ public class TutorialOverride : MonoBehaviour
 		}
 		ConsolePanel.Clear();
 		ConsolePanel.Log("well done");
-		ConsolePanel.Log("now, conscript two hundred thousand soldiers");
+		ConsolePanel.Log("now, conscript 150 thousand soldiers");
 		ConsolePanel.Log("you can see your army count on the panel to the right");
-		while (ArmyUtils.armies[0].Count < 200)
+		while (ArmyUtils.armies[0].Count < 150)
 		{
 			if (UI.ins.currentMenu == UI.ins.menu_defense)
 			{
-				ConsolePanel.ins.toolhead.text = "conscript 200k soldiers";
+				ConsolePanel.ins.toolhead.text = "conscript 150k soldiers";
 				UpDownSpace(0);
 			} 
 			else
@@ -247,10 +254,10 @@ public class TutorialOverride : MonoBehaviour
 		}
 		ConsolePanel.Clear();
 		ConsolePanel.Log("good");
-		ConsolePanel.Log("keep your army strength above 200");
+		ConsolePanel.Log("keep your army strength above 150");
 		ConsolePanel.Log("build more air defenses if necessary");
 		ConsolePanel.ins.toolhead.text = "continue the attack";
-		ConsolePanel.ins.tooltext.text = "keep army count over 200k";
+		ConsolePanel.ins.tooltext.text = "keep army count over 150k";
 	}
 	IEnumerator TutorialProcedure() {
 
@@ -321,6 +328,8 @@ public class TutorialOverride : MonoBehaviour
 		Map.ins.growth_stateGrowthTickOverride = 1;
 
 		yield return new WaitForSecondsRealtime(3);
+		Map.ins.growth_tutorialManualValues = false;
+		Map.ins.populationGrowthTickDelay = 0.25f;
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
 
@@ -414,10 +423,8 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.Clear();
 		ConsolePanel.ins.tooltext.text = "";
 		ConsolePanel.Log("you have been granted access to the computer controls");
-		ConsolePanel.Log(" ");
-		yield return new WaitForSecondsRealtime(3);
+		yield return new WaitForSecondsRealtime(1);
 		ConsolePanel.Log("construct three missile silos", 9999);
-		ConsolePanel.Log(" ");
 		MoveCam.ins.canMove = true;
 		DisplayHandler.ins.screens[3].Switch(-1);
 		showMenu = true;
@@ -434,25 +441,25 @@ public class TutorialOverride : MonoBehaviour
 				if (UI.ins.selected == 0) {
 					int built = state.construction_sites.Count + ArmyUtils.silos[0].Count;
 					if(built == 0) {
-						numText = "three";
+						numText = "3";
 					}
 					if (built == 1)
 					{
-						if(numText != "two") {
+						if(numText != "2") {
 							ConsolePanel.Log("Well done. Now two more.");
 						}
-						numText = "two";
+						numText = "2";
 					}
 					if (built == 2)
 					{
-						if (numText != "one")
+						if (numText != "1")
 						{
 							ConsolePanel.Log("Well done. Now one more.");
 						}
-						numText = "one";
+						numText = "1";
 					}
-					ConsolePanel.ins.toolhead.text = "designate " + numText + " construction sites";
-					ConsolePanel.ins.tooltext.text = "move the cursor with w, a, s, and d keys. q and e to zoom";
+					ConsolePanel.ins.toolhead.text = "designate " + numText + " build sites";
+					ConsolePanel.ins.tooltext.text = "use 'wasdqe' keys to move cursor";
 				}
 				else {
 					ConsolePanel.ins.tooltext.text = "navigate to 'confirm'";
@@ -460,7 +467,7 @@ public class TutorialOverride : MonoBehaviour
 			}
 			else
 			{
-				NavigateToBuildItem("silo");
+				NavigateToBuildItem("icbm silo");
 			}
 			yield return null;
 		}
@@ -470,10 +477,27 @@ public class TutorialOverride : MonoBehaviour
 		ConsolePanel.Log("now launch a pre-emptive strike.");
 		ConsolePanel.Log("press 'tab' three times to return to the home menu");
 		ConsolePanel.ins.toolhead.text = "launch a preemptive strike";
-
+		bool r1 = false, r2 = false, r3 = false;
 		while (!hasLaunchedMissiles)
 		{
-			if(UI.ins.currentMenu != UI.ins.menu_strike) {
+			if(!r1 && UI.ins.currentMenu == UI.ins.menu_home) {
+				r1 = true;
+				ConsolePanel.Clear();
+				ConsolePanel.Log("now select 'diplomacy'");
+			}
+			if (!r2 && UI.ins.currentMenu == UI.ins.menu_nation)
+			{
+				r2 = true;
+				ConsolePanel.Clear();
+				ConsolePanel.Log("select your enemy");
+			}
+			if (!r3 && UI.ins.currentMenu == UI.ins.menu_nation)
+			{
+				r3 = true;
+				ConsolePanel.Clear();
+				ConsolePanel.Log("launch a pre-emptive strike");
+			}
+			if (UI.ins.currentMenu != UI.ins.menu_strike) {
 				NavigateToStrike();
 			}
 			else { 
@@ -686,7 +710,7 @@ public class TutorialOverride : MonoBehaviour
 		else
 		{
 			ConsolePanel.ins.tooltext.text = "press 'space' to select";
-			if (Input.GetKeyDown(KeyCode.Space))
+			if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.KeypadEnter))
 			{
 				UI.ins.currentMenu.children[UI.ins.selected].onSelect?.Invoke();
 			}

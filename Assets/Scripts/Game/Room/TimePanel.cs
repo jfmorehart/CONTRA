@@ -26,7 +26,8 @@ public class TimePanel : MonoBehaviour
         int seconds = Mathf.RoundToInt((timer - (minutes * 60)));
         time.text = minutes.ToString() + ":" + DoubleZero(seconds);
         if(timer < 0.1f) {
-            EndGame();
+            //EndGame();
+            Debug.LogError("time is up");
 	    }
     }
 

@@ -25,8 +25,10 @@ public class EndPanel : MonoBehaviour
 	private void Update()
 	{
 		if (Map.multi) return;
-		if (scenarioEndOffered) return;
+		if (Time.timeScale < 1) return;
 		if (WinCheck()) TimePanel.ins.EndGame();
+		if (scenarioEndOffered) return;
+
 		float teamPop = Map.ins.state_populations[Map.localTeam];
 		float enemyPop = 0;
 		for (int i = 0; i < Map.ins.numStates; i++)
@@ -43,15 +45,33 @@ public class EndPanel : MonoBehaviour
 		//{
 		//	OfferScenarioEnd();
 		//}
-		if (Diplomacy.score[0] > 30 && teamPop > enemyPop * 2) {
-			OfferScenarioEnd();
+		if (ROE.AreWeAtWar(Map.localTeam)){
+			if (Diplomacy.score[0] > 30 && teamPop > enemyPop * 5)
+			{
+
+				OfferScenarioEnd();
+			}
 		}
+		else {
+			if (Diplomacy.score[0] > 30 && teamPop > enemyPop * 2)
+			{
+
+				OfferScenarioEnd();
+			}
+		}
+
 	}
 	void OfferScenarioEnd() {
 		scenarioEndOffered = true;
 		Simulator.activeScenario.Complete();
 		ConsolePanel.Clear();
-		ConsolePanel.Log("[scenario stabilized: player victory]", Mathf.Infinity);
+		if (Diplomacy.score[Map.localTeam] > -1) {
+			ConsolePanel.Log("[scenario stabilized: player victory]", Mathf.Infinity);
+		}
+		else {
+			ConsolePanel.Log("[scenario stabilized:  player defeat]", Mathf.Infinity);
+		}
+
 		ConsolePanel.Log("press 'escape' when ready to leave", Mathf.Infinity);
 		ConsolePanel.Log("__________________________________", Mathf.Infinity);
 	}

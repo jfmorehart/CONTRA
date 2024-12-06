@@ -91,7 +91,7 @@ public class State_Enemy : State_AI
 			opinion[invasionTarget] -= 0.005f;
 			//consider calling off the invasion
 			StateDynamic stdy = new StateDynamic(team, invasionTarget);
-			if (stdy.pVictory < opinion[invasionTarget] * 1.8f || stdy.pVictory < 0.55) //unlikely to crush them
+			if (stdy.pVictory < opinion[invasionTarget] * 1.8f || stdy.pVictory < 0.55 || assesment.percentGrowth < 0.9f) //unlikely to crush them
 			{
 				//call it off
 				invasionTarget = -1;
@@ -406,6 +406,14 @@ public class State_Enemy : State_AI
 			}
 			else if(assesment.percentGrowth < 0){
 				BalanceBudget(assesment.costOverrun + 5);
+			}
+
+
+			int dif = (int)groundThreat - armies[team].Count;
+			if (dif > 0)
+			{
+				if (Simulator.tutorialOverride) return;//dont allow them to do smart things
+				BalanceBudget(dif * Economics.cost_armyUpkeep * 1.5f);
 			}
 		}
 	}

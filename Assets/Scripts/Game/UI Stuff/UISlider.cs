@@ -23,7 +23,7 @@ public class UISlider : MonoBehaviour
 
 		if (troopAllocSlider) {
 			State_Player pl = Diplomacy.states[Map.localTeam] as State_Player;
-			if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow)) {
+			if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.H) || Input.GetKey(KeyCode.L)) {
 				//this is the troop slider
 				pl.troopAllocPlayerInput[UI.ins.targetNation] = boss.value - 0.5f;
 			}
