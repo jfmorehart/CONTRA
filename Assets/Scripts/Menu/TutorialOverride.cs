@@ -417,7 +417,7 @@ public class TutorialOverride : MonoBehaviour
 
 		//new railroad attempt
 		//UI.ins.locked = false;
-		//railroad = false;
+		railroad = false;
 
 
 		ConsolePanel.Clear();

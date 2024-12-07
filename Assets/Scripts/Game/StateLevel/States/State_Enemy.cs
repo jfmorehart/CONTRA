@@ -409,11 +409,11 @@ public class State_Enemy : State_AI
 			}
 
 
-			int dif = (int)groundThreat - armies[team].Count;
+			int dif = armies[team].Count - (int)groundThreat;
 			if (dif > 0)
 			{
 				if (Simulator.tutorialOverride) return;//dont allow them to do smart things
-				BalanceBudget(dif * Economics.cost_armyUpkeep * 1.5f);
+				BalanceBudget(dif * Economics.cost_armyUpkeep);
 			}
 		}
 	}
