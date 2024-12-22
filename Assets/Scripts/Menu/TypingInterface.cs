@@ -218,7 +218,7 @@ public class TypingInterface : MonoBehaviour
 		for(int i = 0; i < numLines; i++) {
 
 			//skip writing animation
-			if (Input.GetKey(KeyCode.LeftShift)) {
+			if (Input.GetKey(KeyCode.LeftShift) || unwritten.Count > lines.Length) {
 				lineObjs[i].text = lines[i];
 				lengths[i] = lines[i].Length;
 				finishedWriting[i] = true;

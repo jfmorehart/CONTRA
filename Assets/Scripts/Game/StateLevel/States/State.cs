@@ -70,6 +70,8 @@ public class State : MonoBehaviour
 
 		//called ever few seconds
 		assesment = Economics.RunAssesment(team);
+		manHourDebt -= assesment.debtPayment;
+		//Debug.Log( team + " paid " + assesment.debtPayment);
 		Economics.state_assesments[team] = assesment;
 		RecordEconomyData();
 

@@ -78,7 +78,7 @@ public class ConsolePanel : TypingInterface
 			}
 
 			int repeatCheck = LineThatContains(str);
-			if (repeatCheck == -1)
+			if (true)//repeatCheck == -1)
 			{	if (str.Length < 1) return;
 				if(lifeTime == Mathf.Infinity) {
 					ins.WriteOut(str, true, true, true); //green, instant, permanent

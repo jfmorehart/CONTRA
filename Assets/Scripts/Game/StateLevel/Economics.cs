@@ -94,10 +94,10 @@ public static class Economics
 
 		//Debt is used to hamstring an economy after over-conscription
 		//spread out debt payment
-		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt * 0.3f, gross * 0.2f);
+		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt, gross * 0.2f);
 		float buyingPower = gross - debtPayment;
 
-		Diplomacy.states[team].manHourDebt -= debtPayment;
+		//Diplomacy.states[team].manHourDebt -= debtPayment;
 
 
 		//despite this split, unused military budget will return to net;
@@ -147,23 +147,24 @@ public static class Economics
 		float researchBudget = 0;
 		if (Research.currentlyResearching[team].x > -1) {
 			researchBudget = Research.budget[team] * buyingPower * max_research_budget;
-			totalConstructionCosts += researchBudget;
+			//totalConstructionCosts += researchBudget;
 		}
-		overrun += totalConstructionCosts; //subtract construction from surplus
+		overrun += totalConstructionCosts + researchBudget; //subtract construction from surplus
 
-		float net = (buyingPower - upkeep) - totalConstructionCosts;
+		float net = (buyingPower - upkeep) - totalConstructionCosts - researchBudget;
 		float percentGrowth = net / gross; //used for growing the country
 
-		if(buyingPower > gross) {
+		if (buyingPower > gross)
+		{
 			//re-credit surplus money
-			Diplomacy.states[team].manHourDebt -= (buyingPower - gross) * 0.8f;
+			debtPayment += (buyingPower - gross) * 0.8f;
 		}
 
-		if(percentGrowth < -1) { 
+		if (percentGrowth < -1) { 
 			//we really got issues
 		}
 
-		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth, researchBudget);
+		return new Assesment(buyingPower, upkeep, overrun, totalConstructionCosts, net, usage,manHoursPerSite, percentGrowth, researchBudget, debtPayment);
     }
 
 	public struct Assesment {
@@ -183,8 +184,10 @@ public static class Economics
 
 		public float researchBudget; //allocated manHours for research
 
+		public float debtPayment;
+
 		public Assesment(float buying, float upkeep, float over, float constr, float ne, 
-	    float conperspeed, float manHoursPS, float pctG, float rBudget) {
+	    float conperspeed, float manHoursPS, float pctG, float rBudget, float debt) {
 
 			buyingPower = buying;
 			upkeepCosts = upkeep;
@@ -197,6 +200,7 @@ public static class Economics
 			percentGrowth = pctG;
 
 			researchBudget = rBudget;
+			debtPayment = debt;
 		}
     }
 }

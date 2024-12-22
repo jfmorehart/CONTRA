@@ -64,6 +64,8 @@ public class Map : MonoBehaviour
 	public float growth_deltaOverride;
 	[HideInInspector]
 	public int growth_stateGrowthTickOverride;
+	[HideInInspector]
+	public bool growth_override_only_player_tick;
 
 	public ComputeShader OCEANS;
 
@@ -834,7 +836,9 @@ public class Map : MonoBehaviour
 
 		if (growth_tutorialManualValues) {
 			state_growth_this_tick[0] = growth_stateGrowthTickOverride;
-			state_growth_this_tick[1] = growth_stateGrowthTickOverride;
+			if (!growth_override_only_player_tick) { 
+				state_growth_this_tick[1] = growth_stateGrowthTickOverride;
+			}
 			GROWTH.SetFloat("deltaOverride", growth_deltaOverride);
 		}
 

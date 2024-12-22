@@ -97,6 +97,9 @@ public class UI : MonoBehaviour
 	}
 	private void Update()
 	{
+		//cant be bothered to go track down all the outdated checks to this int
+		//incomingMissiles = TerminalMissileRegistry.registry[Map.localTeam].Count;
+
 		if (locked) return;
 		if (EndPanel.over) return;
 

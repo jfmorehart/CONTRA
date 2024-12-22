@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +20,39 @@ public class TutorialOverride : MonoBehaviour
 		else if(Simulator.activeScenario.tutorial == 2) {
 			StartCoroutine(nameof(Tutorial2));
 		}
+		else if (Simulator.activeScenario.tutorial == 3)
+		{
+			StartCoroutine(nameof(Tutorial3));
+		}
 
+	}
+	IEnumerator Tutorial3() {
+		yield return new WaitForSecondsRealtime(0.1f); //wait for the old scene to unload
+		Diplomacy.states[0].SpawnTroops(30);
+		Time.timeScale = 1;
+		Map.ins.populationGrowthTickDelay = 0f;
+		Map.ins.growth_tutorialManualValues = true;
+		Map.ins.growth_deltaOverride = 0.0015f;
+		Map.ins.growth_override_only_player_tick = true;
+		Map.ins.growth_stateGrowthTickOverride = -1;
+
+		ConsolePanel.ins.toolTipLockout = true;
+
+
+		//yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(3);
+		Map.ins.populationGrowthTickDelay = 0.25f;
+		Map.ins.growth_tutorialManualValues = false;
+		ConsolePanel.Clear();
+		ConsolePanel.Log("your country's economy has been mismanaged");
+
+
+		yield return new WaitForSecondsRealtime(1);
+		ConsolePanel.ins.tooltext.text = "press space to continue";
+		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
+		ConsolePanel.ins.tooltext.text = "";
+
+		ConsolePanel.Log("note the graph on the right panel");
 	}
 	IEnumerator Tutorial2() {
 		yield return new WaitForSecondsRealtime(0.1f); //wait for the old scene to unload
@@ -340,7 +373,7 @@ public class TutorialOverride : MonoBehaviour
 		Map.ins.growth_deltaOverride = 10f;
 		Map.ins.growth_stateGrowthTickOverride = -1;
 
-		yield return new WaitForSecondsRealtime(5);
+		yield return new WaitForSecondsRealtime(4);
 		ConsolePanel.ins.tooltext.text = "press space to continue";
 		Map.ins.populationGrowthTickDelay = 0.25f;
 		yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));

@@ -57,6 +57,7 @@ public class State_AI : State
 	}
 	public bool[][] airdoctrine;
 
+	#region standard
 	protected override void Awake()
 	{
 		base.Awake();
@@ -137,11 +138,12 @@ public class State_AI : State
 		}
 	}
 
-
 	protected virtual void ConductWar_Update(int enemy, War war)
 	{
 		//if (Map.ins.state_populations[enemy] < 1) ROE.MakePeace(team, enemy);
 	}
+	#endregion //standard
+	#region troops
 	public virtual void GenerateTroopAllocations()
 	{
 		float[] tas = new float[Map.ins.numStates];
@@ -169,6 +171,138 @@ public class State_AI : State
 		}
 	}
 
+	protected async void DistributedPositions(int borderwith, List<Unit> troops, bool teleport = false)
+	{
+		//fucky and overcomplex function designed to spread out troops along the border
+		//with an enemy state, for defensive posturing
+
+		int[] pas = ROE.Passables(team); //which states we can pass over
+		for (int i = 0; i < troops.Count; i++)
+		{
+			Vector2 pos = (troops[i] as Army).wpos;
+			Vector2Int mpos = MapUtils.PointToCoords(pos);
+
+			//honestly stupid expensive city-oriented method
+			//City c = await Task.Run(() => NearestCity(pos, borderwith, null));
+			//if (c == null) return; // alexander wept
+
+			Vector2Int dest;
+			if (ROE.AreWeAtWar(team, borderwith) && Random.Range(0, 1f) > 0.5f)
+			{
+				//honestly stupid expensive city-oriented method
+				//capture enemy cities during wartime
+				City c = await Task.Run(() => NearestCity(pos, borderwith, null));
+				if (c == null)
+				{
+					Debug.LogError("alexander wept");
+					return; // alexander wept
+				}
+				dest = c.mpos;
+			}
+			else
+			{
+				//newer border-oriented method
+				//spread out troops defensively across the border in peacetime
+				int borderSize = Map.ins.borderPoints[team][borderwith].Count;
+				if (borderSize < 1) continue;
+				dest = Map.ins.borderPoints[team][borderwith][troops[i].id % borderSize];
+
+			}
+
+			Vector2 moveto = MapUtils.CoordsToPoint(dest);
+			Vector2 edit = moveto;
+			int tries = 0;
+			bool goodToGo;
+			do
+			{
+				tries++;
+				Vector2 ran = Random.insideUnitCircle * 80;
+				edit = moveto + ran;
+				goodToGo = pas.Contains(Map.ins.GetPixTeam(MapUtils.PointToCoords(edit)));
+			}
+			while (!goodToGo && tries < 50);
+			Order o = new Order(Order.Type.MoveTo, edit);
+			if (i >= troops.Count) break;
+			if (troops[i] == null) continue;
+			if (teleport)
+			{
+				troops[i].transform.position = o.pos;
+			}
+			else
+			{
+				//if(team != 0)Debug.Log("dir");
+				troops[i].Direct(o);
+				recentlyOrdered.Add(troops[i]);
+			}
+		}
+	}
+
+	Unit[] uns;
+	List<Unit> assigned = new List<Unit>();
+	protected void ReAssignGarrisons(bool overwriteRecentOrders)
+	{
+		//used for cleaning up garrison system
+
+		ClearGarrisons();
+		uns = ArmyUtils.GetArmies(team);
+		assigned.Clear();
+
+		if (overwriteRecentOrders)
+		{
+			recentlyOrdered.Clear();
+			assigned = new List<Unit>();
+		}
+		else
+		{
+			assigned = new List<Unit>(recentlyOrdered);
+		}
+
+		//sorting this by allocation size, so that the biggest threat gets the best troops
+		//int[] teamArray = new int[Map.ins.numStates]; 
+		//float[] troopAllocations = new float[Map.ins.numStates];
+		//for(int i = 0; i < Map.ins.numStates; i++) {
+		//	teamArray[i] = i;
+		//	troopAllocations[i] = troopAllocations[i];
+		//}
+		//System.Array.Sort(troopAllocations, teamArray);
+
+		for (int i = 0; i < Map.ins.numStates; i++)
+		{
+			int enemyTeam = i;// teamArray[i];
+			if (enemyTeam == team) continue;
+			if (troopAllocations[enemyTeam] < 0.01f) continue;
+			border_allotment[enemyTeam] = Mathf.FloorToInt(uns.Length * troopAllocations[enemyTeam]);
+			if (border_allotment[enemyTeam] < 1) continue; //no troops assigned
+
+			//grab units closest to arbitrary enemy city
+			City c = NearestCity(transform.position, enemyTeam, null);
+			if (c == null) continue;
+			Unit[] alo = GetArmies(team, border_allotment[enemyTeam], c.wpos, assigned);
+			for (int u = 0; u < alo.Length; u++)
+			{
+				Unit un = alo[u];
+				garrisons[enemyTeam].Add(un);
+				assigned.Add(un);
+			}
+		}
+	}
+	public override void ReadyForOrders(Unit un)
+	{
+		//this is used for marking a unit ready to reorder, 
+		//to ideally not order the same unit a million times in a row
+		base.ReadyForOrders(un);
+		recentlyOrdered.Remove(un);
+	}
+	protected void ClearGarrisons()
+	{
+
+		foreach (List<Unit> gr in garrisons)
+		{
+			gr.Clear();
+		}
+	}
+	#endregion //troops
+	#region nukes
 	public int ICBMStrike(int warheads, List<Target> targets, int enemy)
 	{
 		int missilesAway = 0;
@@ -218,77 +352,45 @@ public class State_AI : State
 		return missilesAway;
 		
 	}
-	IEnumerator InformLaunch(int enemy) {
+	IEnumerator InformLaunch(int enemy)
+	{
 		yield return new WaitForSeconds(3); //todo find launch delay
-		if(!ROE.AreWeAtWar(team, enemy)) ROE.DeclareWar(team, enemy);
+		if (!ROE.AreWeAtWar(team, enemy)) ROE.DeclareWar(team, enemy);
 		LaunchDetection.StrikeDetected(team, enemy);
 
 	}
 
-	protected async void DistributedPositions(int borderwith, List<Unit> troops, bool teleport = false)
+	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
 	{
-		//fucky and overcomplex function designed to spread out troops along the border
-		//with an enemy state, for defensive posturing
+		base.LaunchDetect(launcher, target, perp, victim);
+	}
 
-		int[] pas = ROE.Passables(team); //which states we can pass over
-		for (int i = 0; i < troops.Count; i++)
+	public override void StrikeDetect(int perp, int victim, bool provoked)
+	{
+		base.StrikeDetect(perp, victim, provoked);
+		if (victim == team && Diplomacy.relationships[team, perp] != Diplomacy.Relationship.NuclearWar)
 		{
-			Vector2 pos = (troops[i] as Army).wpos;
-			Vector2Int mpos = MapUtils.PointToCoords(pos);
-
-			//honestly stupid expensive city-oriented method
-			//City c = await Task.Run(() => NearestCity(pos, borderwith, null));
-			//if (c == null) return; // alexander wept
-
-			Vector2Int dest;
-			if (ROE.AreWeAtWar(team, borderwith) && Random.Range(0, 1f) > 0.5f)
-			{
-				//honestly stupid expensive city-oriented method
-				//capture enemy cities during wartime
-				City c = await Task.Run(() => NearestCity(pos, borderwith, null));
-				if (c == null)
-				{
-					Debug.LogError("alexander wept");
-					return; // alexander wept
-				}
-				dest = c.mpos;
-			}
-			else
-			{
-				//newer border-oriented method
-				//spread out troops defensively across the border in peacetime
-				int borderSize = Map.ins.borderPoints[team][borderwith].Count;
-				if (borderSize < 1) continue;
-				dest = Map.ins.borderPoints[team][borderwith][troops[i].id % borderSize];
-				
-			}
-
-			Vector2 moveto = MapUtils.CoordsToPoint(dest);
-			Vector2 edit = moveto;
-			int tries = 0;
-			bool goodToGo; 
-			do
-			{
-				tries++;
-				Vector2 ran = Random.insideUnitCircle * 80;
-				edit = moveto + ran;
-				goodToGo = pas.Contains(Map.ins.GetPixTeam(MapUtils.PointToCoords(edit)));
-			}
-			while (!goodToGo && tries < 50);
-			Order o = new Order(Order.Type.MoveTo, edit);
-			if (i >= troops.Count) break;
-			if (troops[i] == null) continue;
-			if (teleport) {
-				troops[i].transform.position = o.pos;
-			}
-			else {
-				//if(team != 0)Debug.Log("dir");
-				troops[i].Direct(o);
-				recentlyOrdered.Add(troops[i]);
-			}
+			ROE.DeclareWar(team, perp);
+			Diplomacy.relationships[team, perp] = Diplomacy.Relationship.NuclearWar;
 		}
 	}
 
+	protected bool SiloFire(Silo sl, Target t, int warheads)
+	{
+		if (sl.numMissiles < 1) return false;
+		Order or = new Order(Order.Type.Attack, t.wpos);
+		if (ArmyUtils.Salvo(sl, or, warheads))
+		{
+			//todo only add to hashlist if a missile really was fired
+			targetHashList.Add(t.hash);
+			StartCoroutine(RemoveFromHash(t.hash, 3 + MapUtils.Tau(sl.transform.position, t.wpos)));
+			return true;
+		}
+		return false;
+	}
+
+	#endregion //nukes
+	#region planes
 	public void ScrambleAircraft()
 	{
 		Airbase[] bases = GetAirbases(team);
@@ -449,99 +551,7 @@ public class State_AI : State
 		
 		return TargetSort(riskAdjusted).ToList();
 	}
-
-
-	public override void LaunchDetect(Vector2 launcher, Vector2 target, int perp, int victim)
-	{
-		base.LaunchDetect(launcher, target, perp, victim);
-	}
-
-	public override void StrikeDetect(int perp, int victim, bool provoked)
-	{
-		base.StrikeDetect(perp, victim, provoked);
-		if (victim == team && Diplomacy.relationships[team, perp] != Diplomacy.Relationship.NuclearWar)
-		{
-			ROE.DeclareWar(team, perp);
-			Diplomacy.relationships[team, perp] = Diplomacy.Relationship.NuclearWar;
-		}
-	}
-
-	Unit[] uns;
-	List<Unit> assigned = new List<Unit>();
-	protected void ReAssignGarrisons(bool overwriteRecentOrders) {
-		//used for cleaning up garrison system
-
-		ClearGarrisons();
-		uns = ArmyUtils.GetArmies(team);
-		assigned.Clear();
-
-		if (overwriteRecentOrders)
-		{
-			recentlyOrdered.Clear();
-			assigned = new List<Unit>();
-		}
-		else
-		{
-			assigned = new List<Unit>(recentlyOrdered);
-		}
-
-		//sorting this by allocation size, so that the biggest threat gets the best troops
-		//int[] teamArray = new int[Map.ins.numStates]; 
-		//float[] troopAllocations = new float[Map.ins.numStates];
-		//for(int i = 0; i < Map.ins.numStates; i++) {
-		//	teamArray[i] = i;
-		//	troopAllocations[i] = troopAllocations[i];
-		//}
-		//System.Array.Sort(troopAllocations, teamArray);
-
-		for (int i = 0; i < Map.ins.numStates; i++) {
-			int enemyTeam = i;// teamArray[i];
-			if (enemyTeam == team) continue;
-			if (troopAllocations[enemyTeam] < 0.01f) continue;
-			border_allotment[enemyTeam] = Mathf.FloorToInt(uns.Length * troopAllocations[enemyTeam]);
-			if (border_allotment[enemyTeam] < 1) continue; //no troops assigned
-
-			//grab units closest to arbitrary enemy city
-			City c = NearestCity(transform.position, enemyTeam, null);
-			if(c == null) continue;
-			Unit[] alo = GetArmies(team, border_allotment[enemyTeam], c.wpos, assigned);
-			for (int u = 0; u < alo.Length; u++)
-			{
-				Unit un = alo[u];
-				garrisons[enemyTeam].Add(un);
-				assigned.Add(un);
-			}
-		}
-	}
-
-	public override void ReadyForOrders(Unit un)
-	{
-		//this is used for marking a unit ready to reorder, 
-		//to ideally not order the same unit a million times in a row
-		base.ReadyForOrders(un);
-		recentlyOrdered.Remove(un);
-	}
-
-
-	protected bool SiloFire(Silo sl, Target t, int warheads)
-	{
-		if (sl.numMissiles < 1) return false;
-		Order or = new Order(Order.Type.Attack, t.wpos);
-		if(ArmyUtils.Salvo(sl, or, warheads)) {
-			//todo only add to hashlist if a missile really was fired
-			targetHashList.Add(t.hash);
-			StartCoroutine(RemoveFromHash(t.hash, 3 + MapUtils.Tau(sl.transform.position, t.wpos)));
-			return true;
-		}
-		return false;
-	}
-
-	protected void ClearGarrisons() { 
-    
-		foreach(List<Unit> gr in garrisons) {
-			gr.Clear();
-		} 
-	}
+	#endregion //planes
 
 	//these hash functions serve as a memory of what targets have been recently fired at
 	//to avoid wasting nukes on the same targets

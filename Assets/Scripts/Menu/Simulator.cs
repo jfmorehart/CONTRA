@@ -32,7 +32,7 @@ public static class Simulator
 		sc.tutorial = 1;
 		scenarios.Add(sc);
 
-		//lvl 2
+		//tutorial 2
 		double[] almosteven = new double[] { 0.7, 0.3};
 		teams = new int[2][];
 		teams[0] = new int[] { 0 }; //team A is the player
@@ -50,7 +50,25 @@ public static class Simulator
 		sc.tutorial = 2;
 		scenarios.Add(sc);
 
-		//lvl 2
+		//tutorial 3
+		double[] econ = new double[] { 0.5, 0.25, 0.25};
+		teams = new int[2][];
+		teams[0] = new int[] { 0 }; //team A is the player
+		teams[1] = new int[] { 1, 2 }; //team B is the enemy
+		conditions = new Scenario.ScenarioConditions();
+		conditions.unlockedupgrades = new int[4][];
+		conditions.unlockedupgrades[0] = new int[] { 0, 1, 0, 1 };
+		//conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
+		conditions.airbases = new int[] { 2, 0, 0 };
+		conditions.silos = new int[] { 2, 0, 0};
+		conditions.batteries = new int[] { 3, 0, 0};
+		description = "economy instructs the candidate on how to avoid common financial pitfalls";
+		sc = new Scenario("economy", description, 3, econ, teams, conditions);
+		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		sc.tutorial = 3;
+		scenarios.Add(sc);
+
+		//introduce send aid
 		double[] duoShowdown = new double [] {0.4, 0.2, 0.4}; 
 		teams = new int[2][];
 		teams[0] = new int[] { 0, 1 }; //team A is the player
