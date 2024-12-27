@@ -20,13 +20,17 @@ public class EconUIPanel : MonoBehaviour
 	public TMP_Text[] strs;
 
 	public int numchars;
+
+	float ud = 1f, lu;
 	// Update is called once per frame
 	void Update()
     {
+		if (Time.time - lu > ud) {
+			lu = Time.time;
+		} else return;
+
 		State state = Diplomacy.states[UI.ins.targetNation];
 		string rating = "";
-
-		
 
 		if (state.assesment.percentGrowth > 0) {
 
@@ -86,7 +90,7 @@ public class EconUIPanel : MonoBehaviour
 			total.text = "total: " + "<color=\"red\">" + Rounded(-1 *econ.costOverrun, 2) + "</color>";
 		}
 		else {
-			growth.text = "Growth: " + "<color=\"green\"> " + Rounded(state.assesment.percentGrowth * 100, 2) + "% " + "</color>";
+			growth.text = "Growth: " + "<color=\"green\"> " + Rounded(state.assesment.percentGrowth * 100, 2) + "%" + "</color>";
 			total.text = "total: " + "<color=\"green\">" + Rounded(-1 * econ.costOverrun, 2) + "</color>";
 		}
 
@@ -100,7 +104,7 @@ public class EconUIPanel : MonoBehaviour
 				if (tries > 20) break;
 			}
 
-			Debug.Log(tries);
+			//Debug.Log(tries);
 		}
 	}
 

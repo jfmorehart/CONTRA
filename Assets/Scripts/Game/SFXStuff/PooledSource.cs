@@ -45,7 +45,7 @@ public class PooledSource : MonoBehaviour
 		transform.localPosition = mag * delta.normalized * rangeMult;
 	}
 
-	private void Update()
+	public void FUpdate()
 	{
 		if (!live) return;
 		life -= Time.deltaTime;

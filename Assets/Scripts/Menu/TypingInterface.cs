@@ -26,7 +26,8 @@ public class TypingInterface : MonoBehaviour
 	public bool[] permanent;
 	public float lineSpacer;
 
-	int activeLine = 0;
+	protected int activeLine = 0;
+	public int lettersPerTick = 1;
 
 	[SerializeField]
 	bool[] finishedWriting;
@@ -110,6 +111,7 @@ public class TypingInterface : MonoBehaviour
 	// Update is called once per frame
 	public virtual void Update()
     {
+		lettersPerTick = Mathf.RoundToInt(120 / (1 / Time.deltaTime)) + unwritten.Count;
 
 		//do we type?
 		if(Time.unscaledTime- lastcharTime > typingDelay) {
@@ -230,28 +232,32 @@ public class TypingInterface : MonoBehaviour
 
 				if (newchar)
 				{
-					//write tags in one keypress
-					if (lines[i][lengths[i]] == '<')
-					{
-						int add = 0;
-						while (add < 30)
+					for(int t = 0; t < lettersPerTick; t++) {
+						if (lines[i].Length == lengths[i]) break;
+						//write tags in one keypress
+						if (lines[i][lengths[i]] == '<')
 						{
-							add++;
-							//end if we ran out of room
-							if (lines[i].Length <= lengths[i] + add)
+							int add = 0;
+							while (add < 30)
 							{
-								Debug.Log("out of space" + lines[i].Length + " vs" + lengths[i] + add);
-								break;
-							}
+								add++;
+								//end if we ran out of room
+								if (lines[i].Length <= lengths[i] + add)
+								{
+									Debug.Log("out of space" + lines[i].Length + " vs" + lengths[i] + add);
+									break;
+								}
 
-							//end if we found the end character
-							if(lines[i][lengths[i] + add] == '>') {
-								break;
+								//end if we found the end character
+								if (lines[i][lengths[i] + add] == '>')
+								{
+									break;
+								}
 							}
+							lengths[i] += add;
 						}
-						lengths[i] += add;
+						lengths[i]++;
 					}
-					lengths[i]++;
 
 					BoopSound(0.95f, 1.05f);
 					if (lengths[i] >= lines[i].Length) finishedWriting[i] = true;

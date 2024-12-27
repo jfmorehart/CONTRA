@@ -174,11 +174,11 @@ public class Army : Unit
 			if (onLandOf != team)
 			{
 				//recolor army when on ally's territory
-				ren.material.color = Map.ins.state_colors[team] + Color.white * 0.2f;
+				//ren.sharedMaterial.color = Map.ins.state_colors[team] + Color.white * 0.2f;
 			}
 			else
 			{
-				ren.material.color = Color.grey;
+				// ren.material.color = Color.grey;
 			}
 
 

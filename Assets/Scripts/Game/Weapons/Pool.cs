@@ -57,10 +57,33 @@ public class Pool : MonoBehaviour
 
 		if (Map.multi) return; //we're not pooling them in multiplayer
 		atampool = new ATAM[atamsize];
-		for (int i = 0; i < rsize; i++)
+		for (int i = 0; i < atamsize; i++)
 		{
 			atampool[i] = Instantiate(atamPrefab, transform).transform.GetComponent<ATAM>();
 		}
+	}
+	private void Update()
+	{
+		for(int i = 0; i < psize; i++) {
+			bpool[i].FUpdate();
+		}
+		for (int i = 0; i < msize; i++)
+		{
+			mpool[i].FUpdate();
+		}
+		for (int i = 0; i < esize; i++)
+		{
+			epool[i].FUpdate();
+		}
+		for (int i = 0; i < rsize; i++)
+		{
+			rpool[i].FUpdate();
+		}
+		//if (Map.multi) return; //we're not pooling them in multiplayer
+		//for (int i = 0; i < atamsize; i++)
+		//{
+		//	atampool[i].FUpdate();
+		//}
 	}
 
 	public Bullet GetBullet() {

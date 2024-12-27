@@ -54,7 +54,7 @@ public class Missile : MonoBehaviour
 			yield *= 0.25f; //smaller warheads
 		}
 	}
-	private void Update()
+	public void FUpdate()
 	{
 		if (flying) {
 			Vector2 delta = en - st;

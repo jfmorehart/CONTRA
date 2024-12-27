@@ -194,7 +194,7 @@ public static class ArmyUtils
 		}
 		return tars.ToArray();
 	}
-	public static Target[] CivilianTargets(int team, bool clear = true)
+	public static List<Target> CivilianTargets(int team, bool clear = true)
 	{
 		if (clear) tars.Clear(); //allows for better list re-use;
 
@@ -207,7 +207,7 @@ public static class ArmyUtils
 
 			tars.Add(new Target(sl.transform.position, sl.truepop * 0.5f, Tar.Civilian));
 		}
-		return tars.ToArray();
+		return tars;
 	}
 	public static bool PassesTargetDuplicateCheck(List<Target> tars, Vector2 pos) {
 		foreach (Target tar in tars)
@@ -279,9 +279,9 @@ public static class ArmyUtils
 		return null;
     }
 
-	public static Unit[] GetArmies(int team)
+	public static List<Unit> GetArmies(int team)
 	{
-		return armies[team].ToArray();
+		return armies[team];
 	}
 
 	static Unit[] prealloc_units;

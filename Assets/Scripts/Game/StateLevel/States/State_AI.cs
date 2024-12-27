@@ -237,14 +237,13 @@ public class State_AI : State
 		}
 	}
 
-	Unit[] uns;
+	//Unit[] uns;
 	List<Unit> assigned = new List<Unit>();
 	protected void ReAssignGarrisons(bool overwriteRecentOrders)
 	{
 		//used for cleaning up garrison system
 
 		ClearGarrisons();
-		uns = ArmyUtils.GetArmies(team);
 		assigned.Clear();
 
 		if (overwriteRecentOrders)
@@ -271,7 +270,7 @@ public class State_AI : State
 			int enemyTeam = i;// teamArray[i];
 			if (enemyTeam == team) continue;
 			if (troopAllocations[enemyTeam] < 0.01f) continue;
-			border_allotment[enemyTeam] = Mathf.FloorToInt(uns.Length * troopAllocations[enemyTeam]);
+			border_allotment[enemyTeam] = Mathf.FloorToInt(ArmyUtils.armies[team].Count * troopAllocations[enemyTeam]);
 			if (border_allotment[enemyTeam] < 1) continue; //no troops assigned
 
 			//grab units closest to arbitrary enemy city

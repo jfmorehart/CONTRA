@@ -129,7 +129,7 @@ public class State : MonoBehaviour
 	protected virtual void BalanceBudget (float budgetCut) {
 
 		//Army disbanding
-		Unit[] armies = ArmyUtils.GetArmies(team);
+		var armies = ArmyUtils.GetArmies(team).ToArray();
 		for (int i = 0; i < armies.Length; i++)
 		{
 			if(budgetCut > 0) {
@@ -221,9 +221,9 @@ public class State : MonoBehaviour
 		}
 	}
 	public void DisbandTroops(int toDisband) {
-		Unit[] armies = ArmyUtils.GetArmies(team);
+		var armies = ArmyUtils.GetArmies(team);
 		int disbanded = 0;
-		for (int i = 0; i < armies.Length; i++)
+		for (int i = 0; i < armies.Count; i++)
 		{
 			manHourDebt -= Economics.cost_armySpawn * 0.5f;
 			armies[i].Kill();
@@ -428,7 +428,7 @@ public class State : MonoBehaviour
 
     }
 
-	public virtual void SendAid(int to)
+	public virtual void SendAid(int to, bool canmulti = true)
 	{
 		ConsolePanel.Log(ConsolePanel.ColoredName(team) + " sent aid to " + ConsolePanel.ColoredName(to)); ;
 		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 8;
@@ -437,7 +437,7 @@ public class State : MonoBehaviour
 
 		Diplomacy.AnnounceNews(Diplomacy.NewsItem.Aid, team, to);
 
-		if (Map.multi)
+		if (Map.multi && canmulti)
 		{
 			if (Map.host)
 			{

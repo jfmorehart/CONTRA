@@ -34,6 +34,12 @@ public class MultiplayerVariables : NetworkBehaviour
 		if (!NetworkManager.IsHost) return;
 		_mapSeed.Value = UnityEngine.Random.Range(1, 5000);
 	}
+	public override void OnNetworkDespawn()
+	{
+		base.OnNetworkDespawn();
+		ins = null;
+		Destroy(gameObject);
+	}
 
 
 	public static float Ran(Vector2 uv) {
@@ -230,7 +236,7 @@ public class MultiplayerVariables : NetworkBehaviour
 				t2 = i;
 			}
 		}
-		Diplomacy.states[t1].SendAid(t2);
+		Diplomacy.states[t1].SendAid(t2, false);
 	}
 	[ServerRpc(RequireOwnership = false)]
 	public void StrikeDetectServerRPC(ulong team1, ulong team2, ulong sender)
@@ -344,13 +350,17 @@ public class MultiplayerVariables : NetworkBehaviour
 		DisplayHandler.resetGame?.Invoke();
 		NetworkManager.Singleton.Shutdown();
 		SceneManager.LoadScene("Menu");
+		ins = null;
 	}
 	[ServerRpc(RequireOwnership = false)]
 	public void EndGameServerRPC()
 	{
 		EndGameClientRPC();
+		GetComponent<NetworkObject>().Despawn();
 		NetworkManager.Singleton.Shutdown();
 		SceneManager.LoadScene("Menu");
+		ins = null;
+		
 	}
 	#endregion
 }

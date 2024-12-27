@@ -76,7 +76,7 @@ public class Plane : Unit
 		DisplayHandler.resetGame += Reset;
 
 		TrailRenderer tren = GetComponent<TrailRenderer>();
-		Material tmat = new Material(tren.material);
+		Material tmat = tren.material;
 		tmat.color = Map.ins.state_colors[team];
 		tren.material = tmat;
 		GetComponent<SpriteRenderer>().color = Map.ins.state_colors[team] + new Color(0.3f, 0.3f, 0.3f);

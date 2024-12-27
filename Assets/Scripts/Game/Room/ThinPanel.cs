@@ -26,6 +26,9 @@ public class ThinPanel : MonoBehaviour
 	float statusLength = 8;
 	bool showingstatus;
 
+	public AudioSource src;
+	public AudioClip start, loop;
+
 	private void Start()
 	{
 		if (Simulator.activeScenario.tutorial == 1)
@@ -41,10 +44,22 @@ public class ThinPanel : MonoBehaviour
     {
 		if (Simulator.activeScenario.tutorial == 1) return;
 
-		if(Time.timeScale == 0) {
+		if (Research.currentlyResearching[0].Equals(-Vector2Int.one))
+		{
+			if (src.isPlaying)
+			{
+				src.Stop();
+			}
+		}
+
+		if (Time.timeScale == 0) {
 			idleScreen.SetActive(false);
 			threatScreen.SetActive(false);
 			background.color = Color.black;
+			if (src.isPlaying)
+			{
+				src.Pause();
+			}
 			return;
 		}
 		if (UI.ins.incomingMissiles > 0) {
@@ -60,6 +75,10 @@ public class ThinPanel : MonoBehaviour
 				idleScreen.SetActive(false);
 				threatScreen.SetActive(true);
 			}
+			//if (src.isPlaying)
+			//{
+			//	src.Pause();
+			//}
 		}
 		else {
 
@@ -87,7 +106,11 @@ public class ThinPanel : MonoBehaviour
 				if (!idleScreen.activeInHierarchy)
 				{
 					idleScreen.SetActive(true);
+					src.PlayOneShot(start, SFX.globalVolume * 0.03f);
 					//threatScreen.SetActive(false);
+				}
+				if (!src.isPlaying) {
+					src.PlayOneShot(loop, SFX.globalVolume * 0.03f);
 				}
 			}
 			else {

@@ -17,8 +17,12 @@ public class FinalCam : MonoBehaviour
 
 	public float shakestr, shakeAmp, shakeFreq, shakeDecay, launchShakeMagnitude, shakeMax;
 	public Vector2 shake;
+
+	Camera cam;
+
 	private void Start()
 	{
+		cam = GetComponent<Camera>();
 		ins = this;
 		tempRt = new RenderTexture(UnityEngine.Screen.width, UnityEngine.Screen.height, 1);
 		tempRt.enableRandomWrite = true;
@@ -35,6 +39,12 @@ public class FinalCam : MonoBehaviour
 		shakestr -= Time.deltaTime * shakeDecay;
 		if (shakestr < 0.05f) shakestr = 0;
 		if (shakestr > shakeMax) shakestr = shakeMax;
+
+		//Vector2 resTarget = new Vector2(1920f, 1080f);
+		//Vector2 resViewport = new Vector2(UnityEngine.Screen.width, UnityEngine.Screen.height);
+		//Vector2 resNormalized = resTarget / resViewport; // target res in viewport space
+		//Vector2 size = resNormalized / Mathf.Max(resNormalized.x, resNormalized.y);
+		//cam.rect = new Rect(default, size) { center = new Vector2(0.5f, 0.5f) };
 	}
 	public void MissileLaunch()
 	{

@@ -11,7 +11,7 @@ public class SFX : MonoBehaviour
 	public static SFX ins;
 
 
-	public static float globalVolume = 2f;
+	public static float globalVolume = 3f;
 	public float chatterVolume = 0.005f;
 	public float loopvolume = 0.008f;
 	public float pilotChatterMult;
@@ -90,6 +90,9 @@ public class SFX : MonoBehaviour
 			return;
 		}
 		Chatter();
+		for(int i = 0; i < poolSize; i++) {
+			pool[i].FUpdate();
+		}
 	}
 
 	void Chatter() {
@@ -100,11 +103,11 @@ public class SFX : MonoBehaviour
 	}
 
 	public void DeclareWarAlarm() {
-		NewSource(newWar, 0.2f);
+		NewSource(newWar, 0.05f * globalVolume);
     }
 	public void MakePeaceAlarm()
 	{
-		NewSource(newPeace, 0.1f);
+		NewSource(newPeace, 0.05f);
 	}
 
 	public AudioSource NewSource(AudioClip clip, float volume, bool loop = false) {
@@ -118,7 +121,7 @@ public class SFX : MonoBehaviour
 		AudioSource src = go.GetComponent<AudioSource>();
 		src.pitch = Random.Range(0.7f, 1.3f);
 		SFX_OneShot sf = src.GetComponent<SFX_OneShot>();
-		sf.Play(nukeSound, 5f * size, false, wpos, 0.008f);
+		sf.Play(nukeSound, 10f * size, false, wpos, 0.008f);
     }
 	public SFX_OneShot PilotChatter(bool peace, Unit pilot) {
 		AudioClip[] sounds = peace ? pilot_peace : pilot_war;

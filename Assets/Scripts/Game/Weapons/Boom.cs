@@ -12,7 +12,7 @@ public class Boom : MonoBehaviour
 	private void Awake()
 	{
 		ren = GetComponent<Renderer>();
-		ren.material = new Material(ren.material);
+		//ren.material = new Material(ren.material);
 		Hide();
 	}
 
@@ -32,7 +32,7 @@ public class Boom : MonoBehaviour
 		fading = true;
 		sf = Time.time;
     }
-	private void Update()
+	public void FUpdate()
 	{
 		if (fading) {
 			float fadeSpeed = 3 - (Time.time - sf);

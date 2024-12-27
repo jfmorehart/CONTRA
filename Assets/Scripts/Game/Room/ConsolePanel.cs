@@ -52,6 +52,7 @@ public class ConsolePanel : TypingInterface
 	}
 	public override void Update()
 	{
+		//if(Time.deltaTime > 0.06)
 		RefreshTooltip();
 		base.Update();
 	}

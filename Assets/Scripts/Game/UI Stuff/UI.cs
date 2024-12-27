@@ -302,7 +302,7 @@ public class UI : MonoBehaviour
 		if(missilesAway < 1) {
 			return;
 		}
-		SFX.ins.NewSource(SFX.ins.countdown, 0.05f);
+		SFX.ins.NewSource(SFX.ins.countdown, 0.02f);
 		(menu_strike as UIStrikeMenu).UpdateStrikePlanScreen();
 		FinalCam.ins.MissileLaunch();
 		foreach (LaunchSiren ls in FindObjectsOfType<LaunchSiren>()) {

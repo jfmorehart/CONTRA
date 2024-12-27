@@ -587,6 +587,7 @@ public class State_Enemy : State_AI
 	{
 		if (victim == -1 || perp == -1) return;
 		Debug.Log("strdtc " + perp + " " + victim);
+
 		base.StrikeDetect(perp, victim, provoked);
 		if (victim == team)
 		{
@@ -599,6 +600,7 @@ public class State_Enemy : State_AI
 		else
 		{
 			//mm yummy magic number soup
+			Debug.Log("oplen =" + opinion.Length + " vs vic: " + victim);
 			float opmult = HarmOpinionMultiplier(victim, 0.5f) * 0.95f;
 			opinion[perp] += opmult - 1;
 		}

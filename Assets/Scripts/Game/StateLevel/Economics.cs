@@ -95,6 +95,7 @@ public static class Economics
 		//Debt is used to hamstring an economy after over-conscription
 		//spread out debt payment
 		float debtPayment = Mathf.Min(Diplomacy.states[team].manHourDebt, gross * 0.2f);
+
 		float buyingPower = gross - debtPayment;
 
 		//Diplomacy.states[team].manHourDebt -= debtPayment;

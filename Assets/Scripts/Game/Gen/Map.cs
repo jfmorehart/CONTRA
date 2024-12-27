@@ -113,7 +113,7 @@ public class Map : MonoBehaviour
 				mapSeed = seeds[Random.Range(0, seeds.Length)];
 			}
 		}
-
+		multi = false;
 		if (MultiplayerVariables.ins != null)
 		{
 			multi = true;
@@ -137,6 +137,7 @@ public class Map : MonoBehaviour
 			}
 			else
 			{
+				host = false;
 				mapSeed = MultiplayerVariables.ins.MapSeed;
 				numStates = MultiplayerVariables.ins.NumPlayers;
 			}

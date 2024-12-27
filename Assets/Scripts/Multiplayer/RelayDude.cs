@@ -34,6 +34,13 @@ public class RelayDude : MonoBehaviour
 	{
         ins = this;
         clients = new();
+		if(MultiplayerVariables.ins != null) {
+			if(MultiplayerVariables.ins.gameObject == null) {
+				Destroy(MultiplayerVariables.ins.gameObject);
+			}
+			MultiplayerVariables.ins = null;
+		}
+
         if (UnityServices.State != ServicesInitializationState.Uninitialized) return;
         StartMultiplayer();
 	}

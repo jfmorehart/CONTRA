@@ -15,7 +15,7 @@ public class AppearEffect : MonoBehaviour
 	{
         ren = GetComponent<SpriteRenderer>();
         ren.enabled = false;
-        ren.material = new Material(ren.material);
+        //ren.material = new Material(ren.material);
 	}
 
     public void Spawn(Vector3 pos) {
@@ -27,7 +27,7 @@ public class AppearEffect : MonoBehaviour
         startTime = Time.time;
     }
 
-	void Update()
+	public void FUpdate()
     {
         if (!live) return;
 

@@ -79,12 +79,12 @@ public class City : MonoBehaviour
 	 async void CheckReachableCountries() {
 		//return;
 		neighborlist.Clear();
-		debugInfo = ""; 
+		//debugInfo = ""; 
 		for (int i= 0; i< Map.ins.numStates; i++) {
 			if (i == team) continue;
 			if (AsyncPath.ins.SharesBorder(team, i)) {
 				//possibly a neighbor
-				debugInfo += i.ToString() + "mb, ";
+				//debugInfo += i.ToString() + "mb, ";
 				//loop thru cities until we can make it to one
 				City checkC = ArmyUtils.NearestCity(wpos, i, null);
 				if (checkC == null) continue;

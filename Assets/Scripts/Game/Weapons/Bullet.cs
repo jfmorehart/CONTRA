@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour
 		isFlying = true;
 		st = Time.time;
 		transform.SetPositionAndRotation(pos, Quaternion.Euler(dir));
-		df = speed * Time.deltaTime * dir.normalized;
+		df = speed * dir.normalized;
 		Show();
 		float hTime = dir.magnitude / speed;
 		Invoke(nameof(Hide), hTime);
@@ -42,10 +42,10 @@ public class Bullet : MonoBehaviour
 		return hTime;
     }
 
-	private void Update()
+	public void FUpdate()
 	{
 		if (!isFlying) return;
-		transform.Translate(df, Space.World);
+		transform.Translate(df * Time.deltaTime, Space.World);
 	}
 
 	void Hide() {
@@ -55,9 +55,9 @@ public class Bullet : MonoBehaviour
 		lren.enabled = false;
     }
 	void Show() {
-		//ren.enabled = true;
-		//tren.Clear();
-		//tren.enabled = true;
-		lren.enabled = true;
+		ren.enabled = true;
+		tren.Clear();
+		tren.enabled = true;
+		//lren.enabled = true;
     }
 }
