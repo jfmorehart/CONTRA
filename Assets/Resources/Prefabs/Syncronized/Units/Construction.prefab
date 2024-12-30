@@ -126,5 +126,7 @@ MonoBehaviour:
   baseUpkeepCost: 0
   upkeepCost: 0
   id: 0
+  no: {fileID: 0}
   btype: 0
   manHoursRemaining: 400
+  clip: {fileID: 8300000, guid: 019fc5abdcd5b41d89ee1e1c516127e6, type: 3}

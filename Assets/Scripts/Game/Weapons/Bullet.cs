@@ -16,8 +16,8 @@ public class Bullet : MonoBehaviour
 	private void Awake()
 	{
 		ren = GetComponent<Renderer>();
-		tren = GetComponent<TrailRenderer>();
-		lren = GetComponent<LineRenderer>();
+		//tren = GetComponent<TrailRenderer>();
+		//lren = GetComponent<LineRenderer>();
 		Hide();
 	}
 
@@ -31,12 +31,12 @@ public class Bullet : MonoBehaviour
 		float hTime = dir.magnitude / speed;
 		Invoke(nameof(Hide), hTime);
 
-		Vector3[] posAr = new Vector3[2];
-		posAr[0] = pos;
-		posAr[1] = pos + dir;
-		lren.SetPositions(posAr);
-		lren.startColor = Map.ins.state_colors[team];
-		lren.endColor = Map.ins.state_colors[team];
+		//Vector3[] posAr = new Vector3[2];
+		//posAr[0] = pos;
+		//posAr[1] = pos + dir;
+		//lren.SetPositions(posAr);
+		//lren.startColor = Map.ins.state_colors[team];
+		//lren.endColor = Map.ins.state_colors[team];
 
 		SFX.ins.Shoot(transform.position);
 		return hTime;
@@ -51,13 +51,13 @@ public class Bullet : MonoBehaviour
 	void Hide() {
 		isFlying = false;
 		ren.enabled = false;
-		tren.enabled = false;
-		lren.enabled = false;
+		//tren.enabled = false;
+		//lren.enabled = false;
     }
 	void Show() {
 		ren.enabled = true;
-		tren.Clear();
-		tren.enabled = true;
+		//tren.Clear();
+		//tren.enabled = true;
 		//lren.enabled = true;
     }
 }

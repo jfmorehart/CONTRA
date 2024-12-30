@@ -430,6 +430,10 @@ public class State : MonoBehaviour
 
 	public virtual void SendAid(int to, bool canmulti = true)
 	{
+		if(canmulti && manHourDebt > Diplomacy.states[Map.localTeam].assesment.buyingPower * 2) {
+			//insufficient funds
+			return;
+		}
 		ConsolePanel.Log(ConsolePanel.ColoredName(team) + " sent aid to " + ConsolePanel.ColoredName(to)); ;
 		Diplomacy.states[team].manHourDebt += Economics.cost_armySpawn * 8;
 		Diplomacy.states[to].manHourDebt -= Economics.cost_armySpawn * 10;

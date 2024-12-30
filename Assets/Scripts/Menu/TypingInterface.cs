@@ -20,6 +20,7 @@ public class TypingInterface : MonoBehaviour
 	bool hascursor;
 
 	public GameObject linePrefab;
+	public float fontSize;
 	public TMP_Text[] lineObjs;
 	public int numLines;
 	public string[] lines;
@@ -39,7 +40,7 @@ public class TypingInterface : MonoBehaviour
 	float lastcharTime;
 	bool newchar;
 
-	List<string> unwritten;
+	public List<string> unwritten;
 
 	//sound stuff
 	public GameObject oneshotPrefab;
@@ -75,6 +76,7 @@ public class TypingInterface : MonoBehaviour
 			Vector2 pos = new Vector2(0, -lineSpacer * i);
 			lineObjs[i] = Instantiate(linePrefab, (Vector2)textHolder.position + pos, Quaternion.identity, textHolder).GetComponent<TMP_Text>();
 			lineObjs[i].text = "";
+			lineObjs[i].fontSize = fontSize;
 			lineObjs[i].transform.localScale = lineObjs[i].transform.localScale * textScaleOverride;
 			lines[i] = new string("");
 			finishedWriting[i] = true;
@@ -92,11 +94,12 @@ public class TypingInterface : MonoBehaviour
 		GameObject go = Instantiate(oneshotPrefab, transform);
 		SFX_OneShot os = go.GetComponent<SFX_OneShot>();
 		if (keyclick.Length < 1) return null;
-		os.Play(keyclick[Random.Range(0, keyclick.Length)], 0.01f * SFX.globalVolume);
+		os.Play(keyclick[Random.Range(0, keyclick.Length)], 0.01f);
 		os.GetComponent<AudioSource>().pitch = Random.Range(0.95f, 1.05f);
+		Debug.Log("click " + (0.01f) + os.GetComponent<AudioSource>().volume);
 		return os;
 	}
-	void BoopSound(float minPitch = 1, float maxPitch = 1)
+	public void BoopSound(float minPitch = 1, float maxPitch = 1, float volume = 0.01f)
 	{
 		if (Time.unscaledTime- lastBoop < boopDelay) return;
 		lastBoop = Time.unscaledTime;
@@ -104,14 +107,14 @@ public class TypingInterface : MonoBehaviour
 		if (bcham >= booplength) bcham = 0;
 		boopsources[bcham].clip = boops[Random.Range(0, boops.Length)];
 		boopsources[bcham].pitch = Random.Range(minPitch, maxPitch);
-		boopsources[bcham].volume = 0.01f * SFX.globalVolume;
+		boopsources[bcham].volume = volume * SFX.globalVolume;
 		boopsources[bcham].Play();
 	}
 
 	// Update is called once per frame
 	public virtual void Update()
     {
-		lettersPerTick = Mathf.RoundToInt(120 / (1 / Time.deltaTime)) + unwritten.Count;
+		lettersPerTick = Mathf.Max(1, Mathf.RoundToInt(120 / (1 / Time.deltaTime)) + unwritten.Count);
 
 		//do we type?
 		if(Time.unscaledTime- lastcharTime > typingDelay) {
@@ -151,7 +154,7 @@ public class TypingInterface : MonoBehaviour
 				}
 				//special cases, clean input
 				else if (c == '\n') break;
-				else if ((c > 'z' || c < '0') && c != ' ') break; //only 0-9, a-z, and space
+				else if ((c > 'z' || c < '0') && c != ' ' && c!= '.') break; //only 0-9, a-z, period, and space
 				else if (c == '\u001B') break; //esc char
 				else
 				{
@@ -233,7 +236,7 @@ public class TypingInterface : MonoBehaviour
 				if (newchar)
 				{
 					for(int t = 0; t < lettersPerTick; t++) {
-						if (lines[i].Length == lengths[i]) break;
+						if (lines[i].Length <= lengths[i]) break;
 						//write tags in one keypress
 						if (lines[i][lengths[i]] == '<')
 						{
@@ -256,11 +259,16 @@ public class TypingInterface : MonoBehaviour
 							}
 							lengths[i] += add;
 						}
-						lengths[i]++;
+					lengths[i]++;
 					}
 
 					BoopSound(0.95f, 1.05f);
-					if (lengths[i] >= lines[i].Length) finishedWriting[i] = true;
+					if (lengths[i] >= lines[i].Length)
+					{
+						Debug.Log("fin " + i);
+						lengths[i] = lines[i].Length;
+						finishedWriting[i] = true;
+					}
 					newchar = false;
 				}
 				s = Reverse(lines[i]);
@@ -275,7 +283,6 @@ public class TypingInterface : MonoBehaviour
 			}
 
 		}
-
 
 		pstring = Input.inputString;
 		if (lockout) {
@@ -358,8 +365,38 @@ public class TypingInterface : MonoBehaviour
 	public void WriteBracket(bool greenify = false) {
 		WriteOut("_______________________________________", greenify);
 	}
-	public virtual void ProcessText(string message) {
-
+	public virtual bool ProcessText(string message) {
+		//message = message.Replace("\u200B", "");
+		//universal commands
+		if (message.Contains("volume=") || message.Contains("volume ="))
+		{
+			int f = message.IndexOf('=') + 1;
+			string volume = message[f..];
+			float.TryParse(volume, out float v);
+			v = Mathf.Max(v, 0);
+			v = Mathf.Min(v, 10);
+			SFX.globalVolume = v;
+			PlayerPrefs.SetFloat("volume", v);
+			WriteOut("volume set to: " + v);
+			return true;
+		}
+		if(message.Contains("bloom =")|| message.Contains("bloom=")) {
+			int f = message.IndexOf('=') + 1;
+			string volume = message[f..];
+			int.TryParse(volume, out int v);
+			v = Mathf.Max(v, 0);
+			v = Mathf.Min(v, 1);
+			PlayerPrefs.SetInt("bloom", v);
+			WriteOut("bloom set to: " + v);
+			return true;
+		}
+		if (message.Contains("settings")) {
+			WriteBracket();
+			WriteOut("volume = " + SFX.globalVolume);
+			WriteOut("bloom = " + PlayerPrefs.GetInt("bloom", 0));
+			WriteBracket();
+		}
+	return false;
 	}
 
 	string GreenText(string message) {

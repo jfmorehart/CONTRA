@@ -5,48 +5,91 @@ using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MenuConsole: TypingInterface
+public class MenuConsole : TypingInterface
 {
 	int selected_scenario = -1;
+	public static bool seenTitle = false;
+	bool anykey;
 
 	public override void Awake()
 	{
 		base.Awake();
+		SFX.globalVolume = PlayerPrefs.GetFloat("volume", 5);
 		string name = PlayerPrefs.GetString("defaultName");
 		if (name == "falken" || name == "joshua")
 		{
 			WriteOut("greetings professor falken");
 
 		}
-		else
-		{
+		else if (!seenTitle) {
+			ShowTitle();
+		}
+		else {
 			WriteOptions();
 		}
-
 		Simulator.tutorialOverride = false;
 	}
-	bool isLastUnlocked(int scen) {
+	float ttime;
+	void ShowTitle() {
+		WriteOut("");
+		WriteOut("spacemann presents");
+		WriteOut("");
+		WriteOut("   __ ________  ____  __________  _  __");
+		WriteOut("  / //_/  _/ / / __ \\/_  __/ __ \\/ |/ /");
+		WriteOut(" / ,< _/ // /_/ /_/ / / / / /_/ /    / ");
+		WriteOut("/_/|_/___/____|____/ /_/  \\____/_/|_/");
+		WriteOut("  _________  _  ___________  ___ ");
+		WriteOut(" / ___/ __ \\/ |/ /_  __/ _ \\/ _ |");
+		WriteOut("/ /__/ /_/ /    / / / / , _/ __ |");
+		WriteOut("\\___/\\____/_/|_/ /_/ /_/|_/_/ |_|");
+
+		WriteOut("");
+		WriteOut("press any key to start...");
+		WriteOut("");
+		lockout = true;
+		anykey = true;
+		ttime = Time.time;
+	}
+	public override void Update()
+	{
+		base.Update();
+		if (lockout && anykey) {
+			if (Input.anyKeyDown && !Input.GetMouseButtonDown(0) && Time.time - ttime > 0.5f) {
+				lockout = false;
+				anykey = false;
+				WriteOptions();
+				seenTitle = true;
+			}
+		}
+	}
+	bool isLastUnlocked(int scen)
+	{
 		if (scen + 1 <= Simulator.scenarios.Count) return true;
 		if (Simulator.scenarios[scen + 1].completed) return false;
 		return true;
-    }
+	}
 	void WriteOptions()
 	{
 		WriteOut("_______________________________________", false);
 		WriteOut("enter a simulation title to load...", false);
-		WriteOut("");
-		for(int i = 0; i < Simulator.scenarios.Count; i++) {
+		for (int i = 0; i < Simulator.scenarios.Count; i++)
+		{
 			Simulator.scenarios[i].completed = PlayerPrefs.GetInt(Simulator.scenarios[i].name, 0) == 1;
-			if (Simulator.scenarios[i].completed) {
-				if (isLastUnlocked(i)) {
+			if (Simulator.scenarios[i].completed)
+			{
+				if (isLastUnlocked(i))
+				{
 					WriteOut("<color=\"yellow\">" + Simulator.scenarios[i].name + "</color > ");
 				}
-				else {
+				else
+				{
 					WriteOut(Simulator.scenarios[i].name);
 				}
 			}
-			else if(i > 0){
-				if (Simulator.scenarios[i - 1].completed) {
+			else if (i > 0)
+			{
+				if (Simulator.scenarios[i - 1].completed)
+				{
 					if (isLastUnlocked(i))
 					{
 						WriteOut("<color=\"yellow\">" + Simulator.scenarios[i].name + "</color > ");
@@ -57,7 +100,8 @@ public class MenuConsole: TypingInterface
 					}
 				}
 			}
-			else {
+			else
+			{
 				if (isLastUnlocked(i))
 				{
 					WriteOut("<color=\"yellow\">" + Simulator.scenarios[i].name + "</color > ");
@@ -77,19 +121,19 @@ public class MenuConsole: TypingInterface
 		WriteOut("");
 	}
 
-	public override void ProcessText(string message)
+	public override bool ProcessText(string message)
 	{
 		message = message.Replace("\u200B", "");
-
+		if (base.ProcessText(message)) return true;
 		if (message.Contains("quit") || message.Contains("exit"))
 		{
 			Application.Quit();
-			return;
+			return true;
 		}
-
 		if (message.Contains("multiplayer", System.StringComparison.CurrentCultureIgnoreCase))
 		{
-			if (UnityServices.State == ServicesInitializationState.Uninitialized) {
+			if (UnityServices.State == ServicesInitializationState.Uninitialized)
+			{
 				RelayDude.ins.StartMultiplayer();
 			}
 
@@ -105,19 +149,19 @@ public class MenuConsole: TypingInterface
 			WriteOut("");
 			WriteBracket();
 			//RelayDude.ins.StartMultiplayer();
-			return;
+			return true;
 		}
 		if (message.Contains("host", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("hosting");
 			RelayDude.ins.StartGame();
-			return;
+			return true;
 		}
 		if (message.Contains("shutdown", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("shutting down multiplayer");
 			NetworkManager.Singleton.Shutdown();
-			return;
+			return true;
 		}
 		if (message.Contains("start", System.StringComparison.CurrentCultureIgnoreCase) && RelayDude.ins.hosting)
 		{
@@ -129,7 +173,7 @@ public class MenuConsole: TypingInterface
 			{
 				WriteOut("no opposing players, cannot start yet");
 			}
-			return;
+			return true;
 		}
 		if (message.Contains("join", System.StringComparison.CurrentCultureIgnoreCase))
 		{
@@ -138,13 +182,13 @@ public class MenuConsole: TypingInterface
 			Debug.Log("parsed this joincode = " + joincode);
 			WriteOut("trying code..." + joincode.ToLower());
 			RelayDude.ins.JoinGame(joincode);
-			return;
+			return true;
 		}
 		if (message.Contains("hello joshua", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("greetings professor falken");
 			WriteOut("how about a nice game of chess");
-			return;
+			return true;
 		}
 		if (message.Contains("name =", System.StringComparison.CurrentCultureIgnoreCase)
 		|| message.Contains("name=", System.StringComparison.CurrentCultureIgnoreCase))
@@ -166,12 +210,12 @@ public class MenuConsole: TypingInterface
 				WriteOut("greetings professor falken");
 				WriteOut("how about a nice game of chess");
 			}
-			return;
+			return true;
 		}
 		if (message.Contains("tears in rain", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			WriteOut("time to die");
-			return;
+			return true;
 		}
 		if (message.Contains("repeat"))
 		{
@@ -194,7 +238,7 @@ public class MenuConsole: TypingInterface
 			{
 				WriteOptions();
 			}
-			return;
+			return true;
 		}
 		if (message.Contains("list games"))
 		{
@@ -216,12 +260,13 @@ public class MenuConsole: TypingInterface
 			WriteOut("");
 			WriteOut("global thermonuclear war");
 			WriteOut("");
-			return;
+			return true;
 		}
 		if (message.Contains("back"))
 		{
-			WriteOut("you are already in the root menu", false);
-			return;
+			ShowTitle();
+			//WriteOut("you are already in the root menu", false);
+			return true;
 		}
 		if (message.Contains("help"))
 		{
@@ -236,7 +281,7 @@ public class MenuConsole: TypingInterface
 			WriteOut("'help' for commands");
 			WriteOut("");
 			WriteOut("_______________________________________");
-			return;
+			return true;
 		}
 		if (message.Contains("controls"))
 		{
@@ -245,14 +290,15 @@ public class MenuConsole: TypingInterface
 			WriteOut("simulation controls");
 			WriteOut("");
 			WriteOut("arrow keys - menu navigation");
-			WriteOut("spacebar or return - select");
+			WriteOut("spacebar or return true - select");
 			WriteOut("tab - back");
-			WriteOut("w, a, s, d - pan camera"); 
+			WriteOut("w, a, s, d - pan camera");
 			WriteOut("q, e - zoom camera");
 			WriteOut("");
 			WriteOut("_______________________________________");
-			return;
+			return true;
 		}
+
 
 		//generalized scenario loading
 		for (int i = 0; i < Simulator.scenarios.Count; i++)// Scenario sc in Simulator.scenarios)
@@ -265,7 +311,7 @@ public class MenuConsole: TypingInterface
 					Simulator.activeScenario = sc;
 					Simulator.tutorialOverride = sc.tutorial > 0;
 					LoadGame();
-					return;
+					return true;
 				}
 				selected_scenario = i;
 				WriteBracket();
@@ -275,39 +321,17 @@ public class MenuConsole: TypingInterface
 				WriteOut("'load' to load scenario");
 				WriteOut("");
 				WriteBracket();
-				return;
+				return true;
 			}
 
 		}
-		//tutorial reuses scenario a, so I have to put this here
-		//if (message.Contains("tutorial", System.StringComparison.CurrentCultureIgnoreCase))
-		//{
-		//	if (message.Contains("load"))
-		//	{
-		//		Simulator.activeScenario = Simulator.scenarios[0];
-		//		Simulator.tutorialOverride = true;
-		//		LoadGame();
-		//	}
-		//	Simulator.activeScenario = Simulator.scenarios[0];
-		//	Simulator.tutorialOverride = true;
-		//	selected_scenario = 0;
-		//	WriteBracket();
-		//	WriteOut("");
-		//	WriteOut("the tutorial scenario introduces the player to cities, growth, countries, and pre-emptive nuclear strikes");
-		//	WriteOut("");
-		//	WriteOut("'load' to load scenario");
-		//	WriteOut("");
-		//	WriteBracket();
-		//	return;
-		//}
-
 
 		if (message.Contains("load") && selected_scenario != -1)
 		{
 			Simulator.activeScenario = Simulator.scenarios[selected_scenario];
 			Simulator.tutorialOverride = Simulator.activeScenario.tutorial > 0;
 			LoadGame();
-			return;
+			return true;
 		}
 		if (message.Contains("resetprogress"))
 		{
@@ -315,9 +339,10 @@ public class MenuConsole: TypingInterface
 			ClearConsole();
 			WriteOut("progress has been reset");
 			WriteOptions();
-			return;
+			return true;
 		}
 		WriteOut("unknown command");
+		return false;
 		//selected_scenario = -1;
 	}
 
@@ -372,3 +397,64 @@ public class MenuConsole: TypingInterface
 		}
 	}
 }
+/*
+ __  __     __     __         ______     ______   ______     __   __    
+/\ \/ /    /\ \   /\ \       /\  __ \   /\__  _\ /\  __ \   /\ "-.\ \   
+\ \  _"-.  \ \ \  \ \ \____  \ \ \/\ \  \/_/\ \/ \ \ \/\ \  \ \ \-.  \  
+ \ \_\ \_\  \ \_\  \ \_____\  \ \_____\    \ \_\  \ \_____\  \ \_\\"\_\ 
+  \/_/\/_/   \/_/   \/_____/   \/_____/     \/_/   \/_____/   \/_/ \/_/ 
+
+__ ________  ____  __________  _  __
+/ //_/  _/ / / __ \/_  __/ __ \/ |/ /
+/ ,< _/ // /_/ /_/ / / / / /_/ /    / 
+/_/|_/___/____|____/ /_/  \____/_/|_/
+
+______  ______  __   __  ______  ______  ______    
+/\  ___\/\  __ \/\ "-.\ \/\__  _\/\  == \/\  __ \   
+\ \ \___\ \ \/\ \ \ \-.  \/_/\ \/\ \  __<\ \  __ \  
+\ \_____\ \_____\ \_\\"\_\ \ \_\ \ \_\ \_\ \_\ \_\ 
+\/_____/\/_____/\/_/ \/_/  \/_/  \/_/ /_/\/_/\/_/
+_____  ____    _  __ ______   ___    ___ 
+/ ___/ / __ \  / |/ //_  __/  / _ \  / _ |
+/ /__  / /_/ / /    /  / /    / , _/ / __ |
+\___/  \____/ /_/|_/  /_/    /_/|_| /_/ |_|
+_________  _  ___________  ___ 
+/ ___/ __ \/ |/ /_  __/ _ \/ _ |
+/ /__/ /_/ /    / / / / , _/ __ |
+\___/\____/_/|_/ /_/ /_/|_/_/ |_|
+		//WriteOut("  _____  ____    _  __ ______   ___    ___ ");
+//WriteOut(" / ___/ / __ \\  / |/ //_  __/  / _ \\  / _ |");
+//WriteOut("/ /__  / /_/ / /    /  / /    / , _/ / __ |");
+//WriteOut("\\___/  \\____/ /_/|_/  /_/    /_/|_| /_/ |_|");
+
+*/        /*
+		   __  __     __     __         ______     ______   ______     __   __    
+		  /\ \/ /    /\ \   /\ \       /\  __ \   /\__  _\ /\  __ \   /\ "-.\ \   
+		  \ \  _"-.  \ \ \  \ \ \____  \ \ \/\ \  \/_/\ \/ \ \ \/\ \  \ \ \-.  \  
+		   \ \_\ \_\  \ \_\  \ \_____\  \ \_____\    \ \_\  \ \_____\  \ \_\\"\_\ 
+			\/_/\/_/   \/_/   \/_____/   \/_____/     \/_/   \/_____/   \/_/ \/_/ 
+
+	 __ ________  ____  __________  _  __
+	/ //_/  _/ / / __ \/_  __/ __ \/ |/ /
+   / ,< _/ // /_/ /_/ / / / / /_/ /    / 
+  /_/|_/___/____|____/ /_/  \____/_/|_/
+
+   ______  ______  __   __  ______  ______  ______    
+  /\  ___\/\  __ \/\ "-.\ \/\__  _\/\  == \/\  __ \   
+  \ \ \___\ \ \/\ \ \ \-.  \/_/\ \/\ \  __<\ \  __ \  
+   \ \_____\ \_____\ \_\\"\_\ \ \_\ \ \_\ \_\ \_\ \_\ 
+	\/_____/\/_____/\/_/ \/_/  \/_/  \/_/ /_/\/_/\/_/
+	_____  ____    _  __ ______   ___    ___ 
+   / ___/ / __ \  / |/ //_  __/  / _ \  / _ |
+  / /__  / /_/ / /    /  / /    / , _/ / __ |
+  \___/  \____/ /_/|_/  /_/    /_/|_| /_/ |_|
+	_________  _  ___________  ___ 
+   / ___/ __ \/ |/ /_  __/ _ \/ _ |
+  / /__/ /_/ /    / / / / , _/ __ |
+  \___/\____/_/|_/ /_/ /_/|_/_/ |_|
+				  //WriteOut("  _____  ____    _  __ ______   ___    ___ ");
+		  //WriteOut(" / ___/ / __ \\  / |/ //_  __/  / _ \\  / _ |");
+		  //WriteOut("/ /__  / /_/ / /    /  / /    / , _/ / __ |");
+		  //WriteOut("\\___/  \\____/ /_/|_/  /_/    /_/|_| /_/ |_|");
+
+		  */

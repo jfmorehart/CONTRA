@@ -223,7 +223,7 @@ public class TutorialOverride : MonoBehaviour
 				}
 				if (built == 1)
 				{
-					if (numText != "3")
+					if (numText != "2")
 					{
 						ConsolePanel.Clear();
 						ConsolePanel.Log("Well done. Now two more.");

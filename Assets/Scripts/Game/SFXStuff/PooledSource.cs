@@ -28,6 +28,7 @@ public class PooledSource : MonoBehaviour
 		decayAmt = distanceDecay;
 		gameObject.name = "PooledTracker";
 		src = GetComponent<AudioSource>();
+		src.pitch = 1;
 		src.clip = clip;
 		src.volume = volume;
 		baseVolume = volume;

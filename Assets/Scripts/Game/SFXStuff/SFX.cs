@@ -11,7 +11,7 @@ public class SFX : MonoBehaviour
 	public static SFX ins;
 
 
-	public static float globalVolume = 3f;
+	public static float globalVolume = 7f;
 	public float chatterVolume = 0.005f;
 	public float loopvolume = 0.008f;
 	public float pilotChatterMult;
@@ -47,7 +47,7 @@ public class SFX : MonoBehaviour
 
 	float delay = 5;
 
-	public float testPitch;
+	//public float testPitch;
 
 	private void Awake()
 	{
@@ -59,7 +59,8 @@ public class SFX : MonoBehaviour
 		main.loop = true;
 		main.Play();
 		pool = new PooledSource[poolSize];
-		for(int i = 0; i < poolSize; i++) {
+		for (int i = 0; i < poolSize; i++)
+		{
 			pool[i] = Instantiate(pooledSourcePrefab, transform).GetComponent<PooledSource>();
 		}
 	}
@@ -85,14 +86,15 @@ public class SFX : MonoBehaviour
 
 	private void Update()
 	{
-		if(delay > 0) {
+		main.volume = loopvolume * globalVolume;
+		if (delay > 0) {
 			delay -= Time.deltaTime;
 			return;
 		}
 		Chatter();
-		for(int i = 0; i < poolSize; i++) {
-			pool[i].FUpdate();
-		}
+		//for(int i = 0; i < poolSize; i++) {
+		//	pool[i].FUpdate();
+		//}
 	}
 
 	void Chatter() {
@@ -103,11 +105,11 @@ public class SFX : MonoBehaviour
 	}
 
 	public void DeclareWarAlarm() {
-		NewSource(newWar, 0.05f * globalVolume);
+		NewSource(newWar, 0.02f * globalVolume);
     }
 	public void MakePeaceAlarm()
 	{
-		NewSource(newPeace, 0.05f);
+		NewSource(newPeace, 0.02f * globalVolume);
 	}
 
 	public AudioSource NewSource(AudioClip clip, float volume, bool loop = false) {
@@ -171,20 +173,23 @@ public class SFX : MonoBehaviour
 		return Resources.Load<AudioClip>("Sounds/"+ arrayname + "/" + name);
 	}
 	public void Shoot(Vector2 pos) {
-		PooledVLock(launchSound, 0.2f, pos, 0.1f, 0.3f);
+		//VectorLockNewSound(launchSound, 0.2f, pos, 0.3f, 0.1f);
+		PooledVLock(launchSound, 0.2f, 10, pos, 0.1f, 0.3f);
     }
 
-	public void PooledVLock(AudioClip clip, float volume, Vector2 pos, float decayAmt = 0.05f, float pitchVariation = 0.1f) {
+	public void PooledVLock(AudioClip clip, float volume, float pitch, Vector2 pos, float decayAmt = 0.05f, float pitchVariation = 0.1f)
+	{
 		PooledSource os = GetPooledSource();
 		os.Play(clip, volume, pos, decayAmt);
-		os.GetComponent<AudioSource>().pitch = testPitch;// 1 + Random.Range(-pitchVariation * 0.5f, pitchVariation * 0.5f);
+		os.GetComponent<AudioSource>().pitch = pitch + Random.Range(-pitchVariation * 0.5f, pitchVariation * 0.5f);
 	}
 
 	int cham;
-	PooledSource GetPooledSource() {
+	PooledSource GetPooledSource()
+	{
 		cham++;
 		if (cham > pool.Length - 1) cham = 0;
 		return pool[cham];
-    }
+	}
 
 }

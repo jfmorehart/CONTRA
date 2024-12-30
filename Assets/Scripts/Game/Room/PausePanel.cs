@@ -68,24 +68,24 @@ public class PausePanel : TypingInterface
 		ClearConsole();
 	}
 
-	public override void ProcessText(string message)
+	public override bool ProcessText(string message)
 	{
 		message = message.Replace("\u200B", "");
+		if(base.ProcessText(message))return true;
 		if (message.Contains("quit") || message.Contains("exit"))
 		{
 			Application.Quit();
-			return;
+			return true;
 		}
-
 		if (message.Contains("unpause", System.StringComparison.CurrentCultureIgnoreCase))
 		{
 			if (EndPanel.over) {
 				WriteOut("action not possible: session has terminated");
-				return;
+				return true;
 			}
 			else {
 				DisplayHandler.ins.UnPause();
-				return;
+				return true;
 			}
 
 		}
@@ -94,11 +94,11 @@ public class PausePanel : TypingInterface
 			if (Map.multi && !Map.host)
 			{
 				WriteOut("retry is not avaliable in multiplayer");
-				return;
+				return true;
 			}
 			StartCoroutine(nameof(PausedDot));
 			DisplayHandler.ins.ReloadGame();
-			return;
+			return true;
 		}
 		if (message.Contains("back") || (message.Contains("menu")) || (message.Contains("end")))
 		{
@@ -106,11 +106,11 @@ public class PausePanel : TypingInterface
 			//{
 			//	WriteOut("only the host can end the game");
 
-			//	return;
+			//	return true;
 			//}
 			StartCoroutine(nameof(PausedDot));
 			DisplayHandler.ins.LoadMenu();
-			return;
+			return true;
 		}
 		if (message.Contains("help") || message.Contains("options"))
 		{
@@ -122,7 +122,7 @@ public class PausePanel : TypingInterface
 			WriteOut("'back' - terminate current scenario");
 			WriteOut("'quit' - exit game");
 			WriteOut("____________________________________");
-			return;
+			return true;
 		}
 		if (message.Contains("controls"))
 		{
@@ -134,9 +134,10 @@ public class PausePanel : TypingInterface
 			WriteOut("w, a, s, d - pan camera");
 			WriteOut("q, e - zoom camera");
 			WriteOut("_______________________________________");
-			return;
+			return true;
 		}
 		WriteOut("unknown command");
+		return false;
 	}
 
 	IEnumerator PausedDot() { 

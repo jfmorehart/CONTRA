@@ -60,12 +60,12 @@ public class State_Enemy : State_AI
 				if (affiliation == bloc)
 				{
 					//this nation is on our team!
-					opinion[Simulator.activeScenario.affiliations[bloc][index]] = 0.95f;
+					opinion[Simulator.activeScenario.affiliations[bloc][index]] = 0.7f;
 				}
 				else
 				{
 					//this nation is on an enemy team!
-					opinion[Simulator.activeScenario.affiliations[bloc][index]] = 0.05f;
+					opinion[Simulator.activeScenario.affiliations[bloc][index]] = 0.3f;
 				}
 			}
 		}

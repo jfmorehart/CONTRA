@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 
 public class FinalCam : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class FinalCam : MonoBehaviour
 	public Vector2 shake;
 
 	Camera cam;
-
+	public PostProcessVolume ppv;
 	private void Start()
 	{
 		cam = GetComponent<Camera>();
@@ -31,6 +32,7 @@ public class FinalCam : MonoBehaviour
 		tempRt2.enableRandomWrite = true;
 		tempRt2.Create();
 	}
+	float lastchk;
 	private void Update()
 	{
 		Vector3 pos = transform.position - (Vector3)shake;
@@ -40,6 +42,12 @@ public class FinalCam : MonoBehaviour
 		if (shakestr < 0.05f) shakestr = 0;
 		if (shakestr > shakeMax) shakestr = shakeMax;
 
+		if(Time.unscaledTime - lastchk > 0.5f) {
+			lastchk = Time.unscaledTime;
+			if(ppv.profile.TryGetSettings(out Bloom b)) {
+				b.enabled.value = (PlayerPrefs.GetInt("bloom", 0) == 1);
+			}
+		}
 		//Vector2 resTarget = new Vector2(1920f, 1080f);
 		//Vector2 resViewport = new Vector2(UnityEngine.Screen.width, UnityEngine.Screen.height);
 		//Vector2 resNormalized = resTarget / resViewport; // target res in viewport space

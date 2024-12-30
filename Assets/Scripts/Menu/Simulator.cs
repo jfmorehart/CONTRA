@@ -20,7 +20,7 @@ public static class Simulator
 		//basic tutorial, overwhelm
 		Scenario.ScenarioConditions conditions = new Scenario.ScenarioConditions();
 		conditions.unlockedupgrades = new int[4][];
-		conditions.unlockedupgrades[0] = new int[] { 5, 5, 5, 5 };
+		conditions.unlockedupgrades[0] = new int[] { 5, 0, 0, 5 };
 		conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
 		double[] overmatch = new double[] { 0.8, 0.2 };
 		int[][] teams = new int[2][];
@@ -51,22 +51,22 @@ public static class Simulator
 		scenarios.Add(sc);
 
 		//tutorial 3
-		double[] econ = new double[] { 0.5, 0.25, 0.25};
-		teams = new int[2][];
-		teams[0] = new int[] { 0 }; //team A is the player
-		teams[1] = new int[] { 1, 2 }; //team B is the enemy
-		conditions = new Scenario.ScenarioConditions();
-		conditions.unlockedupgrades = new int[4][];
-		conditions.unlockedupgrades[0] = new int[] { 0, 1, 0, 1 };
-		//conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
-		conditions.airbases = new int[] { 2, 0, 0 };
-		conditions.silos = new int[] { 2, 0, 0};
-		conditions.batteries = new int[] { 3, 0, 0};
-		description = "economy instructs the candidate on how to avoid common financial pitfalls";
-		sc = new Scenario("economy", description, 3, econ, teams, conditions);
-		sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
-		sc.tutorial = 3;
-		scenarios.Add(sc);
+		//double[] econ = new double[] { 0.5, 0.25, 0.25};
+		//teams = new int[2][];
+		//teams[0] = new int[] { 0 }; //team A is the player
+		//teams[1] = new int[] { 1, 2 }; //team B is the enemy
+		//conditions = new Scenario.ScenarioConditions();
+		//conditions.unlockedupgrades = new int[4][];
+		//conditions.unlockedupgrades[0] = new int[] { 0, 1, 0, 1 };
+		////conditions.unlockedupgrades[1] = new int[] { 0, 0, 0, 0 };
+		//conditions.airbases = new int[] { 2, 0, 0 };
+		//conditions.silos = new int[] { 2, 0, 0};
+		//conditions.batteries = new int[] { 3, 0, 0};
+		//description = "economy instructs the candidate on how to avoid common financial pitfalls";
+		//sc = new Scenario("economy", description, 3, econ, teams, conditions);
+		//sc.completed = PlayerPrefs.GetInt(sc.name, 0) == 1;
+		//sc.tutorial = 3;
+		//scenarios.Add(sc);
 
 		//introduce send aid
 		double[] duoShowdown = new double [] {0.4, 0.2, 0.4}; 
@@ -74,6 +74,8 @@ public static class Simulator
 		teams[0] = new int[] { 0, 1 }; //team A is the player
 		teams[1] = new int[] { 2 }; //team B is the enemy
 		conditions = new Scenario.ScenarioConditions();
+		conditions.unlockedupgrades = new int[3][];
+		//conditions.unlockedupgrades[2] = new int[] { 0, 0, 0, 0};
 		//conditions.silos = new int[3] { 1, 0, 1 };
 		//seeds where the borders engender the sorta thing im going for
 		conditions.seedBucket = new int[]{585, 905, 874, 930, 494, 92};

@@ -8,6 +8,7 @@ public class Construction : Unit
     //public Unit toBuild;
     public ArmyManager.BuildingType btype;
     public float manHoursRemaining;
+	public AudioClip clip;
 
 	//Sites are registered on Awake as construction_sites in their team's State class
 	// they are then Worked until completed, where they're replaced by the stored toBuild unit
@@ -29,6 +30,15 @@ public class Construction : Unit
 		GetComponent<SpriteRenderer>().sprite = toBuild.GetComponent<SpriteRenderer>().sprite;
 		manHoursRemaining = toBuild.constructionCost;
 		Debug.Log("preparing build");
+		//if()
+		//SFX.ins.NewSource(clip, 0.1f);
+		if(team == Map.localTeam) {
+			SFX.ins.VectorLockNewSound(clip, 0.02f, transform.position, 0.3f, 0.0004f);
+		}
+		else {
+			SFX.ins.VectorLockNewSound(clip, 0.04f, transform.position, 0.3f, 0.002f);
+		}
+
 	}
 
 	public void Work(float workAmt)

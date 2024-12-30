@@ -22,7 +22,7 @@ public class ThinPanel : MonoBehaviour
 	public Color warningCol;
 
 	float lastStatusUpdate;
-	float statusUpdateDelay = 12;
+	float statusUpdateDelay = 25;
 	float statusLength = 8;
 	bool showingstatus;
 
@@ -159,13 +159,14 @@ public class ThinPanel : MonoBehaviour
 			if (PT_index >= plainText.Length) PT_index = 0;
 			threat.text += plainText[PT_index];
 		}
-		else { 
+		else {
 			//only play them once
-			if(PT_index >= plainText.Length) {
+			if (PT_index >= plainText.Length) {
 				threat.text += ' ';
 			}
 			else {
 				threat.text += plainText[PT_index];
+				TypingInterface.interfaceInstance.BoopSound(1.3f, 1.35f, 0.008f);
 			}
 		}
         PT_index++;

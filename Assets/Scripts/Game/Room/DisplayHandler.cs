@@ -68,17 +68,7 @@ public class DisplayHandler : MonoBehaviour
 	}
 	public void EndScreens() {
 		EndPanel.ins.Enable();
-		//TallScreenCam.ins.End();
-		//foreach (Screen s in screens)
-		//{
-		//	if (s.wideFormat) {
-		//		s.Switch(9); //endscreen;
-		//	}
-		//	else {
-		//		s.Switch(4); //tallscreen (economy)
-		//	}
-	
-		//}
+
 	}
 	public void Pause() {
 		if (!Map.multi) {
@@ -174,16 +164,9 @@ public class DisplayHandler : MonoBehaviour
 			}
 
 		}
-
-    //    if (Input.GetKeyDown(KeyCode.R) && !menuNotGame)
-    //    {
-    //        if (paused || EndPanel.over)
-    //        {
-    //            resetGame?.Invoke();
-				//TimePanel.timesUp -= EndScreens;
-				//SceneManager.LoadScene("Menu");
-    //        }
-    //    }
+		//if (Input.GetKeyDown(KeyCode.P)) {
+		//	EndScreens();
+		//}
 	}
 
 	public void LoadMenu() {
