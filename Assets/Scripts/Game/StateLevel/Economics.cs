@@ -9,7 +9,7 @@ public static class Economics
 	public static float cost_siloUpkeep = 20f;
 	public static float cost_armyUpkeep = 1;
 	static readonly float army_multiplier = 0.15f;
-	public static float cost_armySpawn = 5;
+	public static float cost_armySpawn = 2;
 	public static float max_research_budget = 0.25f;
 
 	public static float maxPowerPerSite = 30;

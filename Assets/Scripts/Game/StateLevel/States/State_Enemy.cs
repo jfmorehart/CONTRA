@@ -91,7 +91,7 @@ public class State_Enemy : State_AI
 			opinion[invasionTarget] -= 0.005f;
 			//consider calling off the invasion
 			StateDynamic stdy = new StateDynamic(team, invasionTarget);
-			if (stdy.pVictory < opinion[invasionTarget] * 1.8f || stdy.pVictory < 0.55 || assesment.percentGrowth < 0.9f) //unlikely to crush them
+			if (stdy.armyRatio > 0.7f || stdy.pVictory < 0.55 || assesment.percentGrowth < -0.9f) //unlikely to crush them
 			{
 				//call it off
 				invasionTarget = -1;
@@ -152,7 +152,7 @@ public class State_Enemy : State_AI
 				//threat strength * probability of attack
 
 				if (sharesBorder[i]) {
-					groundThreat += st_eval.str_army * ProbabilityOfWar(st_dynamic);
+					groundThreat += st_eval.str_army * ProbabilityOfWar(st_dynamic) * 0.7f;
 				}
 				airThreat += AirAttackStrength(i) * ProbabilityOfWar(st_dynamic);
 			}
@@ -182,6 +182,23 @@ public class State_Enemy : State_AI
 			if (Diplomacy.IsMyAlly(team, i)) continue;
 			if (!Diplomacy.states[i].alive) continue;
 
+			if (opinion[i] < 0.1f && rivals[i].nukeRatio < 1 && rivals[i].pVictory > 0.6f && rivals[i].armyRatio > 1) {
+				//consider pre-emptive strike
+
+				int numMissiles = 0;
+				for(int s = 0; s < silos[team].Count; s++) {
+					numMissiles += silos[team][s].numMissiles;
+				}
+
+				if(numMissiles > silos[i].Count + airbases[i].Count + 5) { //5 is wiggle room to nuke cities
+					//first strike is feasible
+					ROE.DeclareWar(team, i);
+					SpawnTroops(50);
+					ICBMStrike(100, GetTargets(i).ToList(), i);
+					ScrambleAircraft();
+					return;
+				}
+			}
 			if (sharesBorder[i] || opinion[i] < 0.2f)
 			{
 				//todo replace with more sophisticated method for mimicking anger
@@ -377,48 +394,64 @@ public class State_Enemy : State_AI
 	#region money
 	void ConstructionAndBudgeting() {
 		//THINKING STUFF
-		if (ROE.AreWeAtWar(team) || invasionTarget != -1)
+		if (ROE.AreWeAtWar(team))
 		{
 			//AT WAR
 			WartimeEconomics();
 		}
-		else
+		else if(invasionTarget != -1)
+		{
+			SpawnTroops(20);
+		}
+		else 
 		{
 			//AT PEACE
-			if (GetBuildings(team).Length < assesment.buyingPower / 30 && assesment.percentGrowth > 0.1f) {
+
+			//build if we want
+			if (GetBuildings(team).Length < assesment.buyingPower / 40 && assesment.percentGrowth > 0.1f) {
 				//we can afford more
 				if (Simulator.tutorialOverride) return;
 				ConsiderNewConstruction();
 			}
 
-			if (armies[team].Count < groundThreat && assesment.percentGrowth > 0.1f)
+			//too few armies?
+			if (armies[team].Count + 5 < groundThreat)
 			{
-				//if our standing army is too small, grow it by a tenth of the surplus cash
-				int spawnWave = Mathf.FloorToInt((-assesment.costOverrun * 0.1f) / Economics.cost_armyUpkeep);
-				if (spawnWave > 0)
-				{
-					SpawnTroops(spawnWave);
+				//we can afford more
+				if (assesment.percentGrowth > 0.1f) {
+					//if our standing army is too small, grow it by a tenth of the surplus cash
+					int spawnWave = Mathf.FloorToInt((-assesment.costOverrun * 0.1f) / Economics.cost_armyUpkeep);
+					if (spawnWave > 0)
+					{
+						SpawnTroops(spawnWave);
+					}
+				}else if(assesment.percentGrowth < 0) {
+					//who cares if we need armies, our economy is screwed
+					BalanceBudget(assesment.buyingPower * 0.1f);
 				}
 			}
-			if (assesment.percentGrowth < 0.1 && construction_sites.Count < 1)
-			{
-				BalanceBudget(5);
-			}
-			else if(assesment.percentGrowth < 0){
-				BalanceBudget(assesment.costOverrun + 5);
+			else {
+				//too many armies
+				if(construction_sites.Count < 1) {
+					BalanceBudget(Mathf.Max(assesment.costOverrun, assesment.buyingPower * 0.1f));
+				}
+				
+				////if we're low growth and not building, its overkill
+				//if (assesment.percentGrowth < 0.2 && construction_sites.Count < 1)
+				//{
+					
+				//}
+				////probably shouldn't be negative in peacetime
+				//else if (assesment.percentGrowth < 0)
+				//{
+				//	BalanceBudget(assesment.costOverrun + 5);
+				//}
 			}
 
-
-			int dif = armies[team].Count - (int)groundThreat;
-			if (dif > 0)
-			{
-				if (Simulator.tutorialOverride) return;//dont allow them to do smart things
-				BalanceBudget(dif * Economics.cost_armyUpkeep);
-			}
 		}
 	}
 	void WartimeEconomics() {
-		if (armies[team].Count < groundThreat * 2f || armies[team].Count < Map.ins.state_populations[team] * 0.15f) {
+		if (armies[team].Count < groundThreat * 1.5f || armies[team].Count < Map.ins.state_populations[team] * 0.15f) {
 			int spawnWave = Mathf.RoundToInt(10 / (Economics.cost_armySpawn * confidence_ground));
 			spawnWave = Mathf.Min(spawnWave, Mathf.RoundToInt(Map.ins.state_populations[team] - armies[team].Count) - 1);
 			if (spawnWave > 0)
@@ -446,7 +479,7 @@ public class State_Enemy : State_AI
 			ConsiderNewConstruction();
 		}
 
-		if (assesment.costOverrun > 1 && confidence_warTotal > 0.9 && invasionTarget == -1)
+		if (assesment.costOverrun > 1 && confidence_warTotal > 0.7 && invasionTarget == -1)
 		{
 			//economy is bad, and we're winning
 			//we should cut back on troops
@@ -587,7 +620,10 @@ public class State_Enemy : State_AI
 	{
 		if (victim == -1 || perp == -1) return;
 		Debug.Log("strdtc " + perp + " " + victim);
-
+		Debug.Log("oplen =" + opinion.Length + " vs vic: " + victim);
+		if (opinion.Length <= victim) return;
+		Debug.Log("oplen =" + opinion.Length + " vs perp: " + perp);
+		if (opinion.Length <= perp) return;
 		base.StrikeDetect(perp, victim, provoked);
 		if (victim == team)
 		{
@@ -600,7 +636,7 @@ public class State_Enemy : State_AI
 		else
 		{
 			//mm yummy magic number soup
-			Debug.Log("oplen =" + opinion.Length + " vs vic: " + victim);
+
 			float opmult = HarmOpinionMultiplier(victim, 0.5f) * 0.95f;
 			opinion[perp] += opmult - 1;
 		}

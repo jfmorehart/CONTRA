@@ -41,7 +41,7 @@ public class State_AI : State
 	float lastTargetRefresh;
 
 	float bomber_riskFactor = 10f;
-	float bomber_timeFactor = 0.5f;
+	float bomber_timeFactor = 2f;
 	float bomber_AAAprio = 0.2f;
 
 	//test hack
@@ -455,7 +455,7 @@ public class State_AI : State
 		{
 			if (airdoctrine[i][(int)AirDoctrines.Groundforces])
 			{
-				ts.AddRange(ConventionalTargets(i));
+				ts.AddRange(ConventionalTargets(i, 10, true, 4));
 			}
 		}
 		foreach (int i in enemies)

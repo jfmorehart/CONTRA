@@ -317,9 +317,10 @@ public class State : MonoBehaviour
 
 			//occupied cities are much more expensive to recruit new troops in
 			int originalTeam = Map.ins.GetOriginalMap(cities[i].mpos);
+			if (!Diplomacy.states[originalTeam].alive) originalTeam = team;
 			bool hometurf = originalTeam == team;
 			hometurf = hometurf && (Map.ins.state_populations[originalTeam] > 1);
-			manHourDebt += hometurf ? Economics.cost_armySpawn : Economics.cost_armySpawn * 5;
+			manHourDebt += hometurf ? Economics.cost_armySpawn : Economics.cost_armySpawn * 2;
 
 			//ensure that we dont spawn the troops in the wrong country;
 			Vector3 spawnPos = Random.insideUnitCircle * Random.Range(10, 50);

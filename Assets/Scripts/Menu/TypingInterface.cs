@@ -368,6 +368,17 @@ public class TypingInterface : MonoBehaviour
 	public virtual bool ProcessText(string message) {
 		//message = message.Replace("\u200B", "");
 		//universal commands
+		if (message.Contains("ocean=") || message.Contains("ocean ="))
+		{
+			int f = message.IndexOf('=') + 1;
+			string volume = message[f..];
+			int.TryParse(volume, out int v);
+			v = Mathf.Max(v, 0);
+			v = Mathf.Min(v, 1);
+			PlayerPrefs.SetInt("ocean", v);
+			WriteOut("ocean set to: " + v);
+			return true;
+		}
 		if (message.Contains("volume=") || message.Contains("volume ="))
 		{
 			int f = message.IndexOf('=') + 1;
@@ -394,6 +405,7 @@ public class TypingInterface : MonoBehaviour
 			WriteBracket();
 			WriteOut("volume = " + SFX.globalVolume);
 			WriteOut("bloom = " + PlayerPrefs.GetInt("bloom", 0));
+			WriteOut("ocean = " + PlayerPrefs.GetInt("ocean", 0));
 			WriteBracket();
 		}
 	return false;

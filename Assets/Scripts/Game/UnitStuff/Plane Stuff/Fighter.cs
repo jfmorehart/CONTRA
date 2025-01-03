@@ -17,7 +17,7 @@ public class Fighter : Plane
 	protected float targetAcquireCooldown = 0.1f;
 
 	float lastValidityCheck;
-	readonly float validityCheckCooldown = 0.5f;
+	readonly float validityCheckCooldown = 0.1f;
 
 	readonly float patrolDistance = 200;
 
@@ -202,6 +202,7 @@ public class Fighter : Plane
 			yield break;
 		}
 
+		state.ReportTargetBombed(transform.position);
 		for (int i = 0; i < count; i++)
 		{
 			BombManager.ins.Drop(team, transform.position, yield);
@@ -276,6 +277,9 @@ public class Fighter : Plane
 		lastRadarCheck = Time.time;
 		if (bogey != null) return;
 
+		if(target.distance != AcceptableDistance.None) {
+			bogey = ArmyUtils.EnemyAircraftInRange(team, transform.position, firingRange);
+		}
 		bogey = ArmyUtils.EnemyAircraftInRange(team, transform.position, trackingRange);
 	}
 	void PatrolPoint(Vector2 patrolPoint) {

@@ -157,7 +157,7 @@ public static class ArmyUtils
 		return tars.ToArray();
 	}
 
-	public static Target[] ConventionalTargets(int team, int numTargets = 6, bool clear = true)
+	public static Target[] ConventionalTargets(int team, int numTargets = 6, bool clear = true, float valueMult = 1)
 	{
 		// no comments fio bud
 
@@ -186,7 +186,7 @@ public static class ArmyUtils
 			}
 			Target tar = new Target(
 				testPos,
-				UnitChunks.chunkValues[team][unitChunkIndices_prealloc[t]],
+				UnitChunks.chunkValues[team][unitChunkIndices_prealloc[t]] * valueMult,
 				Tar.Conventional
 			);
 			tars.Add(tar);

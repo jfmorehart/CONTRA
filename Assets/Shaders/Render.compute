@@ -25,6 +25,7 @@ StructuredBuffer<Color> stateColors;
 int buildMode;
 int playerTeam;
 int airmode = 1;
+int renderOcean;
 
 //thanks chatgpt
 // A simple cross-platform hash function
@@ -131,22 +132,43 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     uv.x = (float2)id.x / (float2)dime.x;
     uv.y = (float2)id.y / (float2)dime.y;
 
+
     if(teamOf[index] < 0){
 
+        if(renderOcean == 0){
+            Result[id.xy] = 0;
+	        return;
+	    }
+        float2 cuv = abs(uv - 0.5); 
 
-        float oval = fractal_noise(uv * 2 + seed); 
-        oval += 0.5 * pow(abs(uv.x - 0.5) + 0.2, 2);
-        oval += 0.5 * pow(abs(uv.y - 0.5) + 0.2, 2);
-        float otime = 0.5 * frac(0.5 * (1 + sin(time)));
-        int omask = step(0.8 + 0.5 * otime, oval) - step(0.805 + 0.5 * otime, oval);
-        omask -= step(0.5 * frac(0.5 * (1 + sin(time + 0.01))), otime);
-
-        //float otime2 = 0.5 * frac(0.5 * (1 + sin(time + 0.5)));
-        //int omask = step(0.8 + 0.5 * otime2, oval) - step(0.805 + 0.5 * otime2, oval);
-        //omask -= step(0.5 * frac(0.5 * (1 + sin(time + 0.01 + 0.5))), otime2); 
+        float2 suv = round(uv * 200) / 200;
+        float oval = 1.1 * (0.9 - length(cuv)) * (fractal_noise(uv * 7 + seed) + 0.4);
+        int omask = step(0.5, oval);
 
 
-        col += omask * float3(0, 0, 0.05);
+        float otime = -time * 0.05;
+        float3 ocol= float3(0, 0, 0.1);
+        float3 ocol2 = float3(0.1, 0.2, 0.8) * 0.2;
+        float3 ocol3 = float3(0, 0.2, 0.2) * 0.3;
+        float3 ocol4 = float3(0.01, 0.15, 0.15) * 0.8;
+
+        float fn = pow(fractal_noise(suv * 12 + seed + otime) + 0.5, 10);
+        fn += 0.2 * pow(fractal_noise(suv * 30 - otime * 3) + 0.5, 10); 
+        fn *= 0.5;
+        float shore = pow(fractal_noise(suv * 60 + seed + time * 0.3) + 0.3, 7);
+        shore *= 0.3 * saturate(step(0.47 + sin(time) * 0.01, oval) - step(0.49 + sin(time) * 0.01, oval));
+
+        int l4 = step(4, fn);// - l3;
+        int l3 = step(1.5, fn) - l4;
+        int l2 = step(0.6, fn);// - l3;// - l4;
+        int l1 = step(0.1, fn) - l2;// - l3 - l4;
+        int l0 = 1 - step(0.3, fn);
+
+        col = l1 * ocol + l2 * ocol2 + l3 * ocol3 + l4 * ocol4;
+        col *= 0.6;
+        col += shore;
+        //col +=  l1 * ocol + * fn2 * ocol3; 
+
 
         Result[id.xy] = float4(col, 0);  
         return;

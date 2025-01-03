@@ -8,7 +8,7 @@ public class Missile : MonoBehaviour
 	Vector2 st;
 	public Vector2 en;
 	float yield;
-	float speed = 50;
+	float speed = 65;
 	float hmult = 1.5f;
 
 	public int team;
@@ -102,7 +102,9 @@ public class Missile : MonoBehaviour
 
 	public float PercentOfPath() { 
 		Vector2 delta = en - st;
-		if (delta.x == 0) return 1;
+		if (delta.x == 0) {
+			return delta.magnitude / (en - st).magnitude;
+		}
 		float per = transform.position.x - st.x;
 		per /= delta.x;
 		return per;

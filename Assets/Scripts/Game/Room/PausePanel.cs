@@ -60,6 +60,7 @@ public class PausePanel : TypingInterface
 			WriteOut("____________________________________");
 			WriteOut("game in progress - paused");
 			WriteOut("type 'help' for options");
+			WriteOut("type 'back' for main menu");
 			WriteOut("____________________________________");
 		}
 	}

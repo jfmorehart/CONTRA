@@ -792,6 +792,7 @@ public class Map : MonoBehaviour
 		Render.SetInt("playerTeam", Map.localTeam);
 		Render.SetInt("airmode", PlayerInput.ins.airMode ? 1 : 0);
 		Render.SetFloat("time", Time.time);
+		Render.SetInt("renderOcean", PlayerPrefs.GetInt("ocean", 1));
 
 		colorBuffer = new ComputeBuffer(numStates, 12);
 		colorBuffer.SetData(state_colors_bufferable);

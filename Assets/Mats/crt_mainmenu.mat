@@ -83,13 +83,13 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     - _dist: 0.87
-    - _fuzzAmt: 1.3
-    - _noiseAmt: 0.1
-    - _scale: 0.74
-    - _sls: -0.4
-    - _t: 135.68745
-    - _texScale1: 400
-    - _texScale2: 100
+    - _fuzzAmt: 0.61
+    - _noiseAmt: -0.34
+    - _scale: 0.68
+    - _sls: -13.24
+    - _t: 652.4084
+    - _texScale1: 999
+    - _texScale2: 0
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
